@@ -161,7 +161,7 @@ const STORIES = [
     formatIcon: "🎙️",
     excerpt:
       "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
-    image: "https://placehold.co/480x300/8a4b2c/ffffff?text=Dr.+Paulette+Brown-Hinds",
+    image: "img/inland-empire-unsung-stewards.jpg",
     link: "https://rippel.org/podcasts/?podcast-id=7828",
   },
   {
@@ -185,7 +185,7 @@ const STORIES = [
     formatIcon: "🎙️",
     excerpt:
       "Samantha Shaak, PhD, Executive Director of the Leonard Parker Pool Institute for Health, explains how stewardship starts with connecting the dots between people, partners, and place.",
-    image: "https://placehold.co/480x300/6b2c8a/ffffff?text=Samantha+Shaak%2C+PhD",
+    image: "img/samantha-shaak.webp",
     link: "https://rippel.org/podcasts/?podcast-id=7691",
   },
   {
