@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Story Layer Prototype — Internal Demo</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     REAL SITE CHROME — replicates the live Thriving Together map
+     (header, stat bar, Filters panel, Nationwide Influence panel).
+     Everything in this block mirrors the live map's actual layout.
+     ============================================================ -->
+<header class="top-nav">
+  <div class="header-brand">
+    <div class="logo-mark"></div>
+    <div>
+      <h1>Thriving Together:<br /><span>Who's Committed to Help Make Great Strides?</span></h1>
+    </div>
+  </div>
+  <div class="stat-bar">
+    <div class="stat"><span class="stat-value" id="stat-organizations">—</span><span class="stat-label">organizations</span></div>
+    <div class="stat"><span class="stat-value" id="stat-networks">—</span><span class="stat-label">networks</span></div>
+    <div class="stat"><span class="stat-value" id="stat-counties">—</span><span class="stat-label">counties</span></div>
+    <div class="stat"><span class="stat-value" id="stat-states">—</span><span class="stat-label">states</span></div>
+    <div class="stat"><span class="stat-value" id="stat-tribal">—</span><span class="stat-label">tribal nations</span></div>
+  </div>
+</header>
+
+<!-- ============================================================
+     PROTOTYPE-ONLY LABEL — not part of the live site. Everything below
+     this line is the new "story layer" concept being pitched, clearly
+     separated from the real chrome above.
+     ============================================================ -->
+<div class="demo-bar">
+  <span class="demo-bar-label">PROTOTYPE — story layer: self-guided by default, with an optional guided tour</span>
+</div>
+
+<main class="stage">
+
+  <!-- Persistent left Filters panel -->
+  <aside class="filters-panel" id="filters-panel">
+    <button class="panel-collapse-tab left" id="collapse-filters" title="Collapse">‹</button>
+    <div class="filters-panel-inner">
+      <div class="panel-section">
+        <div class="panel-section-title">Search Organizations</div>
+        <input type="text" class="search-input" id="org-search" placeholder="Search by name..." />
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Geographic Scope</div>
+        <label class="radio-option">
+          <input type="radio" name="geo-scope" value="all" checked />
+          <span class="radio-dot"></span> All Organizations
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="geo-scope" value="statewide" />
+          <span class="radio-dot"></span> Statewide
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="geo-scope" value="local" />
+          <span class="radio-dot"></span> Local / County / Tribal
+        </label>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Networks &amp; Initiatives</div>
+        <label class="toggle-option amber" id="toggle-networks-label">
+          <input type="checkbox" id="toggle-networks" data-layer="regions" checked />
+          <span class="toggle-dot"></span> Show Networks &amp; Initiatives
+        </label>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Map Options</div>
+        <label class="toggle-option">
+          <input type="checkbox" id="toggle-state-labels" />
+          <span class="toggle-dot"></span> Show State Labels
+        </label>
+        <label class="toggle-option teal" id="toggle-story-label">
+          <input type="checkbox" id="toggle-story-layer" data-layer="stories" checked />
+          <span class="toggle-dot"></span> Show Story Layer
+        </label>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Regional Networks and Initiatives</div>
+        <div class="scroll-list" id="list-regional-networks"></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">Place-Based Influence</div>
+        <div class="scroll-list" id="list-place-based"></div>
+        <div class="list-count">23 organizations</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Persistent right Nationwide Influence panel -->
+  <aside class="influence-panel" id="influence-panel">
+    <button class="panel-collapse-tab right" id="collapse-influence" title="Collapse">›</button>
+    <div class="influence-panel-inner">
+      <div class="panel-section-title">Nationwide Influence</div>
+      <div class="info-box">These organizations work nationwide and appear here rather than on the heat map.</div>
+      <div class="influence-list" id="list-nationwide-orgs"></div>
+      <div class="panel-section-title" style="margin-top:18px;">Nationwide Networks</div>
+      <div class="influence-list" id="list-nationwide-networks"></div>
+    </div>
+  </aside>
+
+  <!-- ===================== UNIFIED STORY LAYER MODE ===================== -->
+  <section class="screen active" id="screen-story">
+    <div id="map-story" class="map"></div>
+
+    <div id="tour-banner" class="tour-banner">
+      <span class="tour-banner-text">🧭 Prefer a guided walkthrough?</span>
+      <button class="tour-banner-cta">Take a guided tour of stories</button>
+      <button class="tour-banner-dismiss" title="Dismiss">×</button>
+    </div>
+
+    <button id="exit-tour-btn" class="exit-tour-btn">Exit tour ×</button>
+
+    <aside id="guided-panel" class="guided-panel hidden"></aside>
+
+    <p class="mode-caption">Map stays fully navigable — click a story marker (★) for a teaser, or take the guided tour.</p>
+  </section>
+
+  <div class="about-bar" id="about-bar">
+    <span class="about-bar-dot"></span> ABOUT THIS MAP
+    <span class="about-bar-toggle">▲ Show</span>
+  </div>
+
+</main>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map-common.js"></script>
+<script src="js/mode-story.js"></script>
+<script src="js/filters-panel.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
