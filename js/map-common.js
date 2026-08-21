@@ -21,7 +21,27 @@ function createMap(containerId) {
   return map;
 }
 
-function addBaseLayers(map) {
+// Open-book icon for story points — rasterized once from inline SVG and
+// registered with Mapbox as an image so "story-points-layer" can use
+// icon-image instead of a text-field glyph (Mapbox's hosted glyph service
+// only covers pre-emoji Unicode symbol/dingbat ranges, so a real book
+// shape isn't renderable as a font character).
+function loadStoryIcon(map, callback) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+      <path d="M12 6 C10 4.3 6.5 3.8 3.2 4.7 V18.2 C6.5 17.3 10 17.8 12 19.5 C14 17.8 17.5 17.3 20.8 18.2 V4.7 C17.5 3.8 14 4.3 12 6 Z"
+            fill="#2dd4bf" stroke="#0f1114" stroke-width="1.4" stroke-linejoin="round" />
+      <line x1="12" y1="6" x2="12" y2="19.5" stroke="#0f1114" stroke-width="1.1" />
+    </svg>`;
+  const img = new Image();
+  img.onload = () => {
+    if (!map.hasImage("story-open-book")) map.addImage("story-open-book", img, { pixelRatio: 2 });
+    callback();
+  };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+function addBaseLayers(map, onReady) {
   // Shaded geography regions
   map.addSource("regions", { type: "geojson", data: REGIONS_GEOJSON });
   map.addLayer({
@@ -63,11 +83,11 @@ function addBaseLayers(map) {
     },
   });
 
-  // Story points — deliberately a different SHAPE (star), not just a
-  // different color, from the plain circular org/network pins. Color alone
-  // won't stay a reliable signal once the real map is showing many more
-  // categories/colors, so this needs to read as "different kind of thing"
-  // at a glance regardless of palette.
+  // Story points — deliberately a different SHAPE (open book icon), not
+  // just a different color, from the plain circular org/network pins.
+  // Color alone won't stay a reliable signal once the real map is showing
+  // many more categories/colors, so this needs to read as "different kind
+  // of thing" at a glance regardless of palette.
   map.addSource("story-points", { type: "geojson", data: getStoryPointsGeoJSON() });
   map.addLayer({
     id: "story-points-halo",
@@ -79,49 +99,52 @@ function addBaseLayers(map) {
       "circle-opacity": 0.2,
     },
   });
-  map.addLayer({
-    id: "story-points-layer",
-    type: "symbol",
-    source: "story-points",
-    layout: {
-      "text-field": "★",
-      "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
-      "text-size": 22,
-      "text-allow-overlap": true,
-      "text-ignore-placement": true,
-    },
-    paint: {
-      "text-color": "#2dd4bf",
-      "text-halo-color": "#0f1114",
-      "text-halo-width": 1.5,
-    },
-  });
-  // Small count badge for locations with >1 story (Lehigh Valley), offset
-  // to the upper-right of the star so it doesn't collide with the glyph.
-  map.addLayer({
-    id: "story-points-count",
-    type: "symbol",
-    source: "story-points",
-    filter: [">", ["get", "count"], 1],
-    layout: {
-      "text-field": ["to-string", ["get", "count"]],
-      "text-size": 10,
-      "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
-      "text-offset": [0.85, -0.85],
-      "text-allow-overlap": true,
-      "text-ignore-placement": true,
-    },
-    paint: {
-      "text-color": "#0f1114",
-      "text-halo-color": "#2dd4bf",
-      "text-halo-width": 2,
-    },
+
+  // icon-image requires the image to be registered first, which is an
+  // async decode step (even from a data URI) — the rest of addBaseLayers
+  // runs synchronously as before, and only these two dependent layers
+  // (plus the click/hover wiring that targets them) wait on it.
+  loadStoryIcon(map, () => {
+    map.addLayer({
+      id: "story-points-layer",
+      type: "symbol",
+      source: "story-points",
+      layout: {
+        "icon-image": "story-open-book",
+        "icon-size": 0.75,
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+      },
+    });
+    // Small count badge for locations with >1 story (Lehigh Valley), offset
+    // to the upper-right of the book icon so it doesn't collide with it.
+    map.addLayer({
+      id: "story-points-count",
+      type: "symbol",
+      source: "story-points",
+      filter: [">", ["get", "count"], 1],
+      layout: {
+        "text-field": ["to-string", ["get", "count"]],
+        "text-size": 10,
+        "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
+        "text-offset": [0.85, -0.85],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+      },
+      paint: {
+        "text-color": "#0f1114",
+        "text-halo-color": "#2dd4bf",
+        "text-halo-width": 2,
+      },
+    });
+
+    map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = "pointer"));
+    map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
+    if (onReady) onReady();
   });
 
   map.on("mouseenter", "network-pins-layer", () => (map.getCanvas().style.cursor = "pointer"));
   map.on("mouseleave", "network-pins-layer", () => (map.getCanvas().style.cursor = ""));
-  map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = "pointer"));
-  map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
 
   // Simple "list of links" style popup for plain network pins
   map.on("click", "network-pins-layer", (e) => {

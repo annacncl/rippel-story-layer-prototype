@@ -4,7 +4,7 @@
 // internal team feedback:
 //
 //   1. Defaults to self-guided: on load the map is fully navigable and
-//      story markers (stars) are clickable for a teaser popup. No
+//      story markers (open book icon) are clickable for a teaser popup. No
 //      auto-advancing walkthrough starts on its own.
 //   2. The guided tour is an explicit, visible choice — a banner/button
 //      ("Take a guided tour of stories") is shown as soon as the map loads,
@@ -167,8 +167,9 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   }
 
   map.on("load", () => {
-    addBaseLayers(map);
-    wireStoryClicks();
+    // story-points-layer registers its icon image asynchronously, so its
+    // click/hover wiring waits for addBaseLayers' onReady callback.
+    addBaseLayers(map, wireStoryClicks);
     // Default state: self-guided, markers visible, tour offered but not run.
     showBanner();
   });

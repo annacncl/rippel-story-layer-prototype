@@ -42,7 +42,7 @@ feedback after that meeting, Guided Tour and Self-Guided have since been
   Networks/Place-Based Influence/Nationwide Influence list content, and 5
   story records (Lehigh Valley has 3: two podcasts + a written piece, testing
   multi-story handling at one location).
-- `js/map-common.js` — shared map setup: base layers, star-marker styling,
+- `js/map-common.js` — shared map setup: base layers, story-marker styling,
   teaser popup markup.
 - `js/mode-story.js` — the unified story layer: self-guided base +
   opt-in guided tour. See "How it works" below.
@@ -67,9 +67,9 @@ feedback after that meeting, Guided Tour and Self-Guided have since been
    Toggling "Show Story Layer" off and back on also always lands you in
    self-guided — it never resumes or re-triggers the tour. The tour only
    starts via the explicit banner button.
-4. **Story markers are a distinct shape, not just a color** — a ★ symbol
-   layer, not a circle. Color alone won't stay a reliable signal once the
-   real map is showing many more categories, so this needs to read as
+4. **Story markers are a distinct shape, not just a color** — an open-book
+   icon layer, not a circle. Color alone won't stay a reliable signal once
+   the real map is showing many more categories, so this needs to read as
    "different kind of thing" regardless of palette.
 5. **Teaser popup content/behavior is unchanged** — same image + excerpt +
    "Read full story" link pattern as before, whether you reach it by
