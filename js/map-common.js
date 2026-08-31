@@ -99,6 +99,14 @@ function ensureStoryIcon(map, shape, colorHex, callback) {
 // marker, so it can use a real CSS animation) centered on any location with
 // more than one story. Deliberately not a number: the client asked for a
 // signal more prominent than a small count badge, not a different number.
+//
+// Structure is an outer wrapper (positioned by Mapbox via inline
+// `transform`) containing an inner ring (animated by CSS `transform:
+// scale(...)`) — NOT one div doing both. A CSS animation on `transform`
+// overrides an inline `transform` on that same element for as long as the
+// animation runs, so putting the pulse animation directly on the element
+// Mapbox positions silently cancelled its positioning, leaving it stuck at
+// the map's origin corner regardless of the marker's real coordinates.
 // ---------------------------------------------------------------------------
 let storyHotspotMarkers = [];
 
@@ -108,8 +116,11 @@ function addStoryHotspots(map, storyPointsGeoJSON, colorHex) {
     .filter((f) => f.properties.count > 1)
     .map((f) => {
       const el = document.createElement("div");
-      el.className = "story-hotspot-pulse";
-      el.style.borderColor = colorHex;
+      el.className = "story-hotspot-marker";
+      const ring = document.createElement("div");
+      ring.className = "story-hotspot-pulse";
+      ring.style.borderColor = colorHex;
+      el.appendChild(ring);
       return new mapboxgl.Marker({ element: el, anchor: "center" })
         .setLngLat(f.geometry.coordinates)
         .addTo(map);
@@ -117,7 +128,10 @@ function addStoryHotspots(map, storyPointsGeoJSON, colorHex) {
 }
 
 function setStoryHotspotColor(colorHex) {
-  storyHotspotMarkers.forEach((m) => (m.getElement().style.borderColor = colorHex));
+  storyHotspotMarkers.forEach((m) => {
+    const ring = m.getElement().querySelector(".story-hotspot-pulse");
+    if (ring) ring.style.borderColor = colorHex;
+  });
 }
 
 function setStoryHotspotsVisible(visible) {
@@ -189,7 +203,12 @@ function addBaseLayers(map, onReady) {
     },
   });
 
-  // Shaded geography regions — plain circle alternative (Design Variants)
+  // Shaded geography regions — plain circle alternative (Design Variants).
+  // Deliberately bigger than the per-marker halo (17-24px radius) and
+  // drawn as a lighter fill + crisp stroke, not a small solid dot — a
+  // same-size-as-the-halo circle here was visually indistinguishable from
+  // the halo that's already on every marker, making the blob/circle
+  // toggle look like it wasn't doing anything.
   map.addSource("region-circles", { type: "geojson", data: REGION_CIRCLES_GEOJSON });
   map.addLayer({
     id: "regions-circle",
@@ -197,11 +216,12 @@ function addBaseLayers(map, onReady) {
     source: "region-circles",
     layout: { visibility: "none" },
     paint: {
-      "circle-radius": 7,
+      "circle-radius": 34,
       "circle-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
-      "circle-opacity": 0.55,
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "#0f1114",
+      "circle-opacity": 0.14,
+      "circle-stroke-width": 2,
+      "circle-stroke-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
+      "circle-stroke-opacity": 0.8,
     },
   });
 

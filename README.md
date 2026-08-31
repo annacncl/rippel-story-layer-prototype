@@ -128,14 +128,14 @@ topic, matching how the feedback was organized:
   different marker) closes it.
 - **South Texas (PJTT)** is the multi-story stress test the client asked
   for: 2 stories (1 real, 1 flagged mock — see below) at one marker. It
-  originally also had a 19-blob mock geometry standing in for its
-  non-adjacent county footprint, but that shading (blob **and** circle
-  styles alike) read as visual noise rather than "19 counties" once seen
-  live — removed per client review. The marker/hotspot/cluster panel are
-  unaffected; only the background shape is gone. If PJTT's real,
-  non-contiguous service area needs representing later, that likely wants
-  a different treatment than region shading (e.g. a labeled outline once
-  real boundary data exists), not a fix to the blob generator.
+  originally had a 19-blob mock geometry standing in for its non-adjacent
+  county footprint, but that (and, on a later pass, having no shaded
+  region at all) both read badly in review — see "Fixed after client
+  review" below. It now gets the same single-blob treatment as every other
+  location; the "19 counties, non-adjacent" framing lives in the text
+  subtitle instead of the geometry. If PJTT's real, non-contiguous service
+  area needs depicting later, that likely wants real boundary data, not
+  another mock geometry style.
 - The guided tour now steps through **locations**, not individual stories —
   directly answering the open question about tour sequencing once a stop
   can hold more than one story.
@@ -204,7 +204,7 @@ topic, matching how the feedback was organized:
   under regional names a viewer might not recognize (`subtitle`/`shortName`
   on `STORY_GEOGRAPHIES` in `js/data.js`).
 
-**Fixed after first-look client review**
+**Fixed after client review**
 - The tour/cluster panel's Next/Back (or Close) buttons are now sticky to
   the panel's bottom edge (`.guided-nav` in `css/style.css`) — a 3-story
   location previously required scrolling past every card to find them.
@@ -214,6 +214,26 @@ topic, matching how the feedback was organized:
   explicit (`openPopup()`/`closeActivePopup()` in `js/map-common.js`) —
   this also fixed clicking a second nearby marker leaving two popups open
   at once.
+- The "peeking second icon" stack effect (tried for the multi-story
+  signal) read as a duplicate-icon glitch and was dropped — halo + pulse
+  ring alone now carry that signal.
+- **Real bug, not a design choice**: the pulse ring on the South Texas
+  hotspot was rendering at the map's origin corner instead of over Texas.
+  Root cause: the ring's CSS animated `transform: scale(...)` directly on
+  the same element Mapbox positions via inline `transform: translate(...)`
+  — a CSS animation on a property overrides an inline value for that same
+  property, so the pulse animation was silently cancelling the marker's
+  real position. Fixed by moving the animation to an inner child element,
+  leaving the Mapbox-positioned element untouched (`.story-hotspot-marker`
+  / `.story-hotspot-pulse` in `css/style.css`).
+- South Texas's shading went through three states this round — 19
+  scattered blobs (too noisy), then no shading at all (inconsistent with
+  every other location) — before landing on the same single blob every
+  other location gets, per "everything should be consistent" feedback.
+- The circle-shading mode's dots were only 7px radius — smaller than the
+  17-24px halo already on every marker, so switching blob↔circle barely
+  looked different. Circle mode is now a deliberately bigger (34px),
+  lighter-fill ring with a crisp stroke, clearly distinct from the halo.
 
 ### Not part of this round (flagged back, not built here)
 
@@ -308,8 +328,9 @@ URL if you have access to it for even closer fidelity.
 
 - Geography "regions" (blob and circle styles alike) are procedurally
   generated, not actual boundary data — fine at US map scale for a demo.
-  South Texas (PJTT) has no shaded region at all (see "Round 2" above) —
-  its real, non-contiguous service area isn't represented visually here.
+  South Texas (PJTT) gets the same generic single-blob shape as every
+  other location; its real, non-contiguous 19-county footprint isn't
+  represented visually — only in the text subtitle (see "Round 2" above).
 - Several story images are placeholder blocks, not real photography (see
   sourcing table above).
 - Filters panel list content (org/network names, stat counts) is invented

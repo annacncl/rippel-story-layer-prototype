@@ -520,14 +520,25 @@ html, body {
 /* ------------------------- Multi-story hotspot pulse ------------------------
    DOM marker (not a WebGL layer) so it can use a real CSS animation. A
    hollow ring with a transparent center — the icon underneath always shows
-   through, regardless of DOM stacking order. Deliberately not a number. */
-.story-hotspot-pulse {
+   through, regardless of DOM stacking order. Deliberately not a number.
+
+   Two-element structure is required, not cosmetic: Mapbox positions
+   .story-hotspot-marker via an inline `transform: translate(...)`, and a
+   CSS animation on `transform` (the pulse) overrides an inline `transform`
+   on that same element for its whole duration — so the animation must
+   live on the inner .story-hotspot-pulse instead, or the marker loses its
+   real position entirely and sits at the map's origin corner. */
+.story-hotspot-marker {
   width: 40px;
   height: 40px;
+  pointer-events: none;
+}
+.story-hotspot-pulse {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   border: 3px solid var(--teal);
   background: transparent;
-  pointer-events: none;
   animation: story-pulse 2s ease-in-out infinite;
 }
 /* Never fades to fully invisible (opacity floor 0.45) — a ring that

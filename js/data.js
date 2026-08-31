@@ -87,13 +87,15 @@ const REGION_DEFS = [
   { id: "inland-empire", hasStory: true, name: "Inland Empire, CA", rx: 0.85, ry: 0.6 },
   { id: "fox-cities", hasStory: true, name: "Fox Cities, WI", rx: 0.7, ry: 0.45 },
   { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA", rx: 0.65, ry: 0.4 },
-  // South Texas (PJTT) deliberately has NO shaded region — the 19-scattered-
-  // blob mock geometry (both blob and circle styles) read as visual noise
-  // rather than "19 counties," per client review. The marker, hotspot
-  // signal, and cluster panel are unaffected — this only removes the
-  // background shape. Its real, non-contiguous service area may be worth
-  // representing some other way (e.g. a labeled outline) once real
-  // boundary data exists — flagging rather than reinventing it here.
+  // South Texas (PJTT) gets the same single-blob treatment as every other
+  // location, sized comparably — not the 19-scattered-blob mock geometry
+  // from the first pass, which read as visual noise rather than "19
+  // counties" and, worse, looked inconsistent next to every other location
+  // having one plain shape. The 19-county, non-adjacent framing is carried
+  // by the text subtitle instead (see STORY_GEOGRAPHIES above); if PJTT's
+  // real non-contiguous footprint needs depicting on the map later, that
+  // likely wants real boundary data, not a second mock geometry style.
+  { id: "south-texas", hasStory: true, name: "South Texas (PJTT)", rx: 0.75, ry: 0.55 },
   // MOCK — statewide-scale shading, sized to the whole state rather than a
   // metro area, so both shading styles can be previewed against it.
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
