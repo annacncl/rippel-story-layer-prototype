@@ -225,10 +225,11 @@ function addBaseLayers(map, onReady) {
   // this needs to read as "different kind of thing" regardless of palette.
   const storyPoints = getStoryPointsGeoJSON();
   map.addSource("story-points", { type: "geojson", data: storyPoints });
-  // Bigger, more opaque halo for multi-story locations — one of three
-  // stacked signals (halo, peeking second icon, pulse ring) so a hotspot
-  // reads as different at a glance, not just in a screenshot-unfriendly
-  // animation. See addStoryHotspots below for the other two.
+  // Bigger, more opaque halo for multi-story locations — paired with the
+  // pulse ring (see addStoryHotspots below) so a hotspot reads as different
+  // at a glance, not just in a screenshot-unfriendly animation. A second
+  // "peeking" icon was tried here too but read as a rendering glitch
+  // (duplicate icons) rather than a "stack" — dropped per client feedback.
   map.addLayer({
     id: "story-points-halo",
     type: "circle",
@@ -245,24 +246,6 @@ function addBaseLayers(map, onReady) {
   // runs synchronously as before, and only this dependent layer (plus the
   // click/hover wiring that targets it) waits on it.
   ensureStoryIcon(map, "book", MARKER_COLORS.teal, (iconId) => {
-    // A second, dimmer icon peeking out from behind the main one at
-    // multi-story locations only — a static "stack of cards" read that
-    // doesn't depend on animation timing or zoom level to be noticeable.
-    // Added BEFORE story-points-layer so it renders underneath it.
-    map.addLayer({
-      id: "story-points-stack",
-      type: "symbol",
-      source: "story-points",
-      filter: [">", ["get", "count"], 1],
-      layout: {
-        "icon-image": iconId,
-        "icon-size": 0.5,
-        "icon-offset": [18, -16],
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-      },
-      paint: { "icon-opacity": 0.55 },
-    });
     map.addLayer({
       id: "story-points-layer",
       type: "symbol",
@@ -314,7 +297,7 @@ function setLayerVisibility(map, layerIds, visible) {
 const LAYER_GROUPS = {
   regions: ["regions-fill", "regions-outline", "regions-circle"],
   network: ["network-pins-layer"],
-  stories: ["story-points-halo", "story-points-stack", "story-points-layer"],
+  stories: ["story-points-halo", "story-points-layer"],
 };
 
 // -------------------------- Story content builders --------------------------

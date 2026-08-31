@@ -35,9 +35,7 @@ const variantState = { icon: "book", color: "teal", size: "small", shading: "blo
 function applyIconAndColor(map) {
   const colorHex = MARKER_COLORS[variantState.color];
   ensureStoryIcon(map, variantState.icon, colorHex, (iconId) => {
-    ["story-points-layer", "story-points-stack"].forEach((id) => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, "icon-image", iconId);
-    });
+    if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-image", iconId);
   });
   if (map.getLayer("story-points-halo")) map.setPaintProperty("story-points-halo", "circle-color", colorHex);
   setStoryHotspotColor(colorHex);
@@ -45,9 +43,7 @@ function applyIconAndColor(map) {
 
 function applySize(map) {
   const size = SIZE_OPTIONS.find((s) => s.id === variantState.size).value;
-  ["story-points-layer", "story-points-stack"].forEach((id) => {
-    if (map.getLayer(id)) map.setLayoutProperty(id, "icon-size", size);
-  });
+  if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-size", size);
 }
 
 function renderVariantGroup(groupEl, options, currentId, onPick) {

@@ -25,13 +25,6 @@ function makeBlob(center, rxDeg, ryDeg, steps = 24) {
   return [coords];
 }
 
-// Multiple small blobs combined into one MultiPolygon — stand-in for a
-// non-contiguous service area (e.g. 19 non-adjacent counties) where a single
-// blob would misleadingly imply one contiguous region.
-function makeMultiBlob(centers, rxDeg, ryDeg, steps = 14) {
-  return centers.map((center) => makeBlob(center, rxDeg, ryDeg, steps));
-}
-
 // ---------------------------------------------------------------------------
 // Story geographies (also get a shaded region + are the featured locations).
 // `subtitle` orients users unfamiliar with a regional name (client ask).
@@ -94,24 +87,13 @@ const REGION_DEFS = [
   { id: "inland-empire", hasStory: true, name: "Inland Empire, CA", rx: 0.85, ry: 0.6 },
   { id: "fox-cities", hasStory: true, name: "Fox Cities, WI", rx: 0.7, ry: 0.45 },
   { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA", rx: 0.65, ry: 0.4 },
-  {
-    id: "south-texas",
-    hasStory: true,
-    name: "South Texas (PJTT)",
-    // MOCK geometry standing in for 19 non-adjacent counties — scattered
-    // small blobs, not real county boundaries. Deliberately non-contiguous:
-    // PJTT's real service area isn't one contiguous region either, which is
-    // exactly why the client flagged this as a shading stress test.
-    multi: true,
-    rx: 0.18,
-    ry: 0.14,
-    centers: [
-      [-99.5, 27.5], [-99.1, 27.75], [-98.7, 27.4], [-98.3, 26.95], [-97.95, 26.2],
-      [-97.5, 26.05], [-99.9, 26.9], [-100.3, 28.4], [-99.7, 28.9], [-99.0, 28.6],
-      [-98.4, 28.9], [-97.85, 28.4], [-98.9, 26.3], [-100.6, 27.6], [-97.4, 27.1],
-      [-98.2, 27.9], [-96.9, 27.7], [-99.4, 26.6], [-97.7, 28.85],
-    ],
-  },
+  // South Texas (PJTT) deliberately has NO shaded region — the 19-scattered-
+  // blob mock geometry (both blob and circle styles) read as visual noise
+  // rather than "19 counties," per client review. The marker, hotspot
+  // signal, and cluster panel are unaffected — this only removes the
+  // background shape. Its real, non-contiguous service area may be worth
+  // representing some other way (e.g. a labeled outline) once real
+  // boundary data exists — flagging rather than reinventing it here.
   // MOCK — statewide-scale shading, sized to the whole state rather than a
   // metro area, so both shading styles can be previewed against it.
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
@@ -128,13 +110,6 @@ const REGION_DEFS = [
 const REGIONS_GEOJSON = {
   type: "FeatureCollection",
   features: REGION_DEFS.map((r) => {
-    if (r.multi) {
-      return {
-        type: "Feature",
-        properties: { id: r.id, name: r.name, hasStory: r.hasStory },
-        geometry: { type: "MultiPolygon", coordinates: makeMultiBlob(r.centers, r.rx, r.ry) },
-      };
-    }
     const center = r.center || STORY_GEOGRAPHIES[r.id].center;
     return {
       type: "Feature",
@@ -145,22 +120,22 @@ const REGIONS_GEOJSON = {
 };
 
 // ---------------------------------------------------------------------------
-// Alternate "circle" shading mode (Design Variants comparison) — plain
-// anchor point(s) instead of soft blob polygons, so it reads as "just a
-// locator" rather than an implied boundary. South Texas renders as 19 small
-// dots instead of one big shape; the statewide example is a single dot at
-// a representative point (its `anchor`) rather than state-wide shading.
+// Alternate "circle" shading mode (Design Variants comparison) — a plain
+// anchor point instead of a soft blob polygon, so it reads as "just a
+// locator" rather than an implied boundary. The statewide example is a
+// single dot at a representative point (its `anchor`) rather than
+// state-wide shading.
 // ---------------------------------------------------------------------------
 const REGION_CIRCLES_GEOJSON = {
   type: "FeatureCollection",
-  features: REGION_DEFS.flatMap((r) => {
+  features: REGION_DEFS.map((r) => {
     const geo = STORY_GEOGRAPHIES[r.id];
-    const points = r.multi ? r.centers : [(geo && geo.anchor) || r.center || (geo && geo.center)];
-    return points.map((coords) => ({
+    const coords = (geo && geo.anchor) || r.center || (geo && geo.center);
+    return {
       type: "Feature",
       properties: { id: r.id, name: r.name, hasStory: r.hasStory },
       geometry: { type: "Point", coordinates: coords },
-    }));
+    };
   }),
 };
 

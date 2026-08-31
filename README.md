@@ -113,15 +113,29 @@ Everything below implements the client's post-meeting to-do list. Grouped by
 topic, matching how the feedback was organized:
 
 **Multi-story locations**
-- The old small numeric badge is gone, replaced by a pulsing teal ring
-  (`.story-hotspot-pulse` in `css/style.css`) around any location with more
-  than one story — a signal, not a number.
+- The old small numeric badge is gone. A multi-story location now gets a
+  bigger, more opaque halo (`story-points-halo`'s paint expression in
+  `js/map-common.js`) plus a pulsing ring (`.story-hotspot-pulse`) that
+  never fades below 45% opacity — deliberately two *static* signals, not
+  purely an animation, since the first pass (a ring that faded to fully
+  invisible for part of every cycle, with no halo difference) wasn't
+  visible from the default map view at all. A "peeking second icon" stack
+  effect was also tried and dropped — it read as a duplicate-icon
+  rendering glitch rather than "there's more than one story here."
 - Clicking a multi-story location opens the **cluster panel** — one panel
   listing every story there — instead of flipping through tabs. The map
-  stays fully navigable while it's open.
-- **South Texas (PJTT)** is the stress test the client asked for: a
-  19-county, non-adjacent mock geometry (`js/data.js` `REGION_DEFS`), with 2
-  stories (1 real, 1 flagged mock — see below).
+  stays fully navigable while it's open, and clicking bare map (or a
+  different marker) closes it.
+- **South Texas (PJTT)** is the multi-story stress test the client asked
+  for: 2 stories (1 real, 1 flagged mock — see below) at one marker. It
+  originally also had a 19-blob mock geometry standing in for its
+  non-adjacent county footprint, but that shading (blob **and** circle
+  styles alike) read as visual noise rather than "19 counties" once seen
+  live — removed per client review. The marker/hotspot/cluster panel are
+  unaffected; only the background shape is gone. If PJTT's real,
+  non-contiguous service area needs representing later, that likely wants
+  a different treatment than region shading (e.g. a labeled outline once
+  real boundary data exists), not a fix to the blob generator.
 - The guided tour now steps through **locations**, not individual stories —
   directly answering the open question about tour sequencing once a stop
   can hold more than one story.
@@ -129,8 +143,7 @@ topic, matching how the feedback was organized:
 **Geographic shading**
 - The Design Variants panel (below) toggles between the original organic
   "blob" and a plain **circle** anchor-point style, so the client can judge
-  live whether the blob reads as an implied boundary. South Texas renders
-  as 19 small dots in circle mode instead of one big shape.
+  live whether the blob reads as an implied boundary.
 - **New Hampshire (statewide)** is the non-regional example requested — its
   `anchor` point (Concord, the state capital) is deliberately different
   from its blob's broad centroid, since "where does a statewide story
@@ -190,6 +203,17 @@ topic, matching how the feedback was organized:
   content, and a one-line geography subtitle (e.g. "Southern California")
   under regional names a viewer might not recognize (`subtitle`/`shortName`
   on `STORY_GEOGRAPHIES` in `js/data.js`).
+
+**Fixed after first-look client review**
+- The tour/cluster panel's Next/Back (or Close) buttons are now sticky to
+  the panel's bottom edge (`.guided-nav` in `css/style.css`) — a 3-story
+  location previously required scrolling past every card to find them.
+- Clicking bare map now reliably closes an open single-story popup, not
+  just the cluster panel. Mapbox's own `Popup` `closeOnClick` option
+  turned out not to close it in testing, so popup lifecycle is now
+  explicit (`openPopup()`/`closeActivePopup()` in `js/map-common.js`) —
+  this also fixed clicking a second nearby marker leaving two popups open
+  at once.
 
 ### Not part of this round (flagged back, not built here)
 
@@ -284,8 +308,8 @@ URL if you have access to it for even closer fidelity.
 
 - Geography "regions" (blob and circle styles alike) are procedurally
   generated, not actual boundary data — fine at US map scale for a demo.
-  South Texas's 19-county geometry is scattered mock blobs, not the real
-  PJTT service area.
+  South Texas (PJTT) has no shaded region at all (see "Round 2" above) —
+  its real, non-contiguous service area isn't represented visually here.
 - Several story images are placeholder blocks, not real photography (see
   sourcing table above).
 - Filters panel list content (org/network names, stat counts) is invented
