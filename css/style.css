@@ -394,7 +394,7 @@ html, body {
   height: 100%;
   background: var(--surface);
   border-left: 1px solid var(--border);
-  padding: 20px 22px;
+  padding: 20px 22px 0;
   overflow-y: auto;
   color: var(--text);
   z-index: 3;
@@ -427,7 +427,18 @@ html, body {
 }
 .guided-image { width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius); margin-bottom: 10px; }
 .guided-panel h3 { margin: 8px 0 2px; font-size: 17px; font-family: var(--font-serif); font-weight: 500; color: var(--text); }
-.guided-nav { display: flex; justify-content: space-between; margin-top: 20px; }
+/* Sticky footer: at a 3-story location you'd otherwise have to scroll past
+   every card to find Next/Back (or Close), which isn't discoverable. */
+.guided-nav {
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  bottom: 0;
+  margin: 20px -22px 0;
+  padding: 12px 22px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
 .guided-nav button {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -511,18 +522,20 @@ html, body {
    hollow ring with a transparent center — the icon underneath always shows
    through, regardless of DOM stacking order. Deliberately not a number. */
 .story-hotspot-pulse {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 2px solid var(--teal);
+  border: 3px solid var(--teal);
   background: transparent;
   pointer-events: none;
-  animation: story-pulse 2.2s ease-out infinite;
+  animation: story-pulse 2s ease-in-out infinite;
 }
+/* Never fades to fully invisible (opacity floor 0.45) — a ring that
+   disappears for part of every cycle isn't a reliable "look here" signal
+   at a glance or in a screenshot. */
 @keyframes story-pulse {
-  0% { transform: scale(0.55); opacity: 0.9; }
-  70% { transform: scale(1.7); opacity: 0; }
-  100% { transform: scale(1.7); opacity: 0; }
+  0%, 100% { transform: scale(0.85); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.45; }
 }
 
 /* --------------------- Guided-tour active-stop highlight -------------------

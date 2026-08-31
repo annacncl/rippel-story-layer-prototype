@@ -51,6 +51,7 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   const tourGeoIds = [...new Set(STORIES.map((s) => s.geoId))];
   let stepIndex = 0;
   let tourActive = false;
+  let clusterOpen = false;
 
   function disableInteractions() {
     map.dragPan.disable();
@@ -111,6 +112,19 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
     });
     map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = tourActive ? "" : "pointer"));
     map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
+
+    // Clicking bare map (not a marker) dismisses whatever's currently open
+    // — the single-story popup and the cluster panel alike. (Mapbox's own
+    // Popup closeOnClick option didn't reliably close it in testing, so
+    // popup closing is handled explicitly via closeActivePopup() too — see
+    // js/map-common.js.) Only relevant to self-guided browsing: during a
+    // tour the map is non-interactive anyway.
+    map.on("click", (e) => {
+      const hits = map.queryRenderedFeatures(e.point, { layers: ["story-points-layer", "network-pins-layer"] });
+      if (hits.length > 0) return;
+      closeActivePopup();
+      if (clusterOpen) closeClusterPanel();
+    });
   }
 
   // ----------------------------- Cluster panel ------------------------------
@@ -118,10 +132,13 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   // story there ("here's everything going on in X"), without locking the
   // map — requirement #1 (fully navigable self-guided) still applies.
   function openClusterPanel(geoId) {
+    closeActivePopup();
+    clusterOpen = true;
     renderStoryPanel(document.getElementById(panelId), { geoId, mode: "cluster" });
     setStoryPanelOpen(true);
   }
   function closeClusterPanel() {
+    clusterOpen = false;
     document.getElementById(panelId).classList.add("hidden");
     setStoryPanelOpen(false);
   }
@@ -206,7 +223,9 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
 
   // Explicit, user-chosen entry point — never triggered automatically.
   function startTour() {
+    closeActivePopup();
     tourActive = true;
+    clusterOpen = false;
     stepIndex = 0;
     hideBanner();
     showExitBtn();
@@ -236,6 +255,7 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   // non-sticky with respect to the tour (requirement #3).
   function onStoryToggle(checked) {
     tourActive = false;
+    clusterOpen = false;
     document.getElementById(panelId).classList.add("hidden");
     hideExitBtn();
     enableInteractions();

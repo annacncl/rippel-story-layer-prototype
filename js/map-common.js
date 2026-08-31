@@ -50,6 +50,28 @@ const ICON_PATHS = {
 
 const registeredIcons = new Set();
 
+// Single shared "currently open popup" reference. Mapbox's own Popup
+// closeOnClick option turned out not to reliably close these against a
+// background map click in testing, so closing is handled explicitly here
+// instead of relying on that default — both on background click (see
+// js/mode-story.js) and whenever a different popup opens (so clicking a
+// second nearby marker doesn't leave two popups stacked open).
+let activePopup = null;
+function closeActivePopup() {
+  if (activePopup) {
+    activePopup.remove();
+    activePopup = null;
+  }
+}
+function openPopup(map, lngLat, html, options) {
+  closeActivePopup();
+  activePopup = new mapboxgl.Popup({ closeOnClick: false, ...options }).setLngLat(lngLat).setHTML(html).addTo(map);
+  activePopup.on("close", () => {
+    activePopup = null;
+  });
+  return activePopup;
+}
+
 // Ensures `<shape>-<color>` is registered as a Mapbox image, then calls back
 // with its id. Safe to call repeatedly — already-registered combos resolve
 // on the next microtask without re-decoding the SVG.
@@ -203,14 +225,18 @@ function addBaseLayers(map, onReady) {
   // this needs to read as "different kind of thing" regardless of palette.
   const storyPoints = getStoryPointsGeoJSON();
   map.addSource("story-points", { type: "geojson", data: storyPoints });
+  // Bigger, more opaque halo for multi-story locations — one of three
+  // stacked signals (halo, peeking second icon, pulse ring) so a hotspot
+  // reads as different at a glance, not just in a screenshot-unfriendly
+  // animation. See addStoryHotspots below for the other two.
   map.addLayer({
     id: "story-points-halo",
     type: "circle",
     source: "story-points",
     paint: {
-      "circle-radius": 17,
+      "circle-radius": ["case", [">", ["get", "count"], 1], 24, 17],
       "circle-color": MARKER_COLORS.teal,
-      "circle-opacity": 0.2,
+      "circle-opacity": ["case", [">", ["get", "count"], 1], 0.38, 0.2],
     },
   });
 
@@ -219,6 +245,24 @@ function addBaseLayers(map, onReady) {
   // runs synchronously as before, and only this dependent layer (plus the
   // click/hover wiring that targets it) waits on it.
   ensureStoryIcon(map, "book", MARKER_COLORS.teal, (iconId) => {
+    // A second, dimmer icon peeking out from behind the main one at
+    // multi-story locations only — a static "stack of cards" read that
+    // doesn't depend on animation timing or zoom level to be noticeable.
+    // Added BEFORE story-points-layer so it renders underneath it.
+    map.addLayer({
+      id: "story-points-stack",
+      type: "symbol",
+      source: "story-points",
+      filter: [">", ["get", "count"], 1],
+      layout: {
+        "icon-image": iconId,
+        "icon-size": 0.5,
+        "icon-offset": [18, -16],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+      },
+      paint: { "icon-opacity": 0.55 },
+    });
     map.addLayer({
       id: "story-points-layer",
       type: "symbol",
@@ -244,18 +288,18 @@ function addBaseLayers(map, onReady) {
   // Simple "list of links" style popup for plain network pins
   map.on("click", "network-pins-layer", (e) => {
     const f = e.features[0];
-    new mapboxgl.Popup({ closeButton: true, maxWidth: "220px" })
-      .setLngLat(f.geometry.coordinates)
-      .setHTML(
-        `<div class="plain-popup">
-          <strong>${f.properties.name}</strong>
-          <ul>
-            <li><a href="#" onclick="return false;">Org profile</a></li>
-            <li><a href="#" onclick="return false;">Local projects</a></li>
-          </ul>
-        </div>`
-      )
-      .addTo(map);
+    openPopup(
+      map,
+      f.geometry.coordinates,
+      `<div class="plain-popup">
+        <strong>${f.properties.name}</strong>
+        <ul>
+          <li><a href="#" onclick="return false;">Org profile</a></li>
+          <li><a href="#" onclick="return false;">Local projects</a></li>
+        </ul>
+      </div>`,
+      { closeButton: true, maxWidth: "220px" }
+    );
   });
 }
 
@@ -270,7 +314,7 @@ function setLayerVisibility(map, layerIds, visible) {
 const LAYER_GROUPS = {
   regions: ["regions-fill", "regions-outline", "regions-circle"],
   network: ["network-pins-layer"],
-  stories: ["story-points-halo", "story-points-layer"],
+  stories: ["story-points-halo", "story-points-stack", "story-points-layer"],
 };
 
 // -------------------------- Story content builders --------------------------
@@ -324,10 +368,11 @@ function buildTeaserHTML(story) {
 function openStoryTeaser(map, feature) {
   const storyIds = JSON.parse(feature.properties.storyIds);
   const story = getStoryById(storyIds[0]);
-  return new mapboxgl.Popup({ closeButton: true, maxWidth: "260px", offset: 14 })
-    .setLngLat(feature.geometry.coordinates)
-    .setHTML(buildTeaserHTML(story))
-    .addTo(map);
+  return openPopup(map, feature.geometry.coordinates, buildTeaserHTML(story), {
+    closeButton: true,
+    maxWidth: "260px",
+    offset: 14,
+  });
 }
 
 // Stacked list of story cards — shared by the cluster panel (self-guided
