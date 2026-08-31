@@ -128,7 +128,19 @@
 
     <aside id="guided-panel" class="guided-panel hidden"></aside>
 
-    <p class="mode-caption">Map stays fully navigable — click a story marker (📖) for a teaser, or take the guided tour.</p>
+    <p class="mode-caption">Map stays fully navigable — click a story marker for a teaser (or a full list, at a multi-story location), or take the guided tour.</p>
+
+    <!-- DEV-ONLY comparison tool for the client call — not part of the
+         pitched product. See js/design-variants.js. -->
+    <div id="design-variants" class="design-variants">
+      <span class="design-variants-label">Design options</span>
+      <div class="design-variants-group"><span>Icon</span><div id="dv-icon"></div></div>
+      <div class="design-variants-group"><span>Color</span><div id="dv-color"></div></div>
+      <div class="design-variants-group"><span>Size</span><div id="dv-size"></div></div>
+      <div class="design-variants-group"><span>Shading</span><div id="dv-shading"></div></div>
+      <button id="design-variants-close" title="Hide">×</button>
+    </div>
+    <button id="design-variants-toggle-collapsed" class="design-variants-toggle-collapsed hidden">Design options ▾</button>
   </section>
 
   <div class="about-bar" id="about-bar">
@@ -145,5 +157,6 @@
 <script src="js/mode-story.js"></script>
 <script src="js/filters-panel.js"></script>
 <script src="js/app.js"></script>
+<script src="js/design-variants.js"></script>
 </body>
 </html>

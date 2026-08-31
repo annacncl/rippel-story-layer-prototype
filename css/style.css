@@ -22,6 +22,7 @@
   --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   --filters-w: 300px;
   --influence-w: 300px;
+  --story-panel-w: 0px;
   --header-h: 72px;
   --demo-bar-h: 40px;
 }
@@ -121,7 +122,7 @@ html, body {
   top: 0;
   bottom: 0;
   left: var(--filters-w);
-  right: var(--influence-w);
+  right: calc(var(--influence-w) + var(--story-panel-w));
   transition: left 0.2s, right 0.2s;
 }
 
@@ -504,3 +505,159 @@ html, body {
   padding: 4px 6px;
 }
 .tour-banner-dismiss:hover { color: var(--text); }
+
+/* ------------------------- Multi-story hotspot pulse ------------------------
+   DOM marker (not a WebGL layer) so it can use a real CSS animation. A
+   hollow ring with a transparent center — the icon underneath always shows
+   through, regardless of DOM stacking order. Deliberately not a number. */
+.story-hotspot-pulse {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--teal);
+  background: transparent;
+  pointer-events: none;
+  animation: story-pulse 2.2s ease-out infinite;
+}
+@keyframes story-pulse {
+  0% { transform: scale(0.55); opacity: 0.9; }
+  70% { transform: scale(1.7); opacity: 0; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* --------------------- Guided-tour active-stop highlight -------------------
+   Shown only around whichever location the tour is currently on, so a
+   future narration track has an obvious visual anchor to "flash" on. */
+.story-tour-highlight {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--teal);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.25);
+  background: transparent;
+  pointer-events: none;
+  animation: story-tour-glow 1.6s ease-in-out infinite;
+}
+@keyframes story-tour-glow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.25); }
+  50% { box-shadow: 0 0 0 9px rgba(45, 212, 191, 0.12); }
+}
+
+/* ------------------------------ Media embeds -------------------------------
+   Responsive 16:9 wrapper for an embedded YouTube iframe or hosted video,
+   used in place of a static image wherever a story has `media`. */
+.story-media-embed {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: #000;
+  flex-shrink: 0;
+}
+.story-media-embed iframe,
+.story-media-embed video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* --------------------------- Story panel (shared) ---------------------------
+   Cluster panel (self-guided, multi-story click) and every guided-tour step
+   share this body — a list of "story cards" instead of tab-switching
+   through separate popups one at a time. */
+.story-panel-geo { margin: 10px 0 0; font-size: 17px; font-family: var(--font-serif); font-weight: 500; color: var(--text); }
+.story-panel-subtitle { margin: 2px 0 0; font-size: 12px; color: var(--text-dim); }
+.story-panel-label {
+  margin: 10px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--teal);
+}
+.story-panel-cards { display: flex; flex-direction: column; gap: 14px; }
+.story-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+}
+.story-card-image { width: 100%; height: 130px; object-fit: cover; display: block; }
+.story-card-body { padding: 10px 12px 12px; }
+.story-card-body h3 { margin: 6px 0 2px; font-size: 14px; font-family: var(--font-serif); font-weight: 500; color: var(--text); }
+
+/* ---------------------------- Design Variants panel -------------------------
+   Dev-only comparison tool for the client call — NOT part of the pitched
+   product, clearly labeled, safe to delete once decisions are made. */
+.design-variants {
+  position: absolute;
+  left: 50%;
+  top: 78px; /* below .tour-banner, which shares the same centered top-14px slot */
+  transform: translateX(-50%);
+  z-index: 2; /* above the bare map, but tucks behind the story/cluster/tour panel (z-index 3) and side panels (4) when they overlap */
+  background: rgba(36, 26, 46, 0.96);
+  border: 1px dashed #8a6bb0;
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 90vw;
+}
+.design-variants.hidden { display: none; }
+.design-variants-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #c9a8f0;
+  white-space: nowrap;
+}
+.design-variants-group { display: flex; align-items: center; gap: 4px; }
+.design-variants-group span { color: var(--text-dim); margin-right: 2px; white-space: nowrap; }
+.design-variants button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 9px;
+  border-radius: 20px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  cursor: pointer;
+}
+.design-variants button:hover { color: var(--text); }
+.design-variants button.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); font-weight: 600; }
+.design-variants-toggle-collapsed {
+  position: absolute;
+  left: 50%;
+  top: 78px;
+  transform: translateX(-50%);
+  z-index: 2;
+  background: rgba(36, 26, 46, 0.96);
+  border: 1px dashed #8a6bb0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #c9a8f0;
+  cursor: pointer;
+}
+.design-variants-toggle-collapsed.hidden { display: none; }
+
+/* ------------------------------- Mobile layout -------------------------------
+   This prototype previously had zero @media rules at all — built for a
+   laptop-in-a-meeting demo. This is a first, minimal pass so the client's
+   phone/mobile question is actually testable: both side panels start
+   collapsed (js/filters-panel.js applies this on load), and an open story/
+   cluster/tour panel overlays full-width instead of trying to share space
+   with an already-narrow map. */
+@media (max-width: 768px) {
+  .guided-panel { width: 100%; right: 0; }
+  .mode-caption { max-width: calc(100vw - 40px); }
+  .design-variants,
+  .design-variants-toggle-collapsed { max-width: calc(100vw - 20px); font-size: 10px; top: 96px; }
+}

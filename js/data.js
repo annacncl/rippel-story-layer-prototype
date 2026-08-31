@@ -1,10 +1,11 @@
 // ---------------------------------------------------------------------------
 // Hardcoded data. No Airtable, no live map connection. Geography, network
-// pins, and regions are still mock — but the 5 story records below use real
-// titles/excerpts pulled from rippel.org (client-supplied links), with
-// "Read full story" pointing at the real pages. Podcast headshots are
-// placeholders (episode-specific photos weren't available to pull); the
-// Fox Cities and Lehigh Valley written-piece images are real.
+// pins, and regions are still mock — but story records marked "real content"
+// below use real titles/excerpts pulled from rippel.org (client-supplied
+// links, plus the South Texas episode found via public search on 2026-08-31),
+// with "Read full story" pointing at the real pages. Entries explicitly
+// marked MOCK are invented for this round's stress-testing and flagged as
+// such in their own comments — swap for real content once available.
 // ---------------------------------------------------------------------------
 
 // Rough elliptical "blob" polygon generator so we don't need real boundary
@@ -24,38 +25,142 @@ function makeBlob(center, rxDeg, ryDeg, steps = 24) {
   return [coords];
 }
 
+// Multiple small blobs combined into one MultiPolygon — stand-in for a
+// non-contiguous service area (e.g. 19 non-adjacent counties) where a single
+// blob would misleadingly imply one contiguous region.
+function makeMultiBlob(centers, rxDeg, ryDeg, steps = 14) {
+  return centers.map((center) => makeBlob(center, rxDeg, ryDeg, steps));
+}
+
 // ---------------------------------------------------------------------------
-// Story geographies (also get a shaded region + are the 3 featured locations)
+// Story geographies (also get a shaded region + are the featured locations).
+// `subtitle` orients users unfamiliar with a regional name (client ask).
+// `anchor` is the representative point used by the alternate "circle" shading
+// mode (Design Variants panel) — usually same as `center`, but can differ
+// for a non-adjacent or statewide geography where the marker's map point and
+// the "best single dot to represent this on the map" aren't the same thing.
 // ---------------------------------------------------------------------------
 const STORY_GEOGRAPHIES = {
-  "inland-empire": { label: "Inland Empire, CA", center: [-117.25, 34.05] },
-  "fox-cities": { label: "Fox Cities, WI", center: [-88.4, 44.28] },
-  "lehigh-valley": { label: "Lehigh Valley, PA", center: [-75.5, 40.62] },
+  "inland-empire": {
+    label: "Inland Empire, CA",
+    shortName: "Inland Empire",
+    subtitle: "Riverside & San Bernardino counties, Southern California",
+    center: [-117.25, 34.05],
+  },
+  "fox-cities": {
+    label: "Fox Cities, WI",
+    shortName: "Fox Cities",
+    subtitle: "Greater Appleton area, northeast Wisconsin",
+    center: [-88.4, 44.28],
+  },
+  "lehigh-valley": {
+    label: "Lehigh Valley, PA",
+    shortName: "Lehigh Valley",
+    subtitle: "Allentown–Bethlehem–Easton area, eastern Pennsylvania",
+    center: [-75.5, 40.62],
+  },
+  // Real org (Methodist Healthcare Ministries runs PJTT / Prosperemos Juntos
+  // Thriving Together); marker anchored at Laredo, home of the real featured
+  // story below. Geometry is a non-adjacent 19-county stand-in — see
+  // REGION_DEFS — deliberately testing the cluster panel + shading questions
+  // the client flagged together.
+  "south-texas": {
+    label: "South Texas (PJTT)",
+    shortName: "South Texas",
+    subtitle: "19 counties along the Texas–Mexico border, from Laredo to the Rio Grande Valley",
+    center: [-99.5, 27.5],
+  },
+  // MOCK — statewide example (no tight metro center) added to test how
+  // shading/anchoring should work when a story isn't a small region. `anchor`
+  // (state capital) intentionally differs from the shaded blob's broad
+  // centroid, since "where does a statewide story anchor" was the client's
+  // open question.
+  "granite-state": {
+    label: "New Hampshire (statewide)",
+    shortName: "New Hampshire",
+    subtitle: "Statewide initiative — not tied to one metro area",
+    center: [-71.5, 43.65],
+    anchor: [-71.55, 43.2],
+    statewide: true,
+  },
 };
 
 // ---------------------------------------------------------------------------
+// Raw region definitions, kept separate from the derived GeoJSON below so
+// both the blob-shading layer AND the alternate circle-shading layer (Design
+// Variants comparison) can be built from the same source data.
+// ---------------------------------------------------------------------------
+const REGION_DEFS = [
+  { id: "inland-empire", hasStory: true, name: "Inland Empire, CA", rx: 0.85, ry: 0.6 },
+  { id: "fox-cities", hasStory: true, name: "Fox Cities, WI", rx: 0.7, ry: 0.45 },
+  { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA", rx: 0.65, ry: 0.4 },
+  {
+    id: "south-texas",
+    hasStory: true,
+    name: "South Texas (PJTT)",
+    // MOCK geometry standing in for 19 non-adjacent counties — scattered
+    // small blobs, not real county boundaries. Deliberately non-contiguous:
+    // PJTT's real service area isn't one contiguous region either, which is
+    // exactly why the client flagged this as a shading stress test.
+    multi: true,
+    rx: 0.18,
+    ry: 0.14,
+    centers: [
+      [-99.5, 27.5], [-99.1, 27.75], [-98.7, 27.4], [-98.3, 26.95], [-97.95, 26.2],
+      [-97.5, 26.05], [-99.9, 26.9], [-100.3, 28.4], [-99.7, 28.9], [-99.0, 28.6],
+      [-98.4, 28.9], [-97.85, 28.4], [-98.9, 26.3], [-100.6, 27.6], [-97.4, 27.1],
+      [-98.2, 27.9], [-96.9, 27.7], [-99.4, 26.6], [-97.7, 28.85],
+    ],
+  },
+  // MOCK — statewide-scale shading, sized to the whole state rather than a
+  // metro area, so both shading styles can be previewed against it.
+  { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
+  { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
+  { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },
+  { id: "front-range", hasStory: false, name: "Front Range, CO", rx: 0.8, ry: 0.65, center: [-104.9, 39.6] },
+  { id: "piedmont-triad", hasStory: false, name: "Piedmont Triad, NC", rx: 0.7, ry: 0.4, center: [-79.9, 36.1] },
+  { id: "gulf-coast", hasStory: false, name: "Gulf Coast, MS", rx: 0.75, ry: 0.45, center: [-89.1, 30.6] },
+];
+
+// ---------------------------------------------------------------------------
 // Shaded regions layer (mirrors the live map's shaded geography regions).
-// Includes the 3 story geographies plus a few plain network-only geographies
-// so the map doesn't look suspiciously empty outside the story markets.
 // ---------------------------------------------------------------------------
 const REGIONS_GEOJSON = {
   type: "FeatureCollection",
-  features: [
-    { id: "inland-empire", hasStory: true, name: "Inland Empire, CA", rx: 0.85, ry: 0.6 },
-    { id: "fox-cities", hasStory: true, name: "Fox Cities, WI", rx: 0.7, ry: 0.45 },
-    { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA", rx: 0.65, ry: 0.4 },
-    { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
-    { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },
-    { id: "front-range", hasStory: false, name: "Front Range, CO", rx: 0.8, ry: 0.65, center: [-104.9, 39.6] },
-    { id: "piedmont-triad", hasStory: false, name: "Piedmont Triad, NC", rx: 0.7, ry: 0.4, center: [-79.9, 36.1] },
-    { id: "gulf-coast", hasStory: false, name: "Gulf Coast, MS", rx: 0.75, ry: 0.45, center: [-89.1, 30.6] },
-  ].map((r) => {
+  features: REGION_DEFS.map((r) => {
+    if (r.multi) {
+      return {
+        type: "Feature",
+        properties: { id: r.id, name: r.name, hasStory: r.hasStory },
+        geometry: { type: "MultiPolygon", coordinates: makeMultiBlob(r.centers, r.rx, r.ry) },
+      };
+    }
     const center = r.center || STORY_GEOGRAPHIES[r.id].center;
     return {
       type: "Feature",
       properties: { id: r.id, name: r.name, hasStory: r.hasStory },
       geometry: { type: "Polygon", coordinates: makeBlob(center, r.rx, r.ry) },
     };
+  }),
+};
+
+// ---------------------------------------------------------------------------
+// Alternate "circle" shading mode (Design Variants comparison) — plain
+// anchor point(s) instead of soft blob polygons, so it reads as "just a
+// locator" rather than an implied boundary. South Texas renders as 19 small
+// dots instead of one big shape; the statewide example is a single dot at
+// a representative point (its `anchor`) rather than state-wide shading.
+// ---------------------------------------------------------------------------
+const REGION_CIRCLES_GEOJSON = {
+  type: "FeatureCollection",
+  features: REGION_DEFS.flatMap((r) => {
+    const geo = STORY_GEOGRAPHIES[r.id];
+    const points = r.multi ? r.centers : [(geo && geo.anchor) || r.center || (geo && geo.center)];
+    return points.map((coords) => ({
+      type: "Feature",
+      properties: { id: r.id, name: r.name, hasStory: r.hasStory },
+      geometry: { type: "Point", coordinates: coords },
+    }));
   }),
 };
 
@@ -147,9 +252,10 @@ const NATIONWIDE_NETWORKS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Story records — real content pulled from rippel.org. Lehigh Valley has
-// three (two podcasts + one written piece) at the same point, to test how
-// multiple stories tied to one geography are surfaced.
+// Story records. Lehigh Valley (3 stories) and South Texas (2 stories) are
+// the multi-story "cluster" test locations. Each story may carry an optional
+// `media` field ({type: "youtube"|"video", url, autoplay}) — when present,
+// the teaser/cluster card embeds a real player instead of a static image.
 // ---------------------------------------------------------------------------
 const STORIES = [
   {
@@ -211,6 +317,53 @@ const STORIES = [
       "When Leonard Parker Pool set out to build a better health system for the Lehigh Valley in the 1960s, he laid the groundwork for a hospital network now stewarding equitable health for its entire community.",
     image: "https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png",
     link: "https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/",
+  },
+  // Real content, found via public search (2026-08-31): Rippel's "Unsung
+  // Stewards" podcast, Season 5 Episode 2, featuring Yvonne Pacheco of
+  // Methodist Healthcare Ministries of South Texas (the org behind PJTT).
+  // Doubles as the real-media example for the audio/video embed feature.
+  {
+    id: "south-texas-podcast-pacheco",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "Stewardship Begins with Listening in South Texas",
+    format: "Podcast",
+    formatIcon: "🎙️",
+    excerpt:
+      "Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.",
+    image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc", autoplay: false },
+    link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
+  },
+  // MOCK — invented second South Texas story so this location (a) exercises
+  // the cluster panel with 2 entries and (b) models "PJTT-produced" content
+  // sitting alongside Rippel-produced content, per the separate tour-
+  // composition note about mixing internally/externally produced stories.
+  // Swap for a real PJTT-produced piece once available.
+  {
+    id: "south-texas-pjtt-update",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "PJTT Network Update: Prosperemos Juntos / Thriving Together",
+    format: "Written Story",
+    formatIcon: "📝",
+    excerpt:
+      "PJTT's own team highlights the partners and community connectors weaving together prevention, health equity, and shared power across 19 South Texas counties, from Laredo to the Rio Grande Valley.",
+    image: "https://placehold.co/480x300/6b4f8a/ffffff?text=PJTT+story+(placeholder)",
+    link: "https://www.mhm.org/thriving-communities/",
+  },
+  // MOCK — statewide example (see STORY_GEOGRAPHIES["granite-state"] above).
+  {
+    id: "granite-state-mock",
+    geoId: "granite-state",
+    geography: "New Hampshire (statewide)",
+    title: "A Statewide Network Comes Together Across New Hampshire",
+    format: "Written Story",
+    formatIcon: "📝",
+    excerpt:
+      "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
+    image: "https://placehold.co/480x300/2f6b4f/ffffff?text=Statewide+(placeholder)",
+    link: "#",
   },
 ];
 

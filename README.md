@@ -3,7 +3,7 @@
 Standalone prototype for a "story layer" on top of the Thriving Together
 network map. **Completely separate from the live Rippel / Count Me In map**
 — no Airtable connection, no shared code, no shared data. Map geography/
-network pins are mock, but the 5 story records use real titles/excerpts
+network pins are mock, but most story records use real titles/excerpts
 pulled from rippel.org, with "Read full story" linking to the real pages.
 Safe to open, click around, and throw away.
 
@@ -11,6 +11,12 @@ Originally built as 3 separate switchable concepts (Guided Tour /
 Self-Guided / Hybrid) for a live comparison meeting. Per internal team
 feedback after that meeting, Guided Tour and Self-Guided have since been
 **merged into one unified experience** — see "How it works" below.
+
+**Round 2** (this pass) implements the client's meeting feedback: a cluster
+panel for multi-story locations, blob-vs-circle shading comparison, a
+Design Variants panel for live icon/color/size comparisons, media embeds,
+and a first mobile pass. See "Round 2: client meeting feedback" below for
+the full rundown, including what's still open.
 
 ## Setup (before the meeting)
 
@@ -36,22 +42,30 @@ feedback after that meeting, Guided Tour and Self-Guided have since been
   Influence panel) plus a single unified story layer experience, clearly
   marked with a "PROTOTYPE" label bar so it's obvious what's new vs. what
   mirrors the live site.
-- `js/data.js` — mock data for everything: 3 shaded story geographies (Inland
-  Empire, Fox Cities, Lehigh Valley — North Sound was dropped, no real content
-  was available for it), ~20 mock network pins, header stat counts, Regional
-  Networks/Place-Based Influence/Nationwide Influence list content, and 5
-  story records (Lehigh Valley has 3: two podcasts + a written piece, testing
-  multi-story handling at one location).
-- `js/map-common.js` — shared map setup: base layers, story-marker styling,
-  teaser popup markup.
-- `js/mode-story.js` — the unified story layer: self-guided base +
-  opt-in guided tour. See "How it works" below.
+- `js/data.js` — mock data for everything: 5 shaded story geographies (Inland
+  Empire, Fox Cities, Lehigh Valley, South Texas/PJTT, New Hampshire —
+  North Sound was dropped from round 1, no real content was available for
+  it), ~20 mock network pins, header stat counts, Regional Networks/
+  Place-Based Influence/Nationwide Influence list content, and 8 story
+  records (Lehigh Valley has 3, South Texas has 2 — both multi-story
+  cluster test cases; New Hampshire is a statewide, non-regional example).
+- `js/map-common.js` — shared map setup: base layers, story-marker icon
+  registration (book/person × 3 colors), the multi-story hotspot pulse, the
+  blob/circle shading layers, media-embed rendering, and the teaser
+  popup/story-card markup.
+- `js/mode-story.js` — the unified story layer: self-guided base + opt-in
+  guided tour, the multi-story cluster panel, and the dynamic map-resize
+  behavior when a panel is open. See "How it works" below.
 - `js/filters-panel.js` — wires the persistent left Filters panel and right
   Nationwide Influence panel (search, geographic scope filter, layer toggles,
-  panel collapse) via `window.getActiveMap()`.
+  panel collapse) via `window.getActiveMap()`, plus the mobile default-collapse
+  pass.
 - `js/app.js` — boots the single story mode and exposes
   `window.currentStoryToggleHandler` for the Filters panel's "Show Story
   Layer" checkbox.
+- `js/design-variants.js` — **dev-only** comparison tool for the client
+  call (icon/color/size/shading). Not part of the pitched product — see
+  "Round 2" below.
 
 ## How it works (merged Guided Tour + Self-Guided)
 
@@ -68,12 +82,15 @@ feedback after that meeting, Guided Tour and Self-Guided have since been
    self-guided — it never resumes or re-triggers the tour. The tour only
    starts via the explicit banner button.
 4. **Story markers are a distinct shape, not just a color** — an open-book
-   icon layer, not a circle. Color alone won't stay a reliable signal once
-   the real map is showing many more categories, so this needs to read as
-   "different kind of thing" regardless of palette.
-5. **Teaser popup content/behavior is unchanged** — same image + excerpt +
-   "Read full story" link pattern as before, whether you reach it by
-   clicking a marker in self-guided mode or by stepping through the tour.
+   icon by default (swappable — see "Round 2" below), not a circle. Color
+   alone won't stay a reliable signal once the real map is showing many more
+   categories, so this needs to read as "different kind of thing" regardless
+   of palette.
+5. **A single-story location opens a teaser popup; a multi-story location
+   opens the cluster panel** listing every story there, without locking the
+   map. The guided tour advances per **location**, not per story, using
+   that same list view for every step — a multi-story stop just shows more
+   than one card.
 
 ### Assumptions flagged (state management)
 
@@ -89,6 +106,102 @@ feedback after that meeting, Guided Tour and Self-Guided have since been
   no longer referenced anywhere. They're not git-tracked in this folder, so
   this isn't easily undoable — flagging in case that old 3-way comparison is
   still wanted for some future conversation.
+
+## Round 2: client meeting feedback
+
+Everything below implements the client's post-meeting to-do list. Grouped by
+topic, matching how the feedback was organized:
+
+**Multi-story locations**
+- The old small numeric badge is gone, replaced by a pulsing teal ring
+  (`.story-hotspot-pulse` in `css/style.css`) around any location with more
+  than one story — a signal, not a number.
+- Clicking a multi-story location opens the **cluster panel** — one panel
+  listing every story there — instead of flipping through tabs. The map
+  stays fully navigable while it's open.
+- **South Texas (PJTT)** is the stress test the client asked for: a
+  19-county, non-adjacent mock geometry (`js/data.js` `REGION_DEFS`), with 2
+  stories (1 real, 1 flagged mock — see below).
+- The guided tour now steps through **locations**, not individual stories —
+  directly answering the open question about tour sequencing once a stop
+  can hold more than one story.
+
+**Geographic shading**
+- The Design Variants panel (below) toggles between the original organic
+  "blob" and a plain **circle** anchor-point style, so the client can judge
+  live whether the blob reads as an implied boundary. South Texas renders
+  as 19 small dots in circle mode instead of one big shape.
+- **New Hampshire (statewide)** is the non-regional example requested — its
+  `anchor` point (Concord, the state capital) is deliberately different
+  from its blob's broad centroid, since "where does a statewide story
+  anchor" was the open question. Circle mode shows this clearly: one dot at
+  Concord instead of a state-sized blob.
+
+**Icon / marker design — the Design Variants panel**
+- `js/design-variants.js` + the "DESIGN OPTIONS" toolbar in-app: a
+  **dev-only** tool, clearly labeled, so the client can click through icon
+  (book/person), color (teal/purple/green), size (small/large), and shading
+  (blob/circle) live during the call instead of judging static screenshots.
+  Delete this file + its markup in `index.html` once decisions are made.
+- Color hex values (`MARKER_COLORS` in `js/map-common.js`) are **placeholders**
+  — not Rippel's exact brand purple/green — swatches to react to, not a
+  decision made unilaterally.
+- Default marker size is now smaller (`icon-size: 0.5`, was `0.75`) to
+  address the crowding complaint directly; "Large" in the panel is the old
+  size, kept for comparison.
+- Per-format icon/color differentiation (uniform vs. by content type) is
+  deliberately **not decided** — no toggle for it exists yet, per the
+  client's own note that this doesn't need an answer yet.
+
+**Audio/video & tour narration**
+- Stories can carry an optional `media: { type: "youtube"|"video", url,
+  autoplay }` field (`js/data.js`); when present, `js/map-common.js`
+  `renderMedia()` embeds a real player in place of the static image, in
+  both the single-story popup and cluster/tour cards.
+- The South Texas real story embeds a real YouTube video (found via public
+  search, not invented) as the live example: default is click-to-play, no
+  autoplay.
+- The guided tour has an intro/preamble step (before Location 1) framing
+  what the tour is and why these stories matter, and the active tour stop
+  gets a highlight ring (`.story-tour-highlight`) as an anchor for future
+  narration.
+- **Not built**: actual recorded voiceover narration — there's no narration
+  audio asset to embed, and none was provided. The framing text above is a
+  placeholder script structure, not final copy; real narration copy/audio
+  is a needed input from the client before this can go further.
+
+**Layout / responsiveness**
+- Cluster/tour panel bodies already scroll on overflow (`.guided-panel`'s
+  existing `overflow-y: auto`); same for the single-story popup.
+- This prototype had **zero** `@media` rules before this round — the
+  client's note that panels "already default to collapsed on mobile"
+  describes the live production site, not this static demo. This round
+  adds a first, minimal mobile pass: both side panels collapse on load
+  under 768px (`applyMobileDefaults()` in `js/filters-panel.js`), and an
+  open story/cluster/tour panel overlays full-width instead of trying to
+  share space with an already-narrow map.
+- Opening a story/cluster/tour panel now actually shrinks the map (desktop)
+  via the same CSS-variable + `map.resize()` pattern the Filters/Influence
+  panels already used (`--story-panel-w` in `css/style.css`) — previously
+  it only floated on top.
+
+**Content / labeling**
+- Every panel/popup now shows a "Stories about {place}" label above the
+  content, and a one-line geography subtitle (e.g. "Southern California")
+  under regional names a viewer might not recognize (`subtitle`/`shortName`
+  on `STORY_GEOGRAPHIES` in `js/data.js`).
+
+### Not part of this round (flagged back, not built here)
+
+- **Tour composition** (limiting the tour to ~5–10 stories, mixing
+  internally/externally produced content) — a content/curation decision for
+  the real story set, not something to prototype with mock data.
+- **PJTT's org name on the live Airtable map** — that's the real production
+  system, outside this static mock prototype entirely.
+- **Mapbox outbound-click analytics** and **GA referral bucketing for
+  Mapbox traffic** — research questions about the live map's actual
+  tooling, not prototype changes.
+- The Sept 4 follow-up call logistics.
 
 ## The real site chrome (not just styling)
 
@@ -116,7 +229,7 @@ Airtable base.
 
 ## Where the story content comes from
 
-Pulled live from rippel.org (client-supplied links) on 2026-07-22:
+Round 1, pulled live from rippel.org (client-supplied links) on 2026-07-22:
 
 | Story | Source |
 |---|---|
@@ -126,11 +239,25 @@ Pulled live from rippel.org (client-supplied links) on 2026-07-22:
 | Nate Boateng (Lehigh Valley podcast) | `rippel.org/podcasts/?podcast-id=5337` |
 | LVHN written piece (Lehigh Valley) | `rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/` |
 
-"Read full story" opens these real pages in a new tab. Fox Cities and the
-LVHN written piece use real images pulled from those pages; the 3 podcast
-teasers use labeled placeholder images since the episode-specific headshot
-URLs weren't safely extractable — swap in real photos in `js/data.js` any
-time.
+Round 2, found via public search on 2026-08-31 (not client-supplied — this
+is the PJTT/South Texas real-content stand-in):
+
+| Story | Source |
+|---|---|
+| Yvonne Pacheco (South Texas podcast, real, incl. real YouTube embed) | `rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/` |
+
+Two stories are entirely **mock/invented** for this round, clearly labeled
+in `js/data.js`: "PJTT Network Update" (South Texas's second story, so that
+location exercises the cluster panel and models mixing Rippel- with
+PJTT-produced content) and "A Statewide Network Comes Together Across New
+Hampshire" (the standalone statewide example).
+
+"Read full story" opens the real pages in a new tab. Fox Cities and the
+LVHN written piece use real images pulled from those pages; the 3 round-1
+podcast teasers use labeled placeholder images since the episode-specific
+headshot URLs weren't safely extractable; the South Texas podcast uses its
+real YouTube thumbnail and a real embedded video — swap in real photos/media
+in `js/data.js` any time.
 
 ## Visual design
 
@@ -155,13 +282,22 @@ URL if you have access to it for even closer fidelity.
 
 ## Known limitations (intentional, this is a demo, not production)
 
-- Geography "regions" are procedurally generated soft blobs centered near the
-  real places, not actual boundary data — fine at US map scale for a demo.
-- 3 of the 5 story images are placeholder blocks, not real photography (see
-  table above).
+- Geography "regions" (blob and circle styles alike) are procedurally
+  generated, not actual boundary data — fine at US map scale for a demo.
+  South Texas's 19-county geometry is scattered mock blobs, not the real
+  PJTT service area.
+- Several story images are placeholder blocks, not real photography (see
+  sourcing table above).
 - Filters panel list content (org/network names, stat counts) is invented
   mock data, not the real Airtable list — by design, per the zero-connection
   requirement.
 - "About This Map" bar is decorative (click toggles the label text only, no
   real content panel).
-- No mobile-specific layout pass — built for a laptop-in-a-meeting demo.
+- Mobile layout is a first, minimal pass (round 2) — panels collapse and
+  the story panel goes full-width, but there's no other mobile-specific
+  tuning (e.g. touch gesture handling, font-size sweep). Still built
+  primarily for a laptop-in-a-meeting demo.
+- No real narration audio/voiceover — see "Round 2" above.
+- The Design Variants panel (`js/design-variants.js`) is dev-only scaffolding
+  for the client call, not a real settings UI — no persistence, no
+  production styling polish.

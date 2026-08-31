@@ -70,7 +70,10 @@ function wireNetworksToggle() {
   box.addEventListener("change", () => {
     const map = window.getActiveMap && window.getActiveMap();
     if (!map) return;
-    setLayerVisibility(map, LAYER_GROUPS.regions, box.checked);
+    // Only one of the two shading styles (blob/circle) is visible at a
+    // time — applyRegionsVisibility respects whichever the Design Variants
+    // panel currently has selected, rather than forcing both.
+    applyRegionsVisibility(map);
   });
 }
 
@@ -121,6 +124,21 @@ function wireCollapseTabs() {
   });
 }
 
+// This prototype had no mobile handling at all before this round — the
+// client's note that panels "already default to collapsed on mobile"
+// describes the live production site, not this static demo. This is a
+// one-time, load-time check (not a live resize listener) that collapses
+// both side panels by mirroring an actual click on their collapse tabs, so
+// button state/labels/width all stay in sync regardless of how they got
+// there.
+function applyMobileDefaults() {
+  if (window.innerWidth > 768) return;
+  const collapseFilters = document.getElementById("collapse-filters");
+  const collapseInfluence = document.getElementById("collapse-influence");
+  if (!document.getElementById("filters-panel").classList.contains("collapsed")) collapseFilters.click();
+  if (!document.getElementById("influence-panel").classList.contains("collapsed")) collapseInfluence.click();
+}
+
 function wireAboutBar() {
   const bar = document.getElementById("about-bar");
   let expanded = false;
@@ -143,6 +161,9 @@ function initFiltersPanel() {
   wireStoryLayerToggle();
   wireCollapseTabs();
   wireAboutBar();
+  // Deferred a frame: some embeddings report window.innerWidth as 0 for a
+  // moment right at DOMContentLoaded, before layout has actually committed.
+  requestAnimationFrame(applyMobileDefaults);
 }
 
 document.addEventListener("DOMContentLoaded", initFiltersPanel);
