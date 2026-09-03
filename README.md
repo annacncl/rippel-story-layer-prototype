@@ -241,6 +241,17 @@ topic, matching how the feedback was organized:
   looked different. Circle mode is now a deliberately bigger (34px),
   lighter-fill ring with a crisp stroke, clearly distinct from the halo.
 
+**Incorporated from the Sept 1 internal team call**
+- Blob regions are now fill-only, no border line — a hard outline made the
+  shape read as a defined boundary rather than soft emphasis (team
+  consensus, independent of the client's own reaction to it).
+- New Hampshire (statewide) now shades the **real state polygon**
+  (`regions-state-fill` in `js/map-common.js`, sourced from Mapbox's own
+  public `us-states.geojson` demo dataset) instead of an oval blob — *"I'd
+  lean more towards shading in the state"* for the statewide case
+  specifically; blob stays as-is for regional stories. Circle mode is
+  unaffected — New Hampshire still shows its single dot at Concord there.
+
 ### Not part of this round (flagged back, not built here)
 
 - **Tour composition** (limiting the tour to ~5–10 stories, mixing
@@ -251,6 +262,10 @@ topic, matching how the feedback was organized:
 - **Mapbox outbound-click analytics** and **GA referral bucketing for
   Mapbox traffic** — research questions about the live map's actual
   tooling, not prototype changes.
+- **Story markers that coincide with a real network pin** — raised on the
+  Sept 1 call (should it show as both a network and a story?) and left
+  unresolved even internally ("let me write that down"). Not decided or
+  built here; needs a design answer before it's worth prototyping.
 - The Sept 4 follow-up call logistics.
 
 ## The real site chrome (not just styling)

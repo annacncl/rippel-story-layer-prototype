@@ -171,7 +171,7 @@ let currentShadingStyle = "blob";
 function applyRegionsVisibility(map) {
   const box = document.getElementById("toggle-networks");
   const visible = !box || box.checked;
-  setLayerVisibility(map, ["regions-fill", "regions-outline"], visible && currentShadingStyle === "blob");
+  setLayerVisibility(map, ["regions-fill", "regions-state-fill"], visible && currentShadingStyle === "blob");
   setLayerVisibility(map, ["regions-circle"], visible && currentShadingStyle === "circle");
 }
 
@@ -181,7 +181,9 @@ function setShadingStyle(map, style) {
 }
 
 function addBaseLayers(map, onReady) {
-  // Shaded geography regions — organic blob (default)
+  // Shaded geography regions — organic blob (default). Fill-only, no
+  // border line (internal team review, 2026-09-01: a hard outline made
+  // the shape read as a defined boundary rather than soft emphasis).
   map.addSource("regions", { type: "geojson", data: REGIONS_GEOJSON });
   map.addLayer({
     id: "regions-fill",
@@ -192,15 +194,20 @@ function addBaseLayers(map, onReady) {
       "fill-opacity": 0.16,
     },
   });
+
+  // Statewide stories (currently just New Hampshire) shade the real state
+  // polygon instead of an oval blob — same team review: an oval doesn't
+  // read as "this whole state" the way an actual state shape does. Source
+  // is Mapbox's own public GeoJSON dataset used throughout their docs for
+  // this exact kind of state-choropleth example (also fill-only, no
+  // stroke, matching the blob treatment above).
+  map.addSource("us-states", { type: "geojson", data: "https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json" });
   map.addLayer({
-    id: "regions-outline",
-    type: "line",
-    source: "regions",
-    paint: {
-      "line-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
-      "line-width": 1,
-      "line-opacity": 0.5,
-    },
+    id: "regions-state-fill",
+    type: "fill",
+    source: "us-states",
+    filter: ["==", ["get", "name"], "New Hampshire"],
+    paint: { "fill-color": "#2dd4bf", "fill-opacity": 0.16 },
   });
 
   // Shaded geography regions — plain circle alternative (Design Variants).
@@ -315,7 +322,7 @@ function setLayerVisibility(map, layerIds, visible) {
 }
 
 const LAYER_GROUPS = {
-  regions: ["regions-fill", "regions-outline", "regions-circle"],
+  regions: ["regions-fill", "regions-state-fill", "regions-circle"],
   network: ["network-pins-layer"],
   stories: ["story-points-halo", "story-points-layer"],
 };

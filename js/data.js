@@ -96,9 +96,15 @@ const REGION_DEFS = [
   // real non-contiguous footprint needs depicting on the map later, that
   // likely wants real boundary data, not a second mock geometry style.
   { id: "south-texas", hasStory: true, name: "South Texas (PJTT)", rx: 0.75, ry: 0.55 },
-  // MOCK — statewide-scale shading, sized to the whole state rather than a
-  // metro area, so both shading styles can be previewed against it.
-  { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
+  // Statewide stories shade the REAL state outline instead of an oval blob
+  // (internal team review, 2026-09-01: "I'd lean more towards shading in
+  // the state" for statewide specifically — an oval doesn't read as
+  // "this whole state" the way a recognizable state shape does). See
+  // regions-state-fill in js/map-common.js — skipBlob keeps this out of
+  // the oval-blob generation below while it still gets a circle-mode
+  // anchor dot via REGION_CIRCLES_GEOJSON (unaffected, uses all of
+  // REGION_DEFS regardless of skipBlob).
+  { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", skipBlob: true },
   { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
   { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },
   { id: "front-range", hasStory: false, name: "Front Range, CO", rx: 0.8, ry: 0.65, center: [-104.9, 39.6] },
@@ -111,7 +117,7 @@ const REGION_DEFS = [
 // ---------------------------------------------------------------------------
 const REGIONS_GEOJSON = {
   type: "FeatureCollection",
-  features: REGION_DEFS.map((r) => {
+  features: REGION_DEFS.filter((r) => !r.skipBlob).map((r) => {
     const center = r.center || STORY_GEOGRAPHIES[r.id].center;
     return {
       type: "Feature",

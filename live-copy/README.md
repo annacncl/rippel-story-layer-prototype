@@ -78,3 +78,11 @@ live site itself does).
 - If the live site's own `index.html` changes after this copy was made,
   those changes won't appear here automatically — this is a snapshot, not
   a live mirror.
+
+## Open question, not decided here
+
+Raised on the Sept 1 internal team call: if a story's location coincides
+with one of the real network pins, should it show as both a network and a
+story? Left unresolved even internally on that call — not something this
+prototype invents an answer for. See `../README.md`'s "Not part of this
+round" section.
