@@ -1513,10 +1513,11 @@ const RP_REGION_DEFS = [
   { id: 'fox-cities', name: 'Fox Cities, WI', rx: 0.7, ry: 0.45 },
   { id: 'lehigh-valley', name: 'Lehigh Valley, PA', rx: 0.65, ry: 0.4 },
   { id: 'south-texas', name: 'South Texas (PJTT)', rx: 0.75, ry: 0.55 },
-  // Statewide shades the real state outline instead (rp-regions-state-fill
-  // below) -- team review 2026-09-01: an oval doesn't read as "this whole
-  // state." skipBlob keeps it out of the oval generation but it still
-  // gets a circle-mode anchor dot via RP_REGION_CIRCLES_GEOJSON below.
+  // Statewide (New Hampshire) has no area shading right now -- an oval
+  // blob and a real-state-boundary fill were both tried and both dropped;
+  // neither read as "statewide." skipBlob keeps it out of the oval
+  // generation but it still gets a circle-mode anchor dot via
+  // RP_REGION_CIRCLES_GEOJSON below. Open design question -- see README.
   { id: 'granite-state', name: 'New Hampshire (statewide)', skipBlob: true },
 ];
 
@@ -1609,8 +1610,6 @@ let rpShadingStyle = 'blob';
 function rpApplyRegionsVisibility() {
   const visible = document.getElementById('rp-story-toggle-btn').classList.contains('active');
   map.setLayoutProperty('rp-regions-fill', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
-  map.setLayoutProperty('rp-regions-state-fill', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
-  map.setLayoutProperty('rp-regions-state-outline', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
   map.setLayoutProperty('rp-regions-circle', 'visibility', visible && rpShadingStyle === 'circle' ? 'visible' : 'none');
 }
 function rpSetShadingStyle(style) { rpShadingStyle = style; rpApplyRegionsVisibility(); }
@@ -1736,7 +1735,7 @@ function rpOnStoryToggle(active) {
   rpSetStoryPanelOpen(false); rpHideExitBtn();
   map.dragPan.enable(); map.scrollZoom.enable(); map.boxZoom.enable(); map.doubleClickZoom.enable(); map.touchZoomRotate.enable(); map.keyboard.enable(); map.dragRotate.enable();
   rpHideTourHighlight();
-  ['rp-story-points-halo', 'rp-story-points-layer'].forEach((id) => map.setLayoutProperty(id, 'visibility', active ? 'visible' : 'none'));
+  map.setLayoutProperty('rp-story-points-layer', 'visibility', active ? 'visible' : 'none');
   rpApplyRegionsVisibility();
   if (active) rpShowBanner(); else rpHideBanner();
 }
@@ -1745,25 +1744,20 @@ function rpOnStoryToggle(active) {
 onMapReady(() => {
   map.addSource('rp-regions', { type: 'geojson', data: RP_REGIONS_GEOJSON });
   map.addLayer({ id: 'rp-regions-fill', type: 'fill', source: 'rp-regions', paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.16 } });
-
-  // Statewide (New Hampshire) shades the real state polygon instead of an
-  // oval blob -- team review 2026-09-01. Fill-only, no stroke, same as
-  // the blob above (no hard outline on either, per the same review).
-  map.addSource('rp-us-states', { type: 'geojson', data: 'https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json' });
-  // Real stroke here (unlike the mock blobs above) -- it's tracing an
-  // actual boundary, and at whole-US zoom a small state at blob-level
-  // opacity with no edge was too faint to read as anything.
-  map.addLayer({ id: 'rp-regions-state-fill', type: 'fill', source: 'rp-us-states', filter: ['==', ['get', 'name'], 'New Hampshire'], paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.35 } });
-  map.addLayer({ id: 'rp-regions-state-outline', type: 'line', source: 'rp-us-states', filter: ['==', ['get', 'name'], 'New Hampshire'], paint: { 'line-color': RP_COLORS.teal, 'line-width': 2, 'line-opacity': 0.9 } });
+  // New Hampshire (statewide) has no area shading right now -- an oval
+  // blob and a real-state-boundary fill were both tried and both dropped;
+  // neither read as "statewide." Open design question -- see README.
 
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
   map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles', layout: { visibility: 'none' },
     paint: { 'circle-radius': 34, 'circle-color': RP_COLORS.teal, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_COLORS.teal, 'circle-stroke-opacity': 0.8 } });
 
+  // No circular halo behind the story icon either -- it competed
+  // visually with the region "circle" shading option above, making both
+  // read as the same kind of thing. No replacement multi-story signal is
+  // in place right now -- open question, see README.
   const storyPoints = rpStoryPointsGeoJSON();
   map.addSource('rp-story-points', { type: 'geojson', data: storyPoints });
-  map.addLayer({ id: 'rp-story-points-halo', type: 'circle', source: 'rp-story-points',
-    paint: { 'circle-radius': ['case', ['>', ['get', 'count'], 1], 24, 17], 'circle-color': RP_COLORS.teal, 'circle-opacity': ['case', ['>', ['get', 'count'], 1], 0.38, 0.2] } });
 
   rpEnsureIcon('book', RP_COLORS.teal, (iconId) => {
     map.addLayer({ id: 'rp-story-points-layer', type: 'symbol', source: 'rp-story-points',
@@ -1812,7 +1806,6 @@ const rpVariantState = { icon: 'book', color: 'teal', size: 'small', shading: 'b
 function rpApplyIconAndColor() {
   const colorHex = RP_COLORS[rpVariantState.color];
   rpEnsureIcon(rpVariantState.icon, colorHex, (iconId) => map.setLayoutProperty('rp-story-points-layer', 'icon-image', iconId));
-  map.setPaintProperty('rp-story-points-halo', 'circle-color', colorHex);
 }
 function rpApplySize() { map.setLayoutProperty('rp-story-points-layer', 'icon-size', RP_SIZE_OPTS.find((s) => s.id === rpVariantState.size).value); }
 function rpRenderVariantGroup(el, options, current, onPick) {

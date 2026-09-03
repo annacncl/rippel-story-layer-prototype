@@ -96,14 +96,13 @@ const REGION_DEFS = [
   // real non-contiguous footprint needs depicting on the map later, that
   // likely wants real boundary data, not a second mock geometry style.
   { id: "south-texas", hasStory: true, name: "South Texas (PJTT)", rx: 0.75, ry: 0.55 },
-  // Statewide stories shade the REAL state outline instead of an oval blob
-  // (internal team review, 2026-09-01: "I'd lean more towards shading in
-  // the state" for statewide specifically — an oval doesn't read as
-  // "this whole state" the way a recognizable state shape does). See
-  // regions-state-fill in js/map-common.js — skipBlob keeps this out of
-  // the oval-blob generation below while it still gets a circle-mode
-  // anchor dot via REGION_CIRCLES_GEOJSON (unaffected, uses all of
-  // REGION_DEFS regardless of skipBlob).
+  // Statewide (New Hampshire) has no area shading right now — an oval
+  // blob and a real-state-boundary fill were both tried and both dropped;
+  // neither actually read as "statewide." skipBlob keeps it out of the
+  // oval-blob generation below while it still gets a circle-mode anchor
+  // dot via REGION_CIRCLES_GEOJSON (unaffected, uses all of REGION_DEFS
+  // regardless of skipBlob). Flagged as an open design question in
+  // README.md rather than guessed at with a third geometry style.
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", skipBlob: true },
   { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
   { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },

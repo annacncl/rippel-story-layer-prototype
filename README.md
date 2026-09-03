@@ -221,17 +221,15 @@ topic, matching how the feedback was organized:
   this also fixed clicking a second nearby marker leaving two popups open
   at once.
 - The "peeking second icon" stack effect (tried for the multi-story
-  signal) read as a duplicate-icon glitch and was dropped — halo + pulse
-  ring alone now carry that signal.
-- **Real bug, not a design choice**: the pulse ring on the South Texas
-  hotspot was rendering at the map's origin corner instead of over Texas.
-  Root cause: the ring's CSS animated `transform: scale(...)` directly on
-  the same element Mapbox positions via inline `transform: translate(...)`
-  — a CSS animation on a property overrides an inline value for that same
-  property, so the pulse animation was silently cancelling the marker's
-  real position. Fixed by moving the animation to an inner child element,
-  leaving the Mapbox-positioned element untouched (`.story-hotspot-marker`
-  / `.story-hotspot-pulse` in `css/style.css`).
+  signal) read as a duplicate-icon glitch and was dropped.
+- **Real bug, not a design choice** (since fixed, then the whole approach
+  was dropped anyway — see below): the pulse ring on the South Texas
+  hotspot was briefly rendering at the map's origin corner instead of over
+  Texas. Root cause: the ring's CSS animated `transform: scale(...)`
+  directly on the same element Mapbox positions via inline `transform:
+  translate(...)` — a CSS animation on a property overrides an inline
+  value for that same property, so the pulse animation was silently
+  cancelling the marker's real position.
 - South Texas's shading went through three states this round — 19
   scattered blobs (too noisy), then no shading at all (inconsistent with
   every other location) — before landing on the same single blob every
@@ -245,12 +243,34 @@ topic, matching how the feedback was organized:
 - Blob regions are now fill-only, no border line — a hard outline made the
   shape read as a defined boundary rather than soft emphasis (team
   consensus, independent of the client's own reaction to it).
-- New Hampshire (statewide) now shades the **real state polygon**
-  (`regions-state-fill` in `js/map-common.js`, sourced from Mapbox's own
-  public `us-states.geojson` demo dataset) instead of an oval blob — *"I'd
-  lean more towards shading in the state"* for the statewide case
-  specifically; blob stays as-is for regional stories. Circle mode is
-  unaffected — New Hampshire still shows its single dot at Concord there.
+- New Hampshire (statewide) briefly shaded the real state polygon instead
+  of an oval blob — see the critical design pass below for why that was
+  dropped too.
+
+**Critical design pass (removed, not yet replaced)**
+- The per-marker halo (the small circle behind every story icon) is gone.
+  It competed with the region-level "circle" shading option — both were
+  circles doing conceptually different jobs (marking an exact point vs.
+  shading an area), which made neither read clearly. This also removes
+  the halo size/opacity difference that was carrying the multi-story
+  signal, since the halo itself is gone — **there is currently no visual
+  signal for "this location has more than one story" beyond the icon
+  itself.** Prior attempts (count badge, pulsing ring, bigger/brighter
+  halo, a second peeking icon) were all tried and all dropped across three
+  rounds of feedback; a genuinely different approach is needed, not
+  another variation on a circle.
+- New Hampshire's real-state-boundary fill (added, then made more visible,
+  across the previous two rounds) is also gone — it still didn't
+  communicate "statewide" clearly even once visible. New Hampshire
+  currently has **no area shading at all** in blob mode (still gets its
+  marker and its circle-mode anchor dot at Concord). Options worth
+  discussing for both of these open questions: no map-level signal at all
+  (rely on the panel text, e.g. "Stories about New Hampshire" + the
+  subtitle already there); a distinct icon or size for multi-story
+  markers instead of a decoration around the existing one; a soft,
+  heavily-feathered radial glow for statewide instead of any bounded
+  shape; or a text label rendered directly on the map. Not decided —
+  flagging the options rather than picking one unilaterally.
 
 ### Not part of this round (flagged back, not built here)
 

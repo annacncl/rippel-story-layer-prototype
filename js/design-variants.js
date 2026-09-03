@@ -38,7 +38,6 @@ function applyIconAndColor(map) {
   ensureStoryIcon(map, variantState.icon, colorHex, (iconId) => {
     if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-image", iconId);
   });
-  if (map.getLayer("story-points-halo")) map.setPaintProperty("story-points-halo", "circle-color", colorHex);
 }
 
 function applySize(map) {

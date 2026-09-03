@@ -86,3 +86,10 @@ with one of the real network pins, should it show as both a network and a
 story? Left unresolved even internally on that call — not something this
 prototype invents an answer for. See `../README.md`'s "Not part of this
 round" section.
+
+Two more, from a later critical design pass: there's currently no visual
+signal at all for a multi-story location (the per-marker halo was removed
+as visually redundant with the "circle" shading option), and New Hampshire
+has no area shading in blob mode (both an oval blob and a real-state-
+boundary fill were tried and dropped). See `../README.md`'s "Critical
+design pass" section for the options on the table for both.
