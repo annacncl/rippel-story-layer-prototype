@@ -1,0 +1,648 @@
+[
+  {
+    "id": 1,
+    "name": "Leonard Parker Pool Institute for Health",
+    "website": "lppih.org",
+    "scope": "local",
+    "city": "Allentown",
+    "hqState": "PA",
+    "mission": "",
+    "fips": [
+      42077,
+      42095
+    ],
+    "states": [],
+    "networks": [
+      "Jefferson Collaborative for Health Equity"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "The Civic Canopy",
+    "website": "www.civiccanopy.org",
+    "scope": "statewide",
+    "city": "Denver",
+    "hqState": "CO",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "CO"
+    ],
+    "networks": [
+      "Belonging Colorado",
+      "Better Together America",
+      "Civic Health Project",
+      "Collective Impact Forum",
+      "Braver Angels",
+      "National Coalition for Dialogue and Deliberation",
+      "Listen First Coalition",
+      "New Pluralists",
+      "Presencing Institute",
+      "Trust for Civic Life",
+      "Civic Collaboratory",
+      "Civic Collaboratory"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Primary Health Network",
+    "website": "https://www.primary-health.net/",
+    "scope": "statewide",
+    "city": "Sharon",
+    "hqState": "PA",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "PA"
+    ],
+    "networks": [
+      "National Association of Community Health Centers",
+      "Pennsylvania Association of Community Health Centers"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Chuckanut Health Foundation",
+    "website": "https://www.chuckanuthealthfoundation.org/",
+    "scope": "local",
+    "city": "Bellingham",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [
+      53073
+    ],
+    "states": [],
+    "networks": []
+  },
+  {
+    "id": 5,
+    "name": "Eagle Pass SAFE",
+    "website": "epsafe.org",
+    "scope": "local",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [
+      48323
+    ],
+    "states": [],
+    "networks": [],
+    "tribalNations": [
+      "Kickapoo Traditional Tribe of Texas"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Washington Economic Justice Alliance",
+    "website": "www.waeconomicjusticealliance.com",
+    "scope": "statewide",
+    "city": "",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "WA"
+    ],
+    "networks": [
+      "Washington Alliance for Economic Justice"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Collaborative Capacity Co",
+    "website": "https://www.collabcapacity.com/",
+    "scope": "national",
+    "city": "Denver",
+    "hqState": "CO",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "Colorado Coalition for Community Schools",
+      "Colorado Public Health Association",
+      "Colorado Evaluation Network",
+      "Warm Cookies of the Revolution",
+      "American Public Health Association",
+      "National Association of County and City Health Officials",
+      "Colorado Coalition for Community Schools",
+      "American Public Health Association",
+      "National Association of County and City Health Officials",
+      "Colorado Evaluation Network",
+      "Colorado Public Health Association"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Fox Valley Data Exchange",
+    "website": "www.fvdex.org",
+    "scope": "local",
+    "city": "Menasha",
+    "hqState": "WI",
+    "mission": "",
+    "fips": [
+      55015,
+      55087,
+      55139,
+      55061,
+      55083,
+      55115,
+      55078,
+      55135,
+      55047,
+      55009,
+      55137
+    ],
+    "states": [],
+    "networks": [
+      "Tri-County Community Health Coalition",
+      "Inland Empire Vital Conditions Network",
+      "Healthy Communities Delaware",
+      "Contra Costa Together",
+      "Community Initiatives Network",
+      "Democracy Collaborative",
+      "Investing in Flourishing",
+      "Othering & Belonging Institute",
+      "Thriving Together US"
+    ],
+    "tribalNations": [
+      "Oneida (WI)"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Community Services for Children",
+    "website": "CSC, Inc",
+    "scope": "local",
+    "city": "Allentown",
+    "hqState": "PA",
+    "mission": "",
+    "fips": [
+      42077,
+      42095
+    ],
+    "states": [],
+    "networks": [
+      "Blue Zones",
+      "LPPIH",
+      "LVHN",
+      "Jefferson"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Endowment for Health",
+    "website": "https://www.endowmentforhealth.org/",
+    "scope": "statewide",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "NH"
+    ],
+    "networks": [
+      "NH Possible"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "OSF HealthCare",
+    "website": "",
+    "scope": "statewide",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "IL",
+      "MI"
+    ],
+    "networks": []
+  },
+  {
+    "id": 12,
+    "name": "Midtown Assistance Center",
+    "website": "http://www.midtownassistancecenter.org",
+    "scope": "local",
+    "city": "Atlanta",
+    "hqState": "GA",
+    "mission": "",
+    "fips": [
+      13121
+    ],
+    "states": [],
+    "networks": []
+  },
+  {
+    "id": 13,
+    "name": "Elevate Health",
+    "website": "www.elevatehealth.org",
+    "scope": "local",
+    "city": "Tacoma",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [
+      53053
+    ],
+    "states": [],
+    "networks": [
+      "Washington Alliance for Economic Justice",
+      "Coalition of Accountable Communities of Health",
+      "Tacoma Anchor Network",
+      "Resilient Pierce County",
+      "Blue Zones",
+      "Rippel Foundation, ReThink Health",
+      "Othering & Belonging Institute",
+      "Coalition of Accountable Communities of Health (WA State)",
+      "Tacoma Anchor Network",
+      "Pierce County Resiliency Hub",
+      "Pierce County Healthcare Access Workgroup"
+    ],
+    "tribalNations": [
+      "Nisqually Indian Tribe",
+      "Puyallup Tribe of the Puyallup Reservation"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Memorial Health",
+    "website": "Memorial.health",
+    "scope": "local",
+    "city": "Lincoln",
+    "hqState": "IL",
+    "mission": "",
+    "fips": [
+      17107,
+      17125,
+      17129,
+      17137,
+      17167,
+      17061,
+      17113
+    ],
+    "states": [],
+    "networks": []
+  },
+  {
+    "id": 15,
+    "name": "Institute for People, Place, and Possibility (IP3)",
+    "website": "https://www.i-p3.org/",
+    "scope": "national",
+    "city": "Columbia",
+    "hqState": "MO",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "Contra Costa Together",
+      "Inland Empire Vital Conditions Network",
+      "North Sound Accountable Community for Health",
+      "Northwest Regional Primary Care Association",
+      "Wild, Wonderful & Healthy West Virginia",
+      "Healthy Communities Delaware",
+      "Community Initiatives Network",
+      "Foundation for Social Connection",
+      "Hold.Health",
+      "Thriving Together US",
+      "WIN Network, WE in the World"
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Center for Fair Housing",
+    "website": "www.sacfh.org",
+    "scope": "local",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [
+      1003,
+      1023,
+      1025,
+      1035,
+      1097,
+      1099,
+      1129
+    ],
+    "states": [],
+    "networks": [
+      "National Forum for Heart Disease and Stroke Prevention",
+      "Taproot Earth",
+      "NAACP",
+      "Mobile Environmental Justice Coalition",
+      "National Fair Housing Alliance",
+      "Taproot Earth",
+      "NAACP",
+      "MEJAC"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Yakima Neighborhood Health Services",
+    "website": "www.ynhs.org",
+    "scope": "local",
+    "city": "Yakima",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [
+      53077
+    ],
+    "states": [],
+    "networks": [
+      "Northwest Regional Primary Care Association"
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Georgia Health Policy Center",
+    "website": "ghpc.gsu.edu",
+    "scope": "national",
+    "city": "Atlanta",
+    "hqState": "GA",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "Atlanta Regional Collaborative for Health Improvement",
+      "Federal Reserve Bank, Missing Markets Initiative",
+      "WIN Network, WE in the World",
+      "Investing in Flourishing"
+    ]
+  },
+  {
+    "id": 20,
+    "name": "HealthierHere",
+    "website": "https://www.healthierhere.org/",
+    "scope": "local",
+    "city": "Seattle",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [
+      53033
+    ],
+    "states": [],
+    "networks": [
+      "Civic Commons",
+      "Northwest Regional Primary Care Association",
+      "Thriving Together North Central Washington",
+      "Washington Alliance for Economic Justice",
+      "North Sound Accountable Community for Health",
+      "Funders Forum on Accountable Health"
+    ],
+    "tribalNations": [
+      "Muckleshoot Indian Tribe",
+      "Cowlitz Indian Tribe",
+      "Snoqualmie Indian Tribe"
+    ]
+  },
+  {
+    "id": 21,
+    "name": "ChangeLine",
+    "website": "www.changeline.org",
+    "scope": "local",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [
+      8041,
+      8119
+    ],
+    "states": [],
+    "networks": [
+      "Belonging Colorado",
+      "Better Together America",
+      "Civic Collaboratory",
+      "Collective Impact Forum",
+      "Council on Foundations",
+      "Foundation for Social Connection",
+      "Trust for Civic Life",
+      "Weave Social Fabric"
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Civic Commons",
+    "website": "www.civic-commons.org",
+    "scope": "national",
+    "city": "Seattle",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "North Sound Accountable Community for Health",
+      "Washington Alliance for Economic Justice",
+      "Thriving Together North Central Washington",
+      "Othering & Belonging Institute"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Grady Health System",
+    "website": "Greadyhealth.org",
+    "scope": "local",
+    "city": "Atlanta",
+    "hqState": "GA",
+    "mission": "",
+    "fips": [
+      13089,
+      13121
+    ],
+    "states": [],
+    "networks": [
+      "Atlanta Regional Collaborative for Health Improvement",
+      "America's Essential Hospitals",
+      "America\u2019s Essential Hospitals"
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Palm Health Foundation",
+    "website": "www.palmhealthfoundation.org",
+    "scope": "local",
+    "city": "West Palm Beach",
+    "hqState": "FL",
+    "mission": "",
+    "fips": [
+      12099
+    ],
+    "states": [],
+    "networks": [
+      "BeWell Palm Beach County",
+      "Palm Beach County Culture of Health Network",
+      "Palm Beach County Culture of Health Network"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "The Force for Health Network",
+    "website": "www.theforceforhealth.com",
+    "scope": "national",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "The Force for Health Network University Interns"
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Stand Up Mobile",
+    "website": "www.standupmobile.org",
+    "scope": "local",
+    "city": "Mobile",
+    "hqState": "AL",
+    "mission": "",
+    "fips": [
+      1097
+    ],
+    "states": [],
+    "networks": [
+      "Alabama Arise",
+      "Alabama Alliance",
+      "Southern Poverty Law Center",
+      "Alabama Alliance",
+      "SPLC",
+      "Alabama Arise"
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Buhl Regional Health Foundation",
+    "website": "buhlregionalhealthfoundation.org",
+    "scope": "local",
+    "city": "Hermitage",
+    "hqState": "PA",
+    "mission": "",
+    "fips": [
+      42085
+    ],
+    "states": [],
+    "networks": [
+      "Grantmakers of Western PA",
+      "PA Health Funders Collaborative",
+      "Pennsylvania Association of Community Health Centers",
+      "Grantmakers in Health",
+      "Grantmakers for Effective Organizations",
+      "Council on Foundations",
+      "Exponent Philanthropy",
+      "PA Health Funders Collaborative",
+      "Grantmakers in Health",
+      "Council on Foundations",
+      "GEO",
+      "Grantmakers of Western PA",
+      "Exponent Philanthropy"
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Metroparks Toledo",
+    "website": "Metroparks Toledo.com",
+    "scope": "local",
+    "city": "Toledo",
+    "hqState": "OH",
+    "mission": "",
+    "fips": [
+      39095
+    ],
+    "states": [],
+    "networks": [
+      "Better Together America",
+      "Civic Health Project",
+      "Collective Impact Forum",
+      "Braver Angels",
+      "National Coalition for Dialogue and Deliberation",
+      "Listen First Coalition",
+      "New Pluralists",
+      "Presencing Institute",
+      "Trust for Civic Life"
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Leading Public Health",
+    "website": "LeadingPublicHealth.com",
+    "scope": "national",
+    "city": "Decatur",
+    "hqState": "GA",
+    "mission": "",
+    "fips": [],
+    "states": [],
+    "networks": [
+      "Better Together America",
+      "Civic Health Project",
+      "Collective Impact Forum",
+      "Braver Angels",
+      "National Coalition for Dialogue and Deliberation",
+      "Listen First Coalition",
+      "New Pluralists",
+      "Presencing Institute",
+      "Trust for Civic Life"
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Mercy Care",
+    "website": "Www.mercyatlanta.org",
+    "scope": "local",
+    "city": "Atlanta",
+    "hqState": "GA",
+    "mission": "",
+    "fips": [
+      13089,
+      13121
+    ],
+    "states": [],
+    "networks": [
+      "Better Together America",
+      "Civic Health Project",
+      "Collective Impact Forum",
+      "Braver Angels",
+      "National Coalition for Dialogue and Deliberation",
+      "Listen First Coalition",
+      "New Pluralists",
+      "Presencing Institute",
+      "Trust for Civic Life"
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Endowment for Health",
+    "website": "www.endowmentforhealth.org",
+    "scope": "statewide",
+    "city": "",
+    "hqState": "",
+    "mission": "",
+    "fips": [],
+    "states": [
+      "NH"
+    ],
+    "networks": [
+      "NH Possible",
+      "NH Possible"
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Thriving Together NCW",
+    "website": "thrivingtogether.org",
+    "scope": "local",
+    "city": "East Wenatchee",
+    "hqState": "WA",
+    "mission": "",
+    "fips": [
+      53007,
+      53017,
+      53025,
+      53047
+    ],
+    "states": [],
+    "networks": [
+      "Thriving Together North Central Washington",
+      "Rippel Foundation, ReThink Health",
+      "Community Initiatives Network"
+    ]
+  }
+]

@@ -18,6 +18,12 @@ Design Variants panel for live icon/color/size comparisons, media embeds,
 and a first mobile pass. See "Round 2: client meeting feedback" below for
 the full rundown, including what's still open.
 
+**Also available: [`live-copy/`](live-copy/)** — the same story layer,
+overlaid on an exact, unmodified copy of the real live map (real data,
+real county density heat map, real filters) instead of this folder's
+restyled recreation. Built so there's no ambiguity about what's real vs.
+prototype when presenting — see [`live-copy/README.md`](live-copy/README.md).
+
 ## Setup (before the meeting)
 
 1. Open [`js/config.js`](js/config.js) and paste in a Mapbox **public** token
