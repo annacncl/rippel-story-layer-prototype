@@ -18,6 +18,7 @@ const MARKER_COLORS = {
   teal: "#2dd4bf",
   purple: "#9b7fd4",
   green: "#5fae6b",
+  orange: "#d97b3f", // matches --amber, already used elsewhere on this map (Networks & Initiatives toggle, statewide badges)
 };
 
 function createMap(containerId) {
@@ -95,50 +96,6 @@ function ensureStoryIcon(map, shape, colorHex, callback) {
 }
 
 // ---------------------------------------------------------------------------
-// Multi-story "hotspot" pulse — a hollow, transparent-center ring (DOM
-// marker, so it can use a real CSS animation) centered on any location with
-// more than one story. Deliberately not a number: the client asked for a
-// signal more prominent than a small count badge, not a different number.
-//
-// Structure is an outer wrapper (positioned by Mapbox via inline
-// `transform`) containing an inner ring (animated by CSS `transform:
-// scale(...)`) — NOT one div doing both. A CSS animation on `transform`
-// overrides an inline `transform` on that same element for as long as the
-// animation runs, so putting the pulse animation directly on the element
-// Mapbox positions silently cancelled its positioning, leaving it stuck at
-// the map's origin corner regardless of the marker's real coordinates.
-// ---------------------------------------------------------------------------
-let storyHotspotMarkers = [];
-
-function addStoryHotspots(map, storyPointsGeoJSON, colorHex) {
-  storyHotspotMarkers.forEach((m) => m.remove());
-  storyHotspotMarkers = storyPointsGeoJSON.features
-    .filter((f) => f.properties.count > 1)
-    .map((f) => {
-      const el = document.createElement("div");
-      el.className = "story-hotspot-marker";
-      const ring = document.createElement("div");
-      ring.className = "story-hotspot-pulse";
-      ring.style.borderColor = colorHex;
-      el.appendChild(ring);
-      return new mapboxgl.Marker({ element: el, anchor: "center" })
-        .setLngLat(f.geometry.coordinates)
-        .addTo(map);
-    });
-}
-
-function setStoryHotspotColor(colorHex) {
-  storyHotspotMarkers.forEach((m) => {
-    const ring = m.getElement().querySelector(".story-hotspot-pulse");
-    if (ring) ring.style.borderColor = colorHex;
-  });
-}
-
-function setStoryHotspotsVisible(visible) {
-  storyHotspotMarkers.forEach((m) => (m.getElement().style.display = visible ? "" : "none"));
-}
-
-// ---------------------------------------------------------------------------
 // Guided-tour "active stop" highlight — a single glow ring shown only around
 // whichever location the tour is currently on, so a future narration track
 // has an obvious visual anchor. Reuses the same DOM-marker technique.
@@ -171,7 +128,7 @@ let currentShadingStyle = "blob";
 function applyRegionsVisibility(map) {
   const box = document.getElementById("toggle-networks");
   const visible = !box || box.checked;
-  setLayerVisibility(map, ["regions-fill", "regions-state-fill"], visible && currentShadingStyle === "blob");
+  setLayerVisibility(map, ["regions-fill", "regions-state-fill", "regions-state-outline"], visible && currentShadingStyle === "blob");
   setLayerVisibility(map, ["regions-circle"], visible && currentShadingStyle === "circle");
 }
 
@@ -199,15 +156,24 @@ function addBaseLayers(map, onReady) {
   // polygon instead of an oval blob — same team review: an oval doesn't
   // read as "this whole state" the way an actual state shape does. Source
   // is Mapbox's own public GeoJSON dataset used throughout their docs for
-  // this exact kind of state-choropleth example (also fill-only, no
-  // stroke, matching the blob treatment above).
+  // this exact kind of state-choropleth example. Unlike the mock blobs,
+  // this gets a real stroke — it's tracing an actual boundary, not
+  // implying false precision, and at whole-US zoom a small state at
+  // blob-level opacity with no edge was too faint to read as anything.
   map.addSource("us-states", { type: "geojson", data: "https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json" });
   map.addLayer({
     id: "regions-state-fill",
     type: "fill",
     source: "us-states",
     filter: ["==", ["get", "name"], "New Hampshire"],
-    paint: { "fill-color": "#2dd4bf", "fill-opacity": 0.16 },
+    paint: { "fill-color": "#2dd4bf", "fill-opacity": 0.35 },
+  });
+  map.addLayer({
+    id: "regions-state-outline",
+    type: "line",
+    source: "us-states",
+    filter: ["==", ["get", "name"], "New Hampshire"],
+    paint: { "line-color": "#2dd4bf", "line-width": 2, "line-opacity": 0.9 },
   });
 
   // Shaded geography regions — plain circle alternative (Design Variants).
@@ -252,11 +218,11 @@ function addBaseLayers(map, onReady) {
   // this needs to read as "different kind of thing" regardless of palette.
   const storyPoints = getStoryPointsGeoJSON();
   map.addSource("story-points", { type: "geojson", data: storyPoints });
-  // Bigger, more opaque halo for multi-story locations — paired with the
-  // pulse ring (see addStoryHotspots below) so a hotspot reads as different
-  // at a glance, not just in a screenshot-unfriendly animation. A second
-  // "peeking" icon was tried here too but read as a rendering glitch
-  // (duplicate icons) rather than a "stack" — dropped per client feedback.
+  // Bigger, more opaque halo is the multi-story signal — a pulsing ring
+  // was tried too but the client didn't like it; a second "peeking" icon
+  // was also tried and read as a rendering glitch (duplicate icons)
+  // rather than a "stack." Both dropped — the halo size/opacity
+  // difference alone carries this now.
   map.addLayer({
     id: "story-points-halo",
     type: "circle",
@@ -284,8 +250,6 @@ function addBaseLayers(map, onReady) {
         "icon-ignore-placement": true,
       },
     });
-
-    addStoryHotspots(map, storyPoints, MARKER_COLORS.teal);
 
     map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = "pointer"));
     map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
@@ -322,7 +286,7 @@ function setLayerVisibility(map, layerIds, visible) {
 }
 
 const LAYER_GROUPS = {
-  regions: ["regions-fill", "regions-state-fill", "regions-circle"],
+  regions: ["regions-fill", "regions-state-fill", "regions-state-outline", "regions-circle"],
   network: ["network-pins-layer"],
   stories: ["story-points-halo", "story-points-layer"],
 };

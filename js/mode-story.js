@@ -262,7 +262,6 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
     setStoryPanelOpen(false);
     hideTourHighlight();
     setLayerVisibility(map, LAYER_GROUPS.stories, checked);
-    setStoryHotspotsVisible(checked);
     if (checked) showBanner();
     else hideBanner();
   }

@@ -20,6 +20,7 @@ const COLOR_OPTIONS = [
   { id: "teal", label: "Teal" },
   { id: "purple", label: "Purple" },
   { id: "green", label: "Green" },
+  { id: "orange", label: "Orange" },
 ];
 const SIZE_OPTIONS = [
   { id: "small", label: "Small", value: 0.5 },
@@ -38,7 +39,6 @@ function applyIconAndColor(map) {
     if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-image", iconId);
   });
   if (map.getLayer("story-points-halo")) map.setPaintProperty("story-points-halo", "circle-color", colorHex);
-  setStoryHotspotColor(colorHex);
 }
 
 function applySize(map) {

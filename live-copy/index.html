@@ -414,16 +414,6 @@
   .rp-teaser-body h3 { margin: 6px 0 2px; font-size: 15px; font-family: 'Fraunces', serif; font-weight: 500; color: var(--text); }
   .rp-teaser-geo { margin: 0; font-size: 12px; color: var(--text-dim); }
 
-  .rp-hotspot-marker { width: 40px; height: 40px; pointer-events: none; }
-  .rp-hotspot-pulse {
-    position: absolute; inset: 0; border-radius: 50%;
-    border: 3px solid var(--rippel-teal); background: transparent;
-    animation: rp-pulse 2s ease-in-out infinite;
-  }
-  @keyframes rp-pulse {
-    0%, 100% { transform: scale(0.85); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.45; }
-  }
   .rp-tour-highlight {
     width: 46px; height: 46px; border-radius: 50%;
     border: 2px solid var(--rippel-teal); box-shadow: 0 0 0 4px rgba(45,212,191,0.25);
@@ -1495,7 +1485,9 @@ document.getElementById('about-bar-header').addEventListener('click', () => {
 function onMapReady(cb) { if (map.loaded()) cb(); else map.on('load', cb); }
 
 // --------------------------- Story data (mock) ---------------------------
-const RP_COLORS = { teal: '#2dd4bf', purple: '#9b7fd4', green: '#5fae6b' };
+// orange matches the real site's own accent (.network-toggle-btn.active,
+// statewide scope tags: #fb923c) -- reusing it, not inventing a new color.
+const RP_COLORS = { teal: '#2dd4bf', purple: '#9b7fd4', green: '#5fae6b', orange: '#fb923c' };
 
 function rpMakeBlob(center, rxDeg, ryDeg, steps = 24) {
   const [cx, cy] = center;
@@ -1602,25 +1594,7 @@ function rpEnsureIcon(shape, colorHex, callback) {
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-// --------------------------- Hotspot pulse + tour highlight ---------------------------
-let rpHotspotMarkers = [];
-function rpAddHotspots(storyPoints, colorHex) {
-  rpHotspotMarkers.forEach((m) => m.remove());
-  rpHotspotMarkers = storyPoints.features.filter((f) => f.properties.count > 1).map((f) => {
-    const el = document.createElement('div');
-    el.className = 'rp-hotspot-marker';
-    const ring = document.createElement('div');
-    ring.className = 'rp-hotspot-pulse';
-    ring.style.borderColor = colorHex;
-    el.appendChild(ring);
-    return new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(f.geometry.coordinates).addTo(map);
-  });
-}
-function rpSetHotspotColor(colorHex) {
-  rpHotspotMarkers.forEach((m) => { const r = m.getElement().querySelector('.rp-hotspot-pulse'); if (r) r.style.borderColor = colorHex; });
-}
-function rpSetHotspotsVisible(v) { rpHotspotMarkers.forEach((m) => (m.getElement().style.display = v ? '' : 'none')); }
-
+// --------------------------- Tour highlight ---------------------------
 let rpTourHighlightMarker = null;
 function rpShowTourHighlight(coords) {
   rpHideTourHighlight();
@@ -1636,6 +1610,7 @@ function rpApplyRegionsVisibility() {
   const visible = document.getElementById('rp-story-toggle-btn').classList.contains('active');
   map.setLayoutProperty('rp-regions-fill', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
   map.setLayoutProperty('rp-regions-state-fill', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
+  map.setLayoutProperty('rp-regions-state-outline', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
   map.setLayoutProperty('rp-regions-circle', 'visibility', visible && rpShadingStyle === 'circle' ? 'visible' : 'none');
 }
 function rpSetShadingStyle(style) { rpShadingStyle = style; rpApplyRegionsVisibility(); }
@@ -1762,7 +1737,6 @@ function rpOnStoryToggle(active) {
   map.dragPan.enable(); map.scrollZoom.enable(); map.boxZoom.enable(); map.doubleClickZoom.enable(); map.touchZoomRotate.enable(); map.keyboard.enable(); map.dragRotate.enable();
   rpHideTourHighlight();
   ['rp-story-points-halo', 'rp-story-points-layer'].forEach((id) => map.setLayoutProperty(id, 'visibility', active ? 'visible' : 'none'));
-  rpSetHotspotsVisible(active);
   rpApplyRegionsVisibility();
   if (active) rpShowBanner(); else rpHideBanner();
 }
@@ -1776,7 +1750,11 @@ onMapReady(() => {
   // oval blob -- team review 2026-09-01. Fill-only, no stroke, same as
   // the blob above (no hard outline on either, per the same review).
   map.addSource('rp-us-states', { type: 'geojson', data: 'https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json' });
-  map.addLayer({ id: 'rp-regions-state-fill', type: 'fill', source: 'rp-us-states', filter: ['==', ['get', 'name'], 'New Hampshire'], paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.16 } });
+  // Real stroke here (unlike the mock blobs above) -- it's tracing an
+  // actual boundary, and at whole-US zoom a small state at blob-level
+  // opacity with no edge was too faint to read as anything.
+  map.addLayer({ id: 'rp-regions-state-fill', type: 'fill', source: 'rp-us-states', filter: ['==', ['get', 'name'], 'New Hampshire'], paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.35 } });
+  map.addLayer({ id: 'rp-regions-state-outline', type: 'line', source: 'rp-us-states', filter: ['==', ['get', 'name'], 'New Hampshire'], paint: { 'line-color': RP_COLORS.teal, 'line-width': 2, 'line-opacity': 0.9 } });
 
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
   map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles', layout: { visibility: 'none' },
@@ -1791,7 +1769,6 @@ onMapReady(() => {
     map.addLayer({ id: 'rp-story-points-layer', type: 'symbol', source: 'rp-story-points',
       layout: { 'icon-image': iconId, 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
 
-    rpAddHotspots(storyPoints, RP_COLORS.teal);
     rpApplyRegionsVisibility();
 
     map.on('mouseenter', 'rp-story-points-layer', () => (map.getCanvas().style.cursor = 'pointer'));
@@ -1827,7 +1804,7 @@ onMapReady(rpShowBanner);
 
 // --------------------------- Design Variants panel (dev-only) ---------------------------
 const RP_ICON_OPTS = [{ id: 'book', label: 'Book' }, { id: 'person', label: 'Person' }];
-const RP_COLOR_OPTS = [{ id: 'teal', label: 'Teal' }, { id: 'purple', label: 'Purple' }, { id: 'green', label: 'Green' }];
+const RP_COLOR_OPTS = [{ id: 'teal', label: 'Teal' }, { id: 'purple', label: 'Purple' }, { id: 'green', label: 'Green' }, { id: 'orange', label: 'Orange' }];
 const RP_SIZE_OPTS = [{ id: 'small', label: 'Small', value: 0.5 }, { id: 'large', label: 'Large', value: 0.75 }];
 const RP_SHADING_OPTS = [{ id: 'blob', label: 'Blob' }, { id: 'circle', label: 'Circle' }];
 const rpVariantState = { icon: 'book', color: 'teal', size: 'small', shading: 'blob' };
@@ -1836,7 +1813,6 @@ function rpApplyIconAndColor() {
   const colorHex = RP_COLORS[rpVariantState.color];
   rpEnsureIcon(rpVariantState.icon, colorHex, (iconId) => map.setLayoutProperty('rp-story-points-layer', 'icon-image', iconId));
   map.setPaintProperty('rp-story-points-halo', 'circle-color', colorHex);
-  rpSetHotspotColor(colorHex);
 }
 function rpApplySize() { map.setLayoutProperty('rp-story-points-layer', 'icon-size', RP_SIZE_OPTS.find((s) => s.id === rpVariantState.size).value); }
 function rpRenderVariantGroup(el, options, current, onPick) {
