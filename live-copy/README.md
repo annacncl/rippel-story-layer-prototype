@@ -93,3 +93,41 @@ locations now get a "+" baked directly into the icon artwork instead
 (`RP_MULTI_BADGE`). New Hampshire is back to the same blob every other
 location gets, and region shading now tracks the icon color (Design
 Variants). See `../README.md`'s "Critical design pass" section.
+
+## Network relationships (concept) — this file only
+
+A separate, unrelated ask: the client wants a new layer showing
+"relationships between networks," without a precise spec for what that
+means. This is a first concrete example to react to, not a proposed final
+design — see the "Network relationships (concept)" panel (bottom-left).
+
+**The interpretation chosen**: two networks are "related" if they share at
+least one member organization — an org's `networks` array in `orgs.json`
+can (and often does) list more than one. This is computed live from the
+real data already in this folder, not invented: 21 of 31 orgs belong to
+more than one network, so this produces real, non-trivial connections (one
+org, The Civic Canopy, belongs to 12 networks). Other readings of
+"relationship" — geographic overlap, formal partnership, funder-grantee —
+are just as valid but need data this dataset doesn't have.
+
+Two visual treatments, toggled from the same panel, both triggered by
+clicking a network's map pin or its name in the "Regional Networks and
+Initiatives" sidebar list:
+- **Lines** — draws a connecting line from the selected network to every
+  related network with real coordinates, line width scaled by how many
+  orgs they share.
+- **Highlight** — the same idea without lines: just marks the selected
+  network and its related networks with a colored ring, dimmer/no line
+  clutter for a busier network.
+
+A text panel always backs up the visual with the actual shared-org counts,
+including networks that are related but can't be plotted (nationwide-scope
+networks have no lat/lng in this data, so they're listed as "not mapped"
+rather than silently dropped). One real data quirk surfaced building this:
+multiple statewide networks in the same state share one representative
+coordinate, so a same-state relationship is called out as "(same map
+point)" instead of drawing a zero-length line to itself.
+
+This only exists here, not in the top-level recreation — it needs the real
+per-org `networks` array, and inventing that structure with mock data
+would just be fake relationships that don't tell the client anything real.

@@ -448,10 +448,40 @@
   }
   .rp-dv-toggle-collapsed.rp-hidden { display: none; }
 
+  /* Network relationships (concept) -- separate panel from Design Variants
+     on purpose: this is a different, unrelated layer idea (client asked
+     for "relationships between networks"), not another icon/color option. */
+  .rp-nr-panel {
+    position: fixed; bottom: 64px; left: 12px; z-index: 120;
+    background: rgba(26,36,46,0.96); border: 1px dashed #6ba0b0;
+    border-radius: var(--radius-lg); padding: 10px 14px; font-size: 11px;
+    color: var(--text); max-width: 260px;
+  }
+  .rp-nr-panel.rp-hidden { display: none; }
+  .rp-nr-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #7fc4d8; white-space: nowrap; }
+  .rp-nr-sub { color: var(--text-dim); font-size: 10px; margin: 4px 0 8px; line-height: 1.4; }
+  .rp-nr-group { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+  .rp-nr-group span { color: var(--text-dim); margin-right: 2px; white-space: nowrap; }
+  .rp-nr-panel button {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 4px 9px; border-radius: 20px; font-family: inherit; font-size: 11px; cursor: pointer;
+  }
+  .rp-nr-panel button:hover { color: var(--text); }
+  .rp-nr-panel button.active { background: rgba(45,180,212,0.18); border-color: #4fb8d0; color: #7fc4d8; font-weight: 600; }
+  .rp-nr-hint { color: var(--text-dim); font-style: italic; }
+  .rp-nr-results { max-height: 180px; overflow-y: auto; }
+  .rp-nr-selected { font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .rp-nr-empty { color: var(--text-dim); font-style: italic; }
+  .rp-nr-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--border); }
+  .rp-nr-count { color: #7fc4d8; white-space: nowrap; font-size: 10px; }
+  .rp-nr-clear { display: block; margin-top: 6px; background: none; border: none; color: var(--text-dim); text-decoration: underline; cursor: pointer; font-size: 10px; padding: 0; }
+  .rp-nr-clear:hover { color: var(--text); }
+
   @media (max-width: 768px) {
     .rp-story-panel { width: 100%; right: 0 !important; }
     .rp-exit-tour-btn { right: 12px; }
     .rp-design-variants, .rp-dv-toggle-collapsed { top: 190px; max-width: calc(100vw - 20px); font-size: 10px; }
+    .rp-nr-panel { bottom: 8px; max-width: calc(100vw - 40px); }
   }
 </style>
 </head>
@@ -552,6 +582,16 @@
   <button id="rp-dv-close" title="Hide">×</button>
 </div>
 <button id="rp-dv-toggle-collapsed" class="rp-dv-toggle-collapsed rp-hidden">Design options ▾</button>
+
+<div id="rp-nr-panel" class="rp-nr-panel">
+  <span class="rp-nr-label">Network relationships (concept)</span>
+  <button id="rp-nr-close" title="Hide" style="float:right;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;line-height:1;">×</button>
+  <p class="rp-nr-sub">One reading of "relationships between networks": two networks are related here if they share at least one member organization — computed from the real org/network data, not invented.</p>
+  <div class="rp-nr-group"><span>Show</span><div id="rp-nr-mode"></div></div>
+  <div id="rp-nr-hint" class="rp-nr-hint">Click a network pin on the map, or a name in the sidebar list, to see it.</div>
+  <div id="rp-nr-results" class="rp-nr-results"></div>
+</div>
+<button id="rp-nr-toggle-collapsed" class="rp-dv-toggle-collapsed rp-hidden" style="left:12px;transform:none;bottom:64px;top:auto;">Network relationships ▾</button>
 <!-- =================== END STORY LAYER PROTOTYPE (new) ==================== -->
 
 <div class="legend" id="legend">
@@ -1748,9 +1788,6 @@ function rpOnStoryToggle(active) {
 onMapReady(() => {
   map.addSource('rp-regions', { type: 'geojson', data: RP_REGIONS_GEOJSON });
   map.addLayer({ id: 'rp-regions-fill', type: 'fill', source: 'rp-regions', paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.16 } });
-  // New Hampshire (statewide) has no area shading right now -- an oval
-  // blob and a real-state-boundary fill were both tried and both dropped;
-  // neither read as "statewide." Open design question -- see README.
 
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
   map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles', layout: { visibility: 'none' },
@@ -1850,6 +1887,131 @@ function rpInitDesignVariants() {
   render();
 }
 document.addEventListener('rp-story-layer-ready', rpInitDesignVariants);
+
+// --------------------------- Network relationships (concept) ---------------------------
+// Client asked to see "relationships between networks" as a new layer, without a precise
+// spec. This grounds it in the one relationship that's actually computable from the real
+// data already loaded here: two networks are "related" if they share at least one member
+// org (an org's `networks` array in orgs.json can list more than one). No invented mock
+// data -- just a different lens on the real orgs.json/networks.json. Geographic overlap or
+// formal partnership are other valid readings of "relationship" but need data this dataset
+// doesn't have; this is offered as one concrete example to react to, not the only option.
+let rpNetworkRelMode = 'off'; // 'off' | 'lines' | 'highlight'
+let rpSelectedNetworkName = null;
+
+function rpNetworkRelationships(networkName) {
+  const memberOrgIds = new Set(allOrgs.filter((o) => (o.networks || []).includes(networkName)).map((o) => o.id));
+  if (memberOrgIds.size === 0) return [];
+  const counts = {};
+  allOrgs.forEach((o) => {
+    if (!memberOrgIds.has(o.id)) return;
+    (o.networks || []).forEach((n) => {
+      if (n === networkName) return;
+      counts[n] = (counts[n] || 0) + 1;
+    });
+  });
+  return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+}
+function rpFindNetworkCoords(name) {
+  const n = allNetworks.find((n) => n.name === name && n.lng && n.lat);
+  return n ? [n.lng, n.lat] : null;
+}
+function rpCoordsEqual(a, b) { return !!a && !!b && a[0] === b[0] && a[1] === b[1]; }
+
+function rpRenderNetworkRelResults(name, rels, geoRels, origin) {
+  document.getElementById('rp-nr-hint').style.display = 'none';
+  const el = document.getElementById('rp-nr-results');
+  const skipped = rels.length - geoRels.length;
+  const rows = geoRels.map((r) => {
+    const sameSpot = rpCoordsEqual(rpFindNetworkCoords(r.name), origin);
+    const note = sameSpot ? ' <span style="font-style:italic;">(same map point)</span>' : '';
+    return `<div class="rp-nr-row"><span>${r.name}${note}</span><span class="rp-nr-count">${r.count} shared org${r.count > 1 ? 's' : ''}</span></div>`;
+  }).join('');
+  const skippedNote = skipped > 0 ? `<div class="rp-nr-row" style="border-top:none;color:var(--text-dim);font-style:italic;">+${skipped} more related (nationwide, not mapped)</div>` : '';
+  el.innerHTML = `<div class="rp-nr-selected">${name}</div>` +
+    (rels.length === 0
+      ? `<div class="rp-nr-empty">No shared-organization relationships found for this network in the current data.</div>`
+      : rows + skippedNote) +
+    `<button class="rp-nr-clear" id="rp-nr-clear-btn">Clear selection</button>`;
+  document.getElementById('rp-nr-clear-btn').addEventListener('click', rpClearNetworkRel);
+}
+
+function rpSelectNetwork(name) {
+  if (rpNetworkRelMode === 'off' || !allOrgs.length) return;
+  if (!map.getSource('rp-network-rel-points')) return;
+  rpSelectedNetworkName = name;
+  const origin = rpFindNetworkCoords(name);
+  const rels = rpNetworkRelationships(name);
+  const geoRels = rels.filter((r) => rpFindNetworkCoords(r.name));
+  // Same-state statewide networks share one representative coordinate in the
+  // real data -- a connecting line/point to the exact same spot as the
+  // selected network is geometrically a zero-length no-op, so skip plotting
+  // those (they still show in the text list below, just not on the map).
+  const plottableRels = geoRels.filter((r) => !rpCoordsEqual(rpFindNetworkCoords(r.name), origin));
+
+  const pointFeatures = [];
+  if (origin) pointFeatures.push({ type: 'Feature', properties: { role: 'selected' }, geometry: { type: 'Point', coordinates: origin } });
+  plottableRels.forEach((r) => pointFeatures.push({ type: 'Feature', properties: { role: 'related', count: r.count }, geometry: { type: 'Point', coordinates: rpFindNetworkCoords(r.name) } }));
+  map.getSource('rp-network-rel-points').setData({ type: 'FeatureCollection', features: pointFeatures });
+
+  const lineFeatures = (rpNetworkRelMode === 'lines' && origin)
+    ? plottableRels.map((r) => ({ type: 'Feature', properties: { count: r.count }, geometry: { type: 'LineString', coordinates: [origin, rpFindNetworkCoords(r.name)] } }))
+    : [];
+  map.getSource('rp-network-rel-lines').setData({ type: 'FeatureCollection', features: lineFeatures });
+
+  rpRenderNetworkRelResults(name, rels, geoRels, origin);
+}
+function rpClearNetworkRel() {
+  rpSelectedNetworkName = null;
+  if (map.getSource('rp-network-rel-points')) map.getSource('rp-network-rel-points').setData({ type: 'FeatureCollection', features: [] });
+  if (map.getSource('rp-network-rel-lines')) map.getSource('rp-network-rel-lines').setData({ type: 'FeatureCollection', features: [] });
+  document.getElementById('rp-nr-hint').style.display = '';
+  document.getElementById('rp-nr-results').innerHTML = '';
+}
+
+onMapReady(() => {
+  map.addSource('rp-network-rel-lines', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'rp-network-rel-lines', type: 'line', source: 'rp-network-rel-lines',
+    paint: { 'line-color': '#4fb8d0', 'line-width': ['interpolate', ['linear'], ['get', 'count'], 1, 1.5, 6, 6], 'line-opacity': 0.8 } });
+
+  map.addSource('rp-network-rel-points', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'rp-network-rel-points', type: 'circle', source: 'rp-network-rel-points',
+    paint: {
+      'circle-radius': ['case', ['==', ['get', 'role'], 'selected'], 15, 11],
+      'circle-color': ['case', ['==', ['get', 'role'], 'selected'], '#4fb8d0', 'rgba(79,184,208,0.35)'],
+      'circle-stroke-width': 2, 'circle-stroke-color': '#4fb8d0',
+    } });
+
+  ['network-pins-local', 'network-pins-statewide'].forEach((layerId) => {
+    map.on('click', layerId, (e) => rpSelectNetwork(e.features[0].properties.name));
+  });
+});
+document.getElementById('network-list').addEventListener('click', (e) => {
+  const item = e.target.closest('.network-item');
+  if (item) rpSelectNetwork(item.dataset.name);
+});
+
+const RP_NR_MODE_OPTS = [{ id: 'off', label: 'Off' }, { id: 'lines', label: 'Lines' }, { id: 'highlight', label: 'Highlight' }];
+function rpInitNetworkRelPanel() {
+  function render() {
+    rpRenderVariantGroup(document.getElementById('rp-nr-mode'), RP_NR_MODE_OPTS, rpNetworkRelMode, (id) => {
+      rpNetworkRelMode = id;
+      if (id === 'off') rpClearNetworkRel();
+      else if (rpSelectedNetworkName) rpSelectNetwork(rpSelectedNetworkName);
+      render();
+    });
+  }
+  document.getElementById('rp-nr-close').addEventListener('click', () => {
+    document.getElementById('rp-nr-panel').classList.add('rp-hidden');
+    document.getElementById('rp-nr-toggle-collapsed').classList.remove('rp-hidden');
+  });
+  document.getElementById('rp-nr-toggle-collapsed').addEventListener('click', () => {
+    document.getElementById('rp-nr-panel').classList.remove('rp-hidden');
+    document.getElementById('rp-nr-toggle-collapsed').classList.add('rp-hidden');
+  });
+  render();
+}
+rpInitNetworkRelPanel();
 </script>
 <!-- =================== END STORY LAYER PROTOTYPE (new) ==================== -->
 </body>

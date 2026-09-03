@@ -293,6 +293,16 @@ topic, matching how the feedback was organized:
   built here; needs a design answer before it's worth prototyping.
 - The Sept 4 follow-up call logistics.
 
+## Network relationships (concept) — built in `live-copy/` only
+
+A new, separate client ask: a layer showing "relationships between
+networks," with no spec for what that should look like yet. This
+prototype needs the real per-org `networks` array to compute genuine (not
+invented) relationships, which only `live-copy/` has — see
+`live-copy/README.md`'s "Network relationships (concept)" section for the
+interpretation chosen (shared org membership) and the two example visual
+treatments (connecting lines / highlight-only).
+
 ## The real site chrome (not just styling)
 
 The header (logo, title, live-looking stat counts), the left **Filters**
