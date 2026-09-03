@@ -247,30 +247,31 @@ topic, matching how the feedback was organized:
   of an oval blob — see the critical design pass below for why that was
   dropped too.
 
-**Critical design pass (removed, not yet replaced)**
-- The per-marker halo (the small circle behind every story icon) is gone.
-  It competed with the region-level "circle" shading option — both were
-  circles doing conceptually different jobs (marking an exact point vs.
-  shading an area), which made neither read clearly. This also removes
-  the halo size/opacity difference that was carrying the multi-story
-  signal, since the halo itself is gone — **there is currently no visual
-  signal for "this location has more than one story" beyond the icon
-  itself.** Prior attempts (count badge, pulsing ring, bigger/brighter
-  halo, a second peeking icon) were all tried and all dropped across three
-  rounds of feedback; a genuinely different approach is needed, not
-  another variation on a circle.
-- New Hampshire's real-state-boundary fill (added, then made more visible,
-  across the previous two rounds) is also gone — it still didn't
-  communicate "statewide" clearly even once visible. New Hampshire
-  currently has **no area shading at all** in blob mode (still gets its
-  marker and its circle-mode anchor dot at Concord). Options worth
-  discussing for both of these open questions: no map-level signal at all
-  (rely on the panel text, e.g. "Stories about New Hampshire" + the
-  subtitle already there); a distinct icon or size for multi-story
-  markers instead of a decoration around the existing one; a soft,
-  heavily-feathered radial glow for statewide instead of any bounded
-  shape; or a text label rendered directly on the map. Not decided —
-  flagging the options rather than picking one unilaterally.
+**Critical design pass**
+- The per-marker halo (the small circle behind every story icon) is gone
+  for good. It competed with the region-level "circle" shading option —
+  both were circles doing conceptually different jobs (marking an exact
+  point vs. shading an area), which made neither read clearly. This also
+  removed the halo size/opacity difference that was carrying the
+  multi-story signal — **there is currently no visual signal for "this
+  location has more than one story" beyond the icon itself.** Prior
+  attempts (count badge, pulsing ring, bigger/brighter halo, a second
+  peeking icon) were all tried and all dropped across three rounds of
+  feedback; still an open question, and a genuinely different approach
+  seems needed rather than another variation on a circle or a decoration
+  on the existing marker (ideas on the table: a distinct icon for
+  multi-story locations, or a size difference with no added shape).
+- New Hampshire briefly had no area shading at all, after its
+  real-state-boundary fill (tried across the previous two rounds) still
+  didn't communicate "statewide" clearly — but that made it the one
+  location with no shaded area, which read as inconsistent. It's back to
+  the same blob treatment every other location gets (bigger, to suggest a
+  larger area), rather than a third geometry style.
+- **Region shading now tracks the icon color** (`applyIconAndColor()` in
+  `js/design-variants.js`) — picking Purple/Green/Orange in Design
+  Variants recolors the blob/circle shading to match, not just the icon.
+  Previously these were independent, so a location's marker and its area
+  shading could show two different colors at once.
 
 ### Not part of this round (flagged back, not built here)
 

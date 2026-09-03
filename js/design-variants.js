@@ -38,6 +38,17 @@ function applyIconAndColor(map) {
   ensureStoryIcon(map, variantState.icon, colorHex, (iconId) => {
     if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-image", iconId);
   });
+  // Region shading tracks the icon color too — a location's blob/circle
+  // and its marker should read as the same color, not two independent
+  // choices. Non-story regions (North Sound, Twin Cities, etc.) stay
+  // neutral gray regardless of the selected color.
+  if (map.getLayer("regions-fill")) {
+    map.setPaintProperty("regions-fill", "fill-color", ["case", ["get", "hasStory"], colorHex, "#8a8a8a"]);
+  }
+  if (map.getLayer("regions-circle")) {
+    map.setPaintProperty("regions-circle", "circle-color", ["case", ["get", "hasStory"], colorHex, "#8a8a8a"]);
+    map.setPaintProperty("regions-circle", "circle-stroke-color", ["case", ["get", "hasStory"], colorHex, "#8a8a8a"]);
+  }
 }
 
 function applySize(map) {
