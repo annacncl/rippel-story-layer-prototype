@@ -1583,11 +1583,17 @@ const RP_ICON_PATHS = {
   book: '<path d="M12 6 C10 4.3 6.5 3.8 3.2 4.7 V18.2 C6.5 17.3 10 17.8 12 19.5 C14 17.8 17.5 17.3 20.8 18.2 V4.7 C17.5 3.8 14 4.3 12 6 Z" fill="{{color}}" stroke="#0f1114" stroke-width="1.4" stroke-linejoin="round" /><line x1="12" y1="6" x2="12" y2="19.5" stroke="#0f1114" stroke-width="1.1" />',
   person: '<circle cx="12" cy="8" r="4.2" fill="{{color}}" stroke="#0f1114" stroke-width="1.4" /><path d="M4.5 20 C4.5 15.5 7.8 13.2 12 13.2 C16.2 13.2 19.5 15.5 19.5 20 Z" fill="{{color}}" stroke="#0f1114" stroke-width="1.4" stroke-linejoin="round" />',
 };
+// Multi-story signal: a bold "+" baked directly into the icon artwork as
+// one flat image, not a separate layer/marker -- avoids the alignment
+// glitch a live-composited second layer had. Dark-wide-then-colored-narrow
+// stroke matches the halo-outline look the rest of the icon already uses.
+const RP_MULTI_BADGE = '<path d="M20 1.8 V8.2 M16.8 5 H23.2" stroke="#0f1114" stroke-width="4.2" stroke-linecap="round" /><path d="M20 1.8 V8.2 M16.8 5 H23.2" stroke="{{color}}" stroke-width="2.4" stroke-linecap="round" />';
 const rpRegisteredIcons = new Set();
-function rpEnsureIcon(shape, colorHex, callback) {
-  const id = `rp-icon-${shape}-${colorHex.replace('#', '')}`;
+function rpEnsureIcon(shape, colorHex, multi, callback) {
+  const id = `rp-icon-${shape}-${colorHex.replace('#', '')}${multi ? '-multi' : ''}`;
   if (rpRegisteredIcons.has(id)) return callback(id);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">${RP_ICON_PATHS[shape].replace(/{{color}}/g, colorHex)}</svg>`;
+  const badge = multi ? RP_MULTI_BADGE.replace(/{{color}}/g, colorHex) : '';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">${RP_ICON_PATHS[shape].replace(/{{color}}/g, colorHex)}${badge}</svg>`;
   const img = new Image();
   img.onload = () => { if (!map.hasImage(id)) map.addImage(id, img, { pixelRatio: 2 }); rpRegisteredIcons.add(id); callback(id); };
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
@@ -1752,14 +1758,15 @@ onMapReady(() => {
 
   // No circular halo behind the story icon either -- it competed
   // visually with the region "circle" shading option above, making both
-  // read as the same kind of thing. No replacement multi-story signal is
-  // in place right now -- open question, see README.
+  // read as the same kind of thing. Multi-story locations now get a "+"
+  // baked into the icon artwork instead -- see RP_MULTI_BADGE above.
   const storyPoints = rpStoryPointsGeoJSON();
   map.addSource('rp-story-points', { type: 'geojson', data: storyPoints });
 
-  rpEnsureIcon('book', RP_COLORS.teal, (iconId) => {
+  rpEnsureIcon('book', RP_COLORS.teal, false, (normalId) => {
+    rpEnsureIcon('book', RP_COLORS.teal, true, (multiId) => {
     map.addLayer({ id: 'rp-story-points-layer', type: 'symbol', source: 'rp-story-points',
-      layout: { 'icon-image': iconId, 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
+      layout: { 'icon-image': ['case', ['>', ['get', 'count'], 1], multiId, normalId], 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
 
     rpApplyRegionsVisibility();
 
@@ -1780,6 +1787,7 @@ onMapReady(() => {
     });
 
     document.dispatchEvent(new Event('rp-story-layer-ready'));
+    });
   });
 });
 
@@ -1803,7 +1811,13 @@ const rpVariantState = { icon: 'book', color: 'teal', size: 'small', shading: 'b
 
 function rpApplyIconAndColor() {
   const colorHex = RP_COLORS[rpVariantState.color];
-  rpEnsureIcon(rpVariantState.icon, colorHex, (iconId) => map.setLayoutProperty('rp-story-points-layer', 'icon-image', iconId));
+  rpEnsureIcon(rpVariantState.icon, colorHex, false, (normalId) => {
+    rpEnsureIcon(rpVariantState.icon, colorHex, true, (multiId) => {
+      if (map.getLayer('rp-story-points-layer')) {
+        map.setLayoutProperty('rp-story-points-layer', 'icon-image', ['case', ['>', ['get', 'count'], 1], multiId, normalId]);
+      }
+    });
+  });
   // Region shading tracks the icon color -- a location's blob/circle and
   // its marker should read as the same color, not two independent choices.
   if (map.getLayer('rp-regions-fill')) map.setPaintProperty('rp-regions-fill', 'fill-color', colorHex);

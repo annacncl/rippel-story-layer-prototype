@@ -35,8 +35,12 @@ const variantState = { icon: "book", color: "teal", size: "small", shading: "blo
 
 function applyIconAndColor(map) {
   const colorHex = MARKER_COLORS[variantState.color];
-  ensureStoryIcon(map, variantState.icon, colorHex, (iconId) => {
-    if (map.getLayer("story-points-layer")) map.setLayoutProperty("story-points-layer", "icon-image", iconId);
+  ensureStoryIcon(map, variantState.icon, colorHex, false, (normalId) => {
+    ensureStoryIcon(map, variantState.icon, colorHex, true, (multiId) => {
+      if (map.getLayer("story-points-layer")) {
+        map.setLayoutProperty("story-points-layer", "icon-image", ["case", [">", ["get", "count"], 1], multiId, normalId]);
+      }
+    });
   });
   // Region shading tracks the icon color too — a location's blob/circle
   // and its marker should read as the same color, not two independent

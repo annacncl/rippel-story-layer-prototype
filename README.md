@@ -251,16 +251,20 @@ topic, matching how the feedback was organized:
 - The per-marker halo (the small circle behind every story icon) is gone
   for good. It competed with the region-level "circle" shading option —
   both were circles doing conceptually different jobs (marking an exact
-  point vs. shading an area), which made neither read clearly. This also
-  removed the halo size/opacity difference that was carrying the
-  multi-story signal — **there is currently no visual signal for "this
-  location has more than one story" beyond the icon itself.** Prior
-  attempts (count badge, pulsing ring, bigger/brighter halo, a second
-  peeking icon) were all tried and all dropped across three rounds of
-  feedback; still an open question, and a genuinely different approach
-  seems needed rather than another variation on a circle or a decoration
-  on the existing marker (ideas on the table: a distinct icon for
-  multi-story locations, or a size difference with no added shape).
+  point vs. shading an area), which made neither read clearly.
+- **Multi-story signal, take five**: count badge, pulsing ring, bigger/
+  brighter halo, and a second "peeking" icon layer were each tried and
+  dropped across four rounds of feedback. The current approach is
+  different in kind, not another variation on those: a bold "+" is baked
+  directly into the icon artwork as one flat pre-rendered image
+  (`MULTI_BADGE` in `js/map-common.js`, `RP_MULTI_BADGE` in
+  `live-copy/index.html`), not a separate layer or DOM marker — which is
+  specifically what made the "peeking icon" attempt read as a glitch
+  (two live-composited layers trying to stay aligned). `icon-image` is a
+  data expression keyed on `count`, so the swap between normal/badged
+  icon needs both variants pre-registered (`ensureStoryIcon`/
+  `rpEnsureIcon` now take a `multi` flag) before the layer references
+  either id.
 - New Hampshire briefly had no area shading at all, after its
   real-state-boundary fill (tried across the previous two rounds) still
   didn't communicate "statewide" clearly — but that made it the one

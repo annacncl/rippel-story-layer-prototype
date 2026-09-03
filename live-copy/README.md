@@ -87,9 +87,9 @@ story? Left unresolved even internally on that call — not something this
 prototype invents an answer for. See `../README.md`'s "Not part of this
 round" section.
 
-One more, from a later critical design pass: there's currently no visual
-signal at all for a multi-story location (the per-marker halo was removed
-as visually redundant with the "circle" shading option). New Hampshire is
-back to the same blob every other location gets, and region shading now
-tracks the icon color (Design Variants). See `../README.md`'s "Critical
-design pass" section.
+From a later critical design pass: the per-marker halo was removed as
+visually redundant with the "circle" shading option, and multi-story
+locations now get a "+" baked directly into the icon artwork instead
+(`RP_MULTI_BADGE`). New Hampshire is back to the same blob every other
+location gets, and region shading now tracks the icon color (Design
+Variants). See `../README.md`'s "Critical design pass" section.

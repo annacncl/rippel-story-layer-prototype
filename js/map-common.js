@@ -49,6 +49,16 @@ const ICON_PATHS = {
           fill="{{color}}" stroke="#0f1114" stroke-width="1.4" stroke-linejoin="round" />`,
 };
 
+// Multi-story signal: a bold "+" baked directly into the icon artwork as
+// one flat image, not a separate map layer or DOM marker — the previous
+// "peeking second icon" attempt was two live-composited layers trying to
+// stay aligned, which is exactly what read as a rendering glitch. Drawn
+// twice (dark wide stroke behind, colored narrow stroke in front) for the
+// same halo-outline effect the rest of the icon already uses for contrast
+// against the light basemap.
+const MULTI_BADGE = `<path d="M20 1.8 V8.2 M16.8 5 H23.2" stroke="#0f1114" stroke-width="4.2" stroke-linecap="round" />
+        <path d="M20 1.8 V8.2 M16.8 5 H23.2" stroke="{{color}}" stroke-width="2.4" stroke-linecap="round" />`;
+
 const registeredIcons = new Set();
 
 // Single shared "currently open popup" reference. Mapbox's own Popup
@@ -73,18 +83,19 @@ function openPopup(map, lngLat, html, options) {
   return activePopup;
 }
 
-// Ensures `<shape>-<color>` is registered as a Mapbox image, then calls back
-// with its id. Safe to call repeatedly — already-registered combos resolve
-// on the next microtask without re-decoding the SVG.
-function ensureStoryIcon(map, shape, colorHex, callback) {
-  const id = `story-icon-${shape}-${colorHex.replace("#", "")}`;
+// Ensures `<shape>-<color>[-multi]` is registered as a Mapbox image, then
+// calls back with its id. Safe to call repeatedly — already-registered
+// combos resolve on the next microtask without re-decoding the SVG.
+function ensureStoryIcon(map, shape, colorHex, multi, callback) {
+  const id = `story-icon-${shape}-${colorHex.replace("#", "")}${multi ? "-multi" : ""}`;
   if (registeredIcons.has(id)) {
     callback(id);
     return;
   }
+  const badge = multi ? MULTI_BADGE.replace(/{{color}}/g, colorHex) : "";
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
-      ${ICON_PATHS[shape].replace(/{{color}}/g, colorHex)}
+      ${ICON_PATHS[shape].replace(/{{color}}/g, colorHex)}${badge}
     </svg>`;
   const img = new Image();
   img.onload = () => {
@@ -208,26 +219,28 @@ function addBaseLayers(map, onReady) {
   // dropped too. No replacement signal is in place right now — flagged as
   // an open question rather than guessed at silently.
 
-  // icon-image requires the image to be registered first, which is an
+  // icon-image requires both images to be registered first, which is an
   // async decode step (even from a data URI) — the rest of addBaseLayers
   // runs synchronously as before, and only this dependent layer (plus the
   // click/hover wiring that targets it) waits on it.
-  ensureStoryIcon(map, "book", MARKER_COLORS.teal, (iconId) => {
-    map.addLayer({
-      id: "story-points-layer",
-      type: "symbol",
-      source: "story-points",
-      layout: {
-        "icon-image": iconId,
-        "icon-size": 0.5,
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-      },
-    });
+  ensureStoryIcon(map, "book", MARKER_COLORS.teal, false, (normalId) => {
+    ensureStoryIcon(map, "book", MARKER_COLORS.teal, true, (multiId) => {
+      map.addLayer({
+        id: "story-points-layer",
+        type: "symbol",
+        source: "story-points",
+        layout: {
+          "icon-image": ["case", [">", ["get", "count"], 1], multiId, normalId],
+          "icon-size": 0.5,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      });
 
-    map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = "pointer"));
-    map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
-    if (onReady) onReady();
+      map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = "pointer"));
+      map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
+      if (onReady) onReady();
+    });
   });
 
   map.on("mouseenter", "network-pins-layer", () => (map.getCanvas().style.cursor = "pointer"));
