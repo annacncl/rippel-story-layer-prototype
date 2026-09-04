@@ -5,8 +5,10 @@
 // the UI, and safe to delete (this file + its markup in index.html) once
 // the client has decided. See README "Design Variants panel" section.
 //
-// Color hex values are placeholders (not Rippel's exact brand purple/green)
-// — swatches to react to on the call, not a decision made unilaterally.
+// Color hex values are placeholders (not Rippel's exact brand colors) —
+// swatches to react to on the call, not a decision made unilaterally.
+// Teal and purple were dropped per client feedback (teal read too close to
+// the site's own teal accent/network-pin color); blue was added instead.
 // ---------------------------------------------------------------------------
 
 // Labels intentionally don't say "(current)"/"(default)" — that goes stale
@@ -17,10 +19,9 @@ const ICON_OPTIONS = [
   { id: "person", label: "Person" },
 ];
 const COLOR_OPTIONS = [
-  { id: "teal", label: "Teal" },
-  { id: "purple", label: "Purple" },
   { id: "green", label: "Green" },
   { id: "orange", label: "Orange" },
+  { id: "blue", label: "Blue" },
 ];
 const SIZE_OPTIONS = [
   { id: "small", label: "Small", value: 0.5 },
@@ -31,7 +32,7 @@ const SHADING_OPTIONS = [
   { id: "circle", label: "Circle" },
 ];
 
-const variantState = { icon: "book", color: "teal", size: "small", shading: "blob" };
+const variantState = { icon: "book", color: "green", size: "small", shading: "blob" };
 
 function applyIconAndColor(map) {
   const colorHex = MARKER_COLORS[variantState.color];

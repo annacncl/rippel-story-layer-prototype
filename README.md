@@ -159,12 +159,15 @@ topic, matching how the feedback was organized:
 **Icon / marker design — the Design Variants panel**
 - `js/design-variants.js` + the "DESIGN OPTIONS" toolbar in-app: a
   **dev-only** tool, clearly labeled, so the client can click through icon
-  (book/person), color (teal/purple/green), size (small/large), and shading
+  (book/person), color (green/orange/blue), size (small/large), and shading
   (blob/circle) live during the call instead of judging static screenshots.
   Delete this file + its markup in `index.html` once decisions are made.
 - Color hex values (`MARKER_COLORS` in `js/map-common.js`) are **placeholders**
-  — not Rippel's exact brand purple/green — swatches to react to, not a
-  decision made unilaterally.
+  — not Rippel's exact brand colors — swatches to react to, not a decision
+  made unilaterally. Teal and purple were dropped per client feedback (teal
+  read too close to the site's own teal accent/network-pin color); blue was
+  added in their place, picked distinctly apart from the site's existing
+  network-pin blue. Green is now the default.
 - Default marker size is now smaller (`icon-size: 0.5`, was `0.75`) to
   address the crowding complaint directly; "Large" in the panel is the old
   size, kept for comparison.

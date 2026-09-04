@@ -1527,7 +1527,10 @@ function onMapReady(cb) { if (map.loaded()) cb(); else map.on('load', cb); }
 // --------------------------- Story data (mock) ---------------------------
 // orange matches the real site's own accent (.network-toggle-btn.active,
 // statewide scope tags: #fb923c) -- reusing it, not inventing a new color.
-const RP_COLORS = { teal: '#2dd4bf', purple: '#9b7fd4', green: '#5fae6b', orange: '#fb923c' };
+// Teal and purple dropped per client feedback (teal read too close to the
+// real site's own teal accent/network pins); blue added, picked distinctly
+// apart from the real site's existing network-pin blue.
+const RP_COLORS = { green: '#5fae6b', orange: '#fb923c', blue: '#38bdf8' };
 
 function rpMakeBlob(center, rxDeg, ryDeg, steps = 24) {
   const [cx, cy] = center;
@@ -1787,11 +1790,11 @@ function rpOnStoryToggle(active) {
 // --------------------------- Layer setup ---------------------------
 onMapReady(() => {
   map.addSource('rp-regions', { type: 'geojson', data: RP_REGIONS_GEOJSON });
-  map.addLayer({ id: 'rp-regions-fill', type: 'fill', source: 'rp-regions', paint: { 'fill-color': RP_COLORS.teal, 'fill-opacity': 0.16 } });
+  map.addLayer({ id: 'rp-regions-fill', type: 'fill', source: 'rp-regions', paint: { 'fill-color': RP_COLORS.green, 'fill-opacity': 0.16 } });
 
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
   map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles', layout: { visibility: 'none' },
-    paint: { 'circle-radius': 34, 'circle-color': RP_COLORS.teal, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_COLORS.teal, 'circle-stroke-opacity': 0.8 } });
+    paint: { 'circle-radius': 34, 'circle-color': RP_COLORS.green, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_COLORS.green, 'circle-stroke-opacity': 0.8 } });
 
   // No circular halo behind the story icon either -- it competed
   // visually with the region "circle" shading option above, making both
@@ -1800,8 +1803,8 @@ onMapReady(() => {
   const storyPoints = rpStoryPointsGeoJSON();
   map.addSource('rp-story-points', { type: 'geojson', data: storyPoints });
 
-  rpEnsureIcon('book', RP_COLORS.teal, false, (normalId) => {
-    rpEnsureIcon('book', RP_COLORS.teal, true, (multiId) => {
+  rpEnsureIcon('book', RP_COLORS.green, false, (normalId) => {
+    rpEnsureIcon('book', RP_COLORS.green, true, (multiId) => {
     map.addLayer({ id: 'rp-story-points-layer', type: 'symbol', source: 'rp-story-points',
       layout: { 'icon-image': ['case', ['>', ['get', 'count'], 1], multiId, normalId], 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
 
@@ -1841,10 +1844,10 @@ onMapReady(rpShowBanner);
 
 // --------------------------- Design Variants panel (dev-only) ---------------------------
 const RP_ICON_OPTS = [{ id: 'book', label: 'Book' }, { id: 'person', label: 'Person' }];
-const RP_COLOR_OPTS = [{ id: 'teal', label: 'Teal' }, { id: 'purple', label: 'Purple' }, { id: 'green', label: 'Green' }, { id: 'orange', label: 'Orange' }];
+const RP_COLOR_OPTS = [{ id: 'green', label: 'Green' }, { id: 'orange', label: 'Orange' }, { id: 'blue', label: 'Blue' }];
 const RP_SIZE_OPTS = [{ id: 'small', label: 'Small', value: 0.5 }, { id: 'large', label: 'Large', value: 0.75 }];
 const RP_SHADING_OPTS = [{ id: 'blob', label: 'Blob' }, { id: 'circle', label: 'Circle' }];
-const rpVariantState = { icon: 'book', color: 'teal', size: 'small', shading: 'blob' };
+const rpVariantState = { icon: 'book', color: 'green', size: 'small', shading: 'blob' };
 
 function rpApplyIconAndColor() {
   const colorHex = RP_COLORS[rpVariantState.color];

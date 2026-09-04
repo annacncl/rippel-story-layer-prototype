@@ -11,14 +11,16 @@ const US_BOUNDS = [
 ];
 
 // Design Variants palette (Design Variants panel, js/design-variants.js).
-// Placeholder hex values — swap for Rippel's exact brand purple/green once
+// Placeholder hex values — swap for Rippel's exact brand colors once
 // confirmed; these are here so the client has something concrete to react
-// to on the call rather than a decision made unilaterally.
+// to on the call rather than a decision made unilaterally. Teal and purple
+// were dropped per client feedback (teal was easy to confuse with the
+// site's own teal accent/network-pin color); blue added as a replacement
+// option, picked distinctly apart from the existing network-pin blue below.
 const MARKER_COLORS = {
-  teal: "#2dd4bf",
-  purple: "#9b7fd4",
   green: "#5fae6b",
   orange: "#d97b3f", // matches --amber, already used elsewhere on this map (Networks & Initiatives toggle, statewide badges)
+  blue: "#38bdf8",
 };
 
 function createMap(containerId) {
@@ -158,7 +160,7 @@ function addBaseLayers(map, onReady) {
     type: "fill",
     source: "regions",
     paint: {
-      "fill-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
+      "fill-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
       "fill-opacity": 0.16,
     },
   });
@@ -183,10 +185,10 @@ function addBaseLayers(map, onReady) {
     layout: { visibility: "none" },
     paint: {
       "circle-radius": 34,
-      "circle-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
+      "circle-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
       "circle-opacity": 0.14,
       "circle-stroke-width": 2,
-      "circle-stroke-color": ["case", ["get", "hasStory"], "#2dd4bf", "#8a8a8a"],
+      "circle-stroke-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
       "circle-stroke-opacity": 0.8,
     },
   });
@@ -223,8 +225,8 @@ function addBaseLayers(map, onReady) {
   // async decode step (even from a data URI) — the rest of addBaseLayers
   // runs synchronously as before, and only this dependent layer (plus the
   // click/hover wiring that targets it) waits on it.
-  ensureStoryIcon(map, "book", MARKER_COLORS.teal, false, (normalId) => {
-    ensureStoryIcon(map, "book", MARKER_COLORS.teal, true, (multiId) => {
+  ensureStoryIcon(map, "book", MARKER_COLORS.green, false, (normalId) => {
+    ensureStoryIcon(map, "book", MARKER_COLORS.green, true, (multiId) => {
       map.addLayer({
         id: "story-points-layer",
         type: "symbol",
