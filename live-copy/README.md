@@ -116,9 +116,17 @@ Initiatives" sidebar list:
 - **Lines** — draws a connecting line from the selected network to every
   related network with real coordinates, line width scaled by how many
   orgs they share.
-- **Highlight** — the same idea without lines: just marks the selected
-  network and its related networks with a colored ring, dimmer/no line
-  clutter for a busier network.
+- **Highlight** — the same idea without lines: just marks each related
+  network with a ring, for a busier network where lines get cluttered.
+
+Related networks get a hollow amber ring, not a filled circle — an early
+version drew a solid shape at the same coordinate as the site's own
+existing pin, which stacked into a confusing unlabeled blob (client
+feedback: "what is the green circle?"). The selected network itself gets
+no separate marker at all now; it already has its own pin, since that's
+what was clicked. Amber was chosen specifically so this reads as distinct
+from the site's own teal pins and the Design Variants "Green" story color,
+not a third similar shade.
 
 A text panel always backs up the visual with the actual shared-org counts,
 including networks that are related but can't be plotted (nationwide-scope

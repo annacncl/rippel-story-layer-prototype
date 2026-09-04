@@ -453,12 +453,12 @@
      for "relationships between networks"), not another icon/color option. */
   .rp-nr-panel {
     position: fixed; bottom: 64px; left: 12px; z-index: 120;
-    background: rgba(26,36,46,0.96); border: 1px dashed #6ba0b0;
+    background: rgba(26,36,46,0.96); border: 1px dashed #d68a2e;
     border-radius: var(--radius-lg); padding: 10px 14px; font-size: 11px;
     color: var(--text); max-width: 260px;
   }
   .rp-nr-panel.rp-hidden { display: none; }
-  .rp-nr-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #7fc4d8; white-space: nowrap; }
+  .rp-nr-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #f5b866; white-space: nowrap; }
   .rp-nr-sub { color: var(--text-dim); font-size: 10px; margin: 4px 0 8px; line-height: 1.4; }
   .rp-nr-group { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
   .rp-nr-group span { color: var(--text-dim); margin-right: 2px; white-space: nowrap; }
@@ -467,13 +467,13 @@
     padding: 4px 9px; border-radius: 20px; font-family: inherit; font-size: 11px; cursor: pointer;
   }
   .rp-nr-panel button:hover { color: var(--text); }
-  .rp-nr-panel button.active { background: rgba(45,180,212,0.18); border-color: #4fb8d0; color: #7fc4d8; font-weight: 600; }
+  .rp-nr-panel button.active { background: rgba(245,158,11,0.18); border-color: #f59e0b; color: #f5b866; font-weight: 600; }
   .rp-nr-hint { color: var(--text-dim); font-style: italic; }
   .rp-nr-results { max-height: 180px; overflow-y: auto; }
   .rp-nr-selected { font-weight: 700; color: var(--text); margin-bottom: 4px; }
   .rp-nr-empty { color: var(--text-dim); font-style: italic; }
   .rp-nr-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--border); }
-  .rp-nr-count { color: #7fc4d8; white-space: nowrap; font-size: 10px; }
+  .rp-nr-count { color: #f5b866; white-space: nowrap; font-size: 10px; }
   .rp-nr-clear { display: block; margin-top: 6px; background: none; border: none; color: var(--text-dim); text-decoration: underline; cursor: pointer; font-size: 10px; padding: 0; }
   .rp-nr-clear:hover { color: var(--text); }
 
@@ -1949,9 +1949,12 @@ function rpSelectNetwork(name) {
   // those (they still show in the text list below, just not on the map).
   const plottableRels = geoRels.filter((r) => !rpCoordsEqual(rpFindNetworkCoords(r.name), origin));
 
-  const pointFeatures = [];
-  if (origin) pointFeatures.push({ type: 'Feature', properties: { role: 'selected' }, geometry: { type: 'Point', coordinates: origin } });
-  plottableRels.forEach((r) => pointFeatures.push({ type: 'Feature', properties: { role: 'related', count: r.count }, geometry: { type: 'Point', coordinates: rpFindNetworkCoords(r.name) } }));
+  // No marker drawn at the selected network itself -- it already has its
+  // own real pin (that's what you clicked), and a second filled shape
+  // stacked on top of it just reads as a confusing unlabeled blob. Only
+  // the related networks get a highlight ring, since that's the new
+  // information this view is actually adding.
+  const pointFeatures = plottableRels.map((r) => ({ type: 'Feature', properties: { count: r.count }, geometry: { type: 'Point', coordinates: rpFindNetworkCoords(r.name) } }));
   map.getSource('rp-network-rel-points').setData({ type: 'FeatureCollection', features: pointFeatures });
 
   const lineFeatures = (rpNetworkRelMode === 'lines' && origin)
@@ -1970,16 +1973,23 @@ function rpClearNetworkRel() {
 }
 
 onMapReady(() => {
+  // Amber, not teal/green -- this needs to read as clearly distinct from
+  // the site's own teal network pins and the Design Variants "Green" story
+  // color, not a third shade of the same color family.
   map.addSource('rp-network-rel-lines', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
   map.addLayer({ id: 'rp-network-rel-lines', type: 'line', source: 'rp-network-rel-lines',
-    paint: { 'line-color': '#4fb8d0', 'line-width': ['interpolate', ['linear'], ['get', 'count'], 1, 1.5, 6, 6], 'line-opacity': 0.8 } });
+    paint: { 'line-color': '#f59e0b', 'line-width': ['interpolate', ['linear'], ['get', 'count'], 1, 1.5, 6, 6], 'line-opacity': 0.8 } });
 
+  // A hollow ring, not a filled circle -- a solid shape stacked on the
+  // site's own pin at the same coordinate read as a confusing unlabeled
+  // blob (client feedback). circle-translate nudges the ring above the
+  // pin's anchor point instead of dead-centering on its base.
   map.addSource('rp-network-rel-points', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
   map.addLayer({ id: 'rp-network-rel-points', type: 'circle', source: 'rp-network-rel-points',
     paint: {
-      'circle-radius': ['case', ['==', ['get', 'role'], 'selected'], 15, 11],
-      'circle-color': ['case', ['==', ['get', 'role'], 'selected'], '#4fb8d0', 'rgba(79,184,208,0.35)'],
-      'circle-stroke-width': 2, 'circle-stroke-color': '#4fb8d0',
+      'circle-radius': 10, 'circle-color': 'transparent',
+      'circle-stroke-width': 3, 'circle-stroke-color': '#f59e0b',
+      'circle-translate': [0, -20], 'circle-translate-anchor': 'viewport',
     } });
 
   ['network-pins-local', 'network-pins-statewide'].forEach((layerId) => {
