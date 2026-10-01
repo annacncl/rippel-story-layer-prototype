@@ -94,7 +94,8 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
     // mobile media query in css/style.css) — there's no room to share, so
     // don't also try to shrink the map.
     const isMobile = window.innerWidth <= 768;
-    document.documentElement.style.setProperty("--story-panel-w", open && !isMobile ? "360px" : "0px");
+    document.documentElement.style.setProperty("--story-panel-w", open && !isMobile ? "480px" : "0px");
+    holdInfluenceCollapsed("story-panel", open);
     setTimeout(() => map.resize(), 220);
   }
 

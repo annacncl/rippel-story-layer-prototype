@@ -133,7 +133,7 @@ topic, matching how the feedback was organized:
   stays fully navigable while it's open, and clicking bare map (or a
   different marker) closes it.
 - **South Texas (PJTT)** is the multi-story stress test the client asked
-  for: 2 stories (1 real, 1 flagged mock — see below) at one marker. It
+  for: now 3 real stories (a podcast plus 2 partner videos) at one marker. It
   originally had a 19-blob mock geometry standing in for its non-adjacent
   county footprint, but that (and, on a later pass, having no shaded
   region at all) both read badly in review — see "Fixed after client
@@ -183,6 +183,14 @@ topic, matching how the feedback was organized:
 - The South Texas real story embeds a real YouTube video (found via public
   search, not invented) as the live example: default is click-to-play, no
   autoplay.
+- `type: "external"` covers partner video with no official embed player
+  (e.g. TV-station clips): the card shows the thumbnail with a play overlay
+  and a "Watch on <source> ↗" label, opening the source page in a new tab.
+  Optional `linkLabel` replaces "Read full story →" (video-only stories say
+  "Watch on YouTube →" instead).
+- **Round 3 (2026-10-01):** four partner-supplied videos from Rippel comms
+  (see "Where the story content comes from") — three embed in-window via
+  YouTube, one (NBC Bay Area) uses the link-out card.
 - The guided tour has an intro/preamble step (before Location 1) framing
   what the tour is and why these stories matter, and the active tour stop
   gets a highlight ring (`.story-tour-highlight`) as an anchor for future
@@ -193,6 +201,13 @@ topic, matching how the feedback was organized:
   is a needed input from the client before this can go further.
 
 **Layout / responsiveness**
+- **Round 3 (2026-10-01):** opening a story — single-story teaser,
+  cluster panel, or guided tour — auto-collapses the Nationwide Influence
+  panel to give the story more room, and reopens it on close (only if it
+  was auto-collapsed and the user hasn't reopened it themselves; skipped
+  on mobile). The story panel is wider (480px, was 360px) and so is the
+  single-story teaser (340px, was 240px). The tour banner and Design
+  Options bar now center on the visible map area instead of the screen.
 - Cluster/tour panel bodies already scroll on overflow (`.guided-panel`'s
   existing `overflow-y: auto`); same for the single-story popup.
 - This prototype had **zero** `@media` rules before this round — the
@@ -349,11 +364,24 @@ is the PJTT/South Texas real-content stand-in):
 |---|---|
 | Yvonne Pacheco (South Texas podcast, real, incl. real YouTube embed) | `rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/` |
 
-Two stories are entirely **mock/invented** for this round, clearly labeled
-in `js/data.js`: "PJTT Network Update" (South Texas's second story, so that
-location exercises the cluster panel and models mixing Rippel- with
-PJTT-produced content) and "A Statewide Network Comes Together Across New
-Hampshire" (the standalone statewide example).
+Round 3, partner-supplied by Rippel comms (Molly Belsky) on 2026-10-01 —
+audio/video meant to play directly in the map window:
+
+| Story | Location | Source | Playback |
+|---|---|---|---|
+| Hijas del Campo Works to Support Farmworkers | Inland Empire | NBC Bay Area | Link-out (no official embed) |
+| Hope Heals San Antonio | South Texas | YouTube, MHM's channel | Embedded |
+| Creating Belonging Where It Matters (Tim Barr) | South Texas | YouTube, Rippel's channel | Embedded |
+| Welcome to Franklin Park | Lehigh Valley | YouTube, LPPIH's channel | Embedded |
+
+Open question: NBC's own description places Hijas del Campo in Contra Costa
+County (East Bay, near Brentwood), not the Inland Empire. It's filed under
+Inland Empire as sent, pending confirmation from Rippel.
+
+"Hope Heals SA" replaced the invented "PJTT Network Update" mock as South
+Texas's partner-produced story. One story is still entirely **mock/invented**,
+clearly labeled in `js/data.js`: "A Statewide Network Comes Together Across
+New Hampshire" (the standalone statewide example).
 
 "Read full story" opens the real pages in a new tab. Fox Cities and the
 LVHN written piece use real images pulled from those pages; the 3 round-1

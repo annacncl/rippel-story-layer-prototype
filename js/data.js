@@ -232,10 +232,14 @@ const NATIONWIDE_NETWORKS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Story records. Lehigh Valley (3 stories) and South Texas (2 stories) are
-// the multi-story "cluster" test locations. Each story may carry an optional
-// `media` field ({type: "youtube"|"video", url, autoplay}) — when present,
-// the teaser/cluster card embeds a real player instead of a static image.
+// Story records. Lehigh Valley (4 stories), South Texas (3) and Inland
+// Empire (2) are the multi-story "cluster" test locations. Each story may carry an optional
+// `media` field ({type: "youtube"|"video"|"external", url, autoplay}) — when
+// present, the teaser/cluster card embeds a real player instead of a static
+// image. "external" is for partner video with no official embed player (e.g.
+// TV-station clips): it shows the thumbnail with a play overlay that opens
+// the source page in a new tab. Optional `linkLabel` overrides the default
+// "Read full story →" text (video-only stories link to the video itself).
 // ---------------------------------------------------------------------------
 const STORIES = [
   {
@@ -249,6 +253,31 @@ const STORIES = [
       "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
     image: "img/inland-empire-unsung-stewards.jpg",
     link: "https://rippel.org/podcasts/?podcast-id=7828",
+  },
+  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
+  // NBC Bay Area offers no official embed player for this clip, so it uses
+  // the "external" media type (thumbnail + play overlay that links out) —
+  // the test case for partner video we can't play in-window. NOTE: NBC's
+  // own description places Hijas del Campo in Contra Costa County / East
+  // Bay (near Brentwood), not the Inland Empire — filed under Inland Empire
+  // as sent; confirm the intended location with Rippel.
+  {
+    id: "inland-empire-video-hijas-del-campo",
+    geoId: "inland-empire",
+    geography: "Inland Empire, CA",
+    title: "Hijas del Campo Works to Support Farmworkers",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.",
+    image: "https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675",
+    media: {
+      type: "external",
+      url: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
+      source: "NBC Bay Area",
+    },
+    link: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
+    linkLabel: "Watch on NBC Bay Area →",
   },
   {
     id: "fox-cities-multimedia",
@@ -298,6 +327,24 @@ const STORIES = [
     image: "https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png",
     link: "https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/",
   },
+  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01):
+  // the Leonard Parker Pool Institute for Health's own YouTube video. Makes
+  // Lehigh Valley a 4-story cluster and mixes partner-produced video in with
+  // Rippel-produced podcasts/writing.
+  {
+    id: "lehigh-valley-video-franklin-park",
+    geoId: "lehigh-valley",
+    geography: "Lehigh Valley, PA",
+    title: "Welcome to Franklin Park",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "A video from the Leonard Parker Pool Institute for Health introducing Franklin Park.",
+    image: "https://img.youtube.com/vi/Os8kum9GgJE/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Os8kum9GgJE", autoplay: false },
+    link: "https://www.youtube.com/watch?v=Os8kum9GgJE",
+    linkLabel: "Watch on YouTube →",
+  },
   // Real content, found via public search (2026-08-31): Rippel's "Unsung
   // Stewards" podcast, Season 5 Episode 2, featuring Yvonne Pacheco of
   // Methodist Healthcare Ministries of South Texas (the org behind PJTT).
@@ -315,22 +362,38 @@ const STORIES = [
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc", autoplay: false },
     link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
   },
-  // MOCK — invented second South Texas story so this location (a) exercises
-  // the cluster panel with 2 entries and (b) models "PJTT-produced" content
-  // sitting alongside Rippel-produced content, per the separate tour-
-  // composition note about mixing internally/externally produced stories.
-  // Swap for a real PJTT-produced piece once available.
+  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
+  // "Hope Heals SA" is MHM-produced (their own YouTube channel) and replaces
+  // the invented "PJTT Network Update" mock that previously stood in for
+  // partner-produced content at this location; the Tim Barr profile is
+  // Rippel-produced. South Texas is now a 3-story cluster, all real.
   {
-    id: "south-texas-pjtt-update",
+    id: "south-texas-video-hope-heals",
     geoId: "south-texas",
     geography: "South Texas (PJTT)",
-    title: "PJTT Network Update: Prosperemos Juntos / Thriving Together",
-    format: "Written Story",
-    formatIcon: "📝",
+    title: "Hope Heals San Antonio",
+    format: "Video",
+    formatIcon: "▶️",
     excerpt:
-      "PJTT's own team highlights the partners and community connectors weaving together prevention, health equity, and shared power across 19 South Texas counties, from Laredo to the Rio Grande Valley.",
-    image: "https://placehold.co/480x300/6b4f8a/ffffff?text=PJTT+story+(placeholder)",
-    link: "https://www.mhm.org/thriving-communities/",
+      "A video from Methodist Healthcare Ministries of South Texas, the organization behind Prosperemos Juntos / Thriving Together.",
+    image: "https://img.youtube.com/vi/MM_CVMzC8Sw/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/MM_CVMzC8Sw", autoplay: false },
+    link: "https://www.youtube.com/watch?v=MM_CVMzC8Sw",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "south-texas-video-tim-barr",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "Creating Belonging Where It Matters",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.",
+    image: "https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/0oPep3N5mIk", autoplay: false },
+    link: "https://www.youtube.com/watch?v=0oPep3N5mIk",
+    linkLabel: "Watch on YouTube →",
   },
   // MOCK — statewide example (see STORY_GEOGRAPHIES["granite-state"] above).
   {

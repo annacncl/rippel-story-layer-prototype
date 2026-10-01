@@ -305,6 +305,16 @@ function renderMedia(story, imgClass) {
       ></iframe>
     </div>`;
   }
+  // No embeddable player (e.g. a TV-station clip): thumbnail + play overlay
+  // that opens the source page, so the card still reads as "video".
+  if (story.media.type === "external") {
+    return `<a class="story-media-embed story-media-external" href="${story.media.url}" target="_blank" rel="noopener"
+        aria-label="Watch ${story.title} on ${story.media.source || "the source site"} (opens in a new tab)">
+      <img src="${story.image}" alt="" />
+      <span class="story-media-play" aria-hidden="true"></span>
+      <span class="story-media-source">Watch on ${story.media.source || "source site"} ↗</span>
+    </a>`;
+  }
   const attrs = story.media.autoplay ? "autoplay muted loop playsinline" : "controls playsinline";
   return `<div class="story-media-embed"><video src="${story.media.url}" ${attrs} poster="${story.image || ""}"></video></div>`;
 }
@@ -322,7 +332,7 @@ function buildTeaserHTML(story) {
         <h3>${story.title}</h3>
         <p class="teaser-geo">${story.geography}</p>
         <p class="teaser-excerpt">${story.excerpt}</p>
-        <a class="teaser-link" href="${story.link}" target="_blank" rel="noopener">Read full story →</a>
+        <a class="teaser-link" href="${story.link}" target="_blank" rel="noopener">${story.linkLabel || "Read full story →"}</a>
       </div>
     </div>
   `;
@@ -331,11 +341,15 @@ function buildTeaserHTML(story) {
 function openStoryTeaser(map, feature) {
   const storyIds = JSON.parse(feature.properties.storyIds);
   const story = getStoryById(storyIds[0]);
-  return openPopup(map, feature.geometry.coordinates, buildTeaserHTML(story), {
+  const popup = openPopup(map, feature.geometry.coordinates, buildTeaserHTML(story), {
     closeButton: true,
-    maxWidth: "260px",
+    maxWidth: "360px",
     offset: 14,
+    className: "teaser-popup-wrap",
   });
+  holdInfluenceCollapsed("teaser", true);
+  popup.on("close", () => holdInfluenceCollapsed("teaser", false));
+  return popup;
 }
 
 // Stacked list of story cards — shared by the cluster panel (self-guided
@@ -352,7 +366,7 @@ function renderStoryCards(storyList) {
           ${formatBadge(story)}
           <h3>${story.title}</h3>
           <p class="teaser-excerpt">${story.excerpt}</p>
-          <a class="teaser-link" href="${story.link}" target="_blank" rel="noopener">Read full story →</a>
+          <a class="teaser-link" href="${story.link}" target="_blank" rel="noopener">${story.linkLabel || "Read full story →"}</a>
         </div>
       </div>`
     )

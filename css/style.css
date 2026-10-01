@@ -323,6 +323,7 @@ html, body {
   z-index: 20; /* always paint above the side panels, never hidden/clipped under them */
   max-width: 260px !important;
 }
+.mapboxgl-popup.teaser-popup-wrap { max-width: 360px !important; } /* wider single-story teaser (client ask) */
 .mapboxgl-popup-content {
   padding: 0;
   overflow: hidden;
@@ -330,7 +331,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
-  max-height: min(70vh, 420px);
+  max-height: min(75vh, 500px);
   display: flex;
   flex-direction: column;
 }
@@ -343,7 +344,7 @@ html, body {
 .plain-popup ul { margin: 6px 0 0; padding-left: 16px; }
 .plain-popup a { color: var(--accent-light); }
 
-.teaser-popup { width: 240px; display: flex; flex-direction: column; min-height: 0; }
+.teaser-popup { width: 340px; display: flex; flex-direction: column; min-height: 0; }
 .teaser-series-tag {
   flex-shrink: 0;
   background: var(--teal-dim);
@@ -355,7 +356,7 @@ html, body {
   text-align: center;
   padding: 6px 10px;
 }
-.teaser-image { width: 100%; height: 140px; object-fit: cover; display: block; flex-shrink: 0; }
+.teaser-image { width: 100%; height: 190px; object-fit: cover; display: block; flex-shrink: 0; }
 .teaser-body { padding: 12px 14px 14px; overflow-y: auto; min-height: 0; }
 .teaser-body h3 { margin: 6px 0 2px; font-size: 15px; font-family: var(--font-serif); font-weight: 500; color: var(--text); }
 .format-badge {
@@ -390,7 +391,7 @@ html, body {
   position: absolute;
   top: 0;
   right: var(--influence-w);
-  width: 360px;
+  width: 480px;
   height: 100%;
   background: var(--surface);
   border-left: 1px solid var(--border);
@@ -474,9 +475,17 @@ html, body {
 }
 .exit-tour-btn.visible { opacity: 1; pointer-events: auto; }
 
+/* Floating overlays center on the visible map area (not the full screen),
+   so they track the side panels collapsing and the story panel opening. */
+.tour-banner,
+.design-variants,
+.design-variants-toggle-collapsed {
+  --map-center: calc(var(--filters-w) + (100% - var(--filters-w) - var(--influence-w) - var(--story-panel-w)) / 2);
+  transition: left 0.2s;
+}
 .tour-banner {
   position: absolute;
-  left: 50%;
+  left: var(--map-center);
   top: 14px;
   transform: translateX(-50%);
   z-index: 6;
@@ -555,6 +564,15 @@ html, body {
   display: block;
 }
 
+/* "external" media: partner video with no embeddable player — thumbnail +
+   play overlay linking out to the source page. */
+.story-media-external { display: block; color: #fff; text-decoration: none; overflow: hidden; }
+.story-media-external img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.15s; }
+.story-media-external:hover img, .story-media-external:focus-visible img { opacity: 1; }
+.story-media-play { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #fff; }
+.story-media-play::after { content: ""; position: absolute; top: 50%; left: 54%; transform: translate(-50%, -50%); border-style: solid; border-width: 8px 0 8px 13px; border-color: transparent transparent transparent #fff; }
+.story-media-source { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 10px; font-size: 11px; font-weight: 600; background: linear-gradient(transparent, rgba(0,0,0,0.75)); }
+
 /* --------------------------- Story panel (shared) ---------------------------
    Cluster panel (self-guided, multi-story click) and every guided-tour step
    share this body — a list of "story cards" instead of tab-switching
@@ -585,7 +603,7 @@ html, body {
    product, clearly labeled, safe to delete once decisions are made. */
 .design-variants {
   position: absolute;
-  left: 50%;
+  left: var(--map-center);
   top: 78px; /* below .tour-banner, which shares the same centered top-14px slot */
   transform: translateX(-50%);
   z-index: 2; /* above the bare map, but tucks behind the story/cluster/tour panel (z-index 3) and side panels (4) when they overlap */
@@ -625,7 +643,7 @@ html, body {
 .design-variants button.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); font-weight: 600; }
 .design-variants-toggle-collapsed {
   position: absolute;
-  left: 50%;
+  left: var(--map-center);
   top: 78px;
   transform: translateX(-50%);
   z-index: 2;

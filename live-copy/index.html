@@ -357,7 +357,7 @@
      .national-panel treatment (backdrop-blur, floats over the full-bleed
      map) rather than a different mechanism for this one new panel. */
   .rp-story-panel {
-    position: fixed; top: 80px; right: 280px; bottom: 0; width: 360px;
+    position: fixed; top: 80px; right: 280px; bottom: 0; width: 480px;
     z-index: 130; background: rgba(15,17,20,0.94); backdrop-filter: blur(24px);
     border-left: 1px solid var(--border); padding: 20px 22px 0;
     overflow-y: auto; color: var(--text); transition: right 0.3s ease;
@@ -387,6 +387,13 @@
   .rp-link:hover { text-decoration: underline; }
   .rp-media-embed { position: relative; width: 100%; padding-top: 56.25%; background: #000; flex-shrink: 0; }
   .rp-media-embed iframe, .rp-media-embed video { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+  /* "external" media: partner video with no embeddable player — thumbnail + play overlay linking out. */
+  .rp-media-external { display: block; color: #fff; text-decoration: none; overflow: hidden; }
+  .rp-media-external img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.15s; }
+  .rp-media-external:hover img, .rp-media-external:focus-visible img { opacity: 1; }
+  .rp-media-play { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #fff; }
+  .rp-media-play::after { content: ""; position: absolute; top: 50%; left: 54%; transform: translate(-50%, -50%); border-style: solid; border-width: 8px 0 8px 13px; border-color: transparent transparent transparent #fff; }
+  .rp-media-source { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 10px; font-size: 11px; font-weight: 600; background: linear-gradient(transparent, rgba(0,0,0,0.75)); }
   .rp-nav {
     display: flex; justify-content: space-between; position: sticky; bottom: 0;
     margin: 20px -22px 0; padding: 12px 22px 20px;
@@ -405,11 +412,12 @@
   .rp-teaser-popup .mapboxgl-popup-content {
     padding: 0; overflow: hidden; border-radius: var(--radius-lg);
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    max-height: min(70vh, 420px); display: flex; flex-direction: column;
+    max-height: min(75vh, 500px); display: flex; flex-direction: column;
   }
+  .rp-teaser-popup-inner { width: 340px; max-width: 100%; display: flex; flex-direction: column; min-height: 0; }
   .rp-teaser-popup .mapboxgl-popup-tip { border-top-color: var(--surface); }
   .rp-teaser-series-tag { flex-shrink: 0; background: var(--rippel-teal-dim); color: var(--rippel-teal); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; padding: 6px 10px; }
-  .rp-teaser-image { width: 100%; height: 140px; object-fit: cover; display: block; flex-shrink: 0; }
+  .rp-teaser-image { width: 100%; height: 190px; object-fit: cover; display: block; flex-shrink: 0; }
   .rp-teaser-body { padding: 12px 14px 14px; overflow-y: auto; min-height: 0; }
   .rp-teaser-body h3 { margin: 6px 0 2px; font-size: 15px; font-family: 'Fraunces', serif; font-weight: 500; color: var(--text); }
   .rp-teaser-geo { margin: 0; font-size: 12px; color: var(--text-dim); }
@@ -1582,6 +1590,12 @@ const RP_STORIES = [
   { id: 'inland-empire-podcast', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Building Belonging and Civic Muscle Through Journalism', format: 'Podcast', formatIcon: '🎙️',
     excerpt: "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
     image: 'https://rippel.org/wp-content/uploads/2024/06/unsung-stewards-cover.png', link: 'https://rippel.org/podcasts/?podcast-id=7828' },
+  // Partner-supplied 2026-10-01; no official NBC embed, so "external" (link-out) media. NBC places Hijas del Campo in Contra Costa County, not the Inland Empire — confirm with Rippel.
+  { id: 'inland-empire-video-hijas-del-campo', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Hijas del Campo Works to Support Farmworkers', format: 'Video', formatIcon: '▶️',
+    excerpt: 'What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.',
+    image: 'https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675',
+    media: { type: 'external', url: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', source: 'NBC Bay Area' },
+    link: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', linkLabel: 'Watch on NBC Bay Area →' },
   { id: 'fox-cities-multimedia', geoId: 'fox-cities', geography: 'Fox Cities, WI', title: 'Imagine Fox Cities: Creating a Community Where Everyone Belongs', format: 'Multimedia', formatIcon: '🎬',
     excerpt: 'Fox Cities, a region of 19 municipalities in central Wisconsin, is bringing together residents, businesses, and institutions around one question: how do we build a community where everyone belongs?',
     image: 'https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png', link: 'https://rippel.org/foxcities/' },
@@ -1594,13 +1608,24 @@ const RP_STORIES = [
   { id: 'lehigh-valley-written', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'A Pennsylvania Health Care System Stewards Equitable Health and Well-Being', format: 'Written Story', formatIcon: '📝',
     excerpt: 'When Leonard Parker Pool set out to build a better health system for the Lehigh Valley in the 1960s, he laid the groundwork for a hospital network now stewarding equitable health for its entire community.',
     image: 'https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png', link: 'https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/' },
+  // Partner-supplied 2026-10-01 (Leonard Parker Pool Institute for Health's own video).
+  { id: 'lehigh-valley-video-franklin-park', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'Welcome to Franklin Park', format: 'Video', formatIcon: '▶️',
+    excerpt: 'A video from the Leonard Parker Pool Institute for Health introducing Franklin Park.',
+    image: 'https://img.youtube.com/vi/Os8kum9GgJE/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Os8kum9GgJE', autoplay: false },
+    link: 'https://www.youtube.com/watch?v=Os8kum9GgJE', linkLabel: 'Watch on YouTube →' },
   { id: 'south-texas-podcast-pacheco', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'Stewardship Begins with Listening in South Texas', format: 'Podcast', formatIcon: '🎙️',
     excerpt: 'Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.',
     image: 'https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/T7wdBXB5RUc', autoplay: false },
     link: 'https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/' },
-  { id: 'south-texas-pjtt-update', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'PJTT Network Update: Prosperemos Juntos / Thriving Together', format: 'Written Story', formatIcon: '📝',
-    excerpt: "PJTT's own team highlights the partners and community connectors weaving together prevention, health equity, and shared power across 19 South Texas counties, from Laredo to the Rio Grande Valley.",
-    image: 'https://placehold.co/480x300/6b4f8a/ffffff?text=PJTT+story+(placeholder)', link: 'https://www.mhm.org/thriving-communities/' },
+  // Partner-supplied 2026-10-01; "Hope Heals SA" (MHM-produced) replaces the invented "PJTT Network Update" mock.
+  { id: 'south-texas-video-hope-heals', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'Hope Heals San Antonio', format: 'Video', formatIcon: '▶️',
+    excerpt: 'A video from Methodist Healthcare Ministries of South Texas, the organization behind Prosperemos Juntos / Thriving Together.',
+    image: 'https://img.youtube.com/vi/MM_CVMzC8Sw/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/MM_CVMzC8Sw', autoplay: false },
+    link: 'https://www.youtube.com/watch?v=MM_CVMzC8Sw', linkLabel: 'Watch on YouTube →' },
+  { id: 'south-texas-video-tim-barr', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'Creating Belonging Where It Matters', format: 'Video', formatIcon: '▶️',
+    excerpt: 'Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.',
+    image: 'https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/0oPep3N5mIk', autoplay: false },
+    link: 'https://www.youtube.com/watch?v=0oPep3N5mIk', linkLabel: 'Watch on YouTube →' },
   { id: 'granite-state-mock', geoId: 'granite-state', geography: 'New Hampshire (statewide)', title: 'A Statewide Network Comes Together Across New Hampshire', format: 'Written Story', formatIcon: '📝',
     excerpt: "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
     image: 'https://placehold.co/480x300/2f6b4f/ffffff?text=Statewide+(placeholder)', link: '#' },
@@ -1678,6 +1703,10 @@ function rpRenderMedia(s, imgClass) {
     const autoplay = s.media.autoplay ? '&autoplay=1&mute=1' : '';
     return `<div class="rp-media-embed"><iframe src="${s.media.url}?rel=0&modestbranding=1${autoplay}" title="${s.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   }
+  if (s.media.type === 'external') {
+    const src = s.media.source || 'source site';
+    return `<a class="rp-media-embed rp-media-external" href="${s.media.url}" target="_blank" rel="noopener" aria-label="Watch ${s.title} on ${src} (opens in a new tab)"><img src="${s.image}" alt="" /><span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-source">Watch on ${src} ↗</span></a>`;
+  }
   const attrs = s.media.autoplay ? 'autoplay muted loop playsinline' : 'controls playsinline';
   return `<div class="rp-media-embed"><video src="${s.media.url}" ${attrs} poster="${s.image || ''}"></video></div>`;
 }
@@ -1690,17 +1719,20 @@ function rpBuildTeaserHTML(s) {
       <h3>${s.title}</h3>
       <p class="rp-teaser-geo">${s.geography}</p>
       <p class="rp-excerpt">${s.excerpt}</p>
-      <a class="rp-link" href="${s.link}" target="_blank" rel="noopener">Read full story →</a>
+      <a class="rp-link" href="${s.link}" target="_blank" rel="noopener">${s.linkLabel || 'Read full story →'}</a>
     </div>
   </div>`;
 }
 function rpOpenStoryTeaser(feature) {
   const storyIds = JSON.parse(feature.properties.storyIds);
   const story = rpStoryById(storyIds[0]);
-  return rpOpenPopup(feature.geometry.coordinates, rpBuildTeaserHTML(story), { closeButton: true, maxWidth: '260px', offset: 14 });
+  const popup = rpOpenPopup(feature.geometry.coordinates, rpBuildTeaserHTML(story), { closeButton: true, maxWidth: '360px', offset: 14 });
+  rpHoldNationalCollapsed('teaser', true);
+  popup.on('close', () => rpHoldNationalCollapsed('teaser', false));
+  return popup;
 }
 function rpRenderCards(storyList) {
-  return storyList.map((s) => `<div class="rp-card">${rpRenderMedia(s, 'rp-card-image')}<div class="rp-card-body">${rpFormatBadge(s)}<h3>${s.title}</h3><p class="rp-excerpt">${s.excerpt}</p><a class="rp-link" href="${s.link}" target="_blank" rel="noopener">Read full story →</a></div></div>`).join('');
+  return storyList.map((s) => `<div class="rp-card">${rpRenderMedia(s, 'rp-card-image')}<div class="rp-card-body">${rpFormatBadge(s)}<h3>${s.title}</h3><p class="rp-excerpt">${s.excerpt}</p><a class="rp-link" href="${s.link}" target="_blank" rel="noopener">${s.linkLabel || 'Read full story →'}</a></div></div>`).join('');
 }
 
 // --------------------------- Story mode (self-guided + tour + cluster) ---------------------------
@@ -1711,6 +1743,31 @@ let rpClusterOpen = false;
 
 function rpSetStoryPanelOpen(open) {
   document.getElementById('rp-story-panel').classList.toggle('rp-hidden', !open);
+  rpHoldNationalCollapsed('story-panel', open);
+}
+
+// Opening a story (teaser popup, cluster panel, or tour) auto-collapses the
+// Nationwide Influence panel to give the story more room (client ask), then
+// restores it once nothing story-related is open — only if we collapsed it
+// and the user hasn't reopened it themselves. Skipped on mobile, where the
+// side panels already start collapsed.
+const rpNationalHolds = new Set();
+let rpNationalAutoCollapsed = false;
+function rpHoldNationalCollapsed(key, held) {
+  const panel = document.getElementById('national-panel');
+  const toggle = document.getElementById('national-panel-toggle');
+  if (held) {
+    rpNationalHolds.add(key);
+    if (window.innerWidth > 768 && !panel.classList.contains('collapsed')) { toggle.click(); rpNationalAutoCollapsed = true; }
+    return;
+  }
+  rpNationalHolds.delete(key);
+  // Deferred so a hand-off (teaser closing as the cluster panel opens) doesn't flash the panel.
+  setTimeout(() => {
+    if (rpNationalHolds.size || !rpNationalAutoCollapsed) return;
+    rpNationalAutoCollapsed = false;
+    if (panel.classList.contains('collapsed')) toggle.click();
+  }, 50);
 }
 function rpShowBanner() { document.getElementById('rp-tour-banner').classList.add('visible'); }
 function rpHideBanner() { document.getElementById('rp-tour-banner').classList.remove('visible'); }
