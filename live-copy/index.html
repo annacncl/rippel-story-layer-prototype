@@ -409,18 +409,6 @@
   .rp-nav button.primary:hover { background: var(--accent-light); }
   .rp-nav button:disabled { opacity: 0.4; cursor: default; }
 
-  .rp-teaser-popup .mapboxgl-popup-content {
-    padding: 0; overflow: hidden; border-radius: var(--radius-lg);
-    background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    max-height: min(75vh, 500px); display: flex; flex-direction: column;
-  }
-  .rp-teaser-popup-inner { width: 340px; max-width: 100%; display: flex; flex-direction: column; min-height: 0; }
-  .rp-teaser-popup .mapboxgl-popup-tip { border-top-color: var(--surface); }
-  .rp-teaser-series-tag { flex-shrink: 0; background: var(--rippel-teal-dim); color: var(--rippel-teal); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; padding: 6px 10px; }
-  .rp-teaser-image { width: 100%; height: 190px; object-fit: cover; display: block; flex-shrink: 0; }
-  .rp-teaser-body { padding: 12px 14px 14px; overflow-y: auto; min-height: 0; }
-  .rp-teaser-body h3 { margin: 6px 0 2px; font-size: 15px; font-family: 'Fraunces', serif; font-weight: 500; color: var(--text); }
-  .rp-teaser-geo { margin: 0; font-size: 12px; color: var(--text-dim); }
 
   .rp-tour-highlight {
     width: 46px; height: 46px; border-radius: 50%;
@@ -1686,15 +1674,6 @@ function rpApplyRegionsVisibility() {
 }
 function rpSetShadingStyle(style) { rpShadingStyle = style; rpApplyRegionsVisibility(); }
 
-// --------------------------- Popup lifecycle ---------------------------
-let rpActivePopup = null;
-function rpCloseActivePopup() { if (rpActivePopup) { rpActivePopup.remove(); rpActivePopup = null; } }
-function rpOpenPopup(lngLat, html, options) {
-  rpCloseActivePopup();
-  rpActivePopup = new mapboxgl.Popup({ closeOnClick: false, className: 'rp-teaser-popup', ...options }).setLngLat(lngLat).setHTML(html).addTo(map);
-  rpActivePopup.on('close', () => { rpActivePopup = null; });
-  return rpActivePopup;
-}
 
 function rpFormatBadge(s) { return `<span class="rp-format-badge">${s.formatIcon} ${s.format}</span>`; }
 function rpRenderMedia(s, imgClass) {
@@ -1709,27 +1688,6 @@ function rpRenderMedia(s, imgClass) {
   }
   const attrs = s.media.autoplay ? 'autoplay muted loop playsinline' : 'controls playsinline';
   return `<div class="rp-media-embed"><video src="${s.media.url}" ${attrs} poster="${s.image || ''}"></video></div>`;
-}
-function rpBuildTeaserHTML(s) {
-  return `<div class="rp-teaser-popup-inner">
-    <div class="rp-teaser-series-tag">Stories of Communities Thriving Together</div>
-    ${rpRenderMedia(s, 'rp-teaser-image')}
-    <div class="rp-teaser-body">
-      ${rpFormatBadge(s)}
-      <h3>${s.title}</h3>
-      <p class="rp-teaser-geo">${s.geography}</p>
-      <p class="rp-excerpt">${s.excerpt}</p>
-      <a class="rp-link" href="${s.link}" target="_blank" rel="noopener">${s.linkLabel || 'Read full story →'}</a>
-    </div>
-  </div>`;
-}
-function rpOpenStoryTeaser(feature) {
-  const storyIds = JSON.parse(feature.properties.storyIds);
-  const story = rpStoryById(storyIds[0]);
-  const popup = rpOpenPopup(feature.geometry.coordinates, rpBuildTeaserHTML(story), { closeButton: true, maxWidth: '360px', offset: 14 });
-  rpHoldNationalCollapsed('teaser', true);
-  popup.on('close', () => rpHoldNationalCollapsed('teaser', false));
-  return popup;
 }
 function rpRenderCards(storyList) {
   return storyList.map((s) => `<div class="rp-card">${rpRenderMedia(s, 'rp-card-image')}<div class="rp-card-body">${rpFormatBadge(s)}<h3>${s.title}</h3><p class="rp-excerpt">${s.excerpt}</p><a class="rp-link" href="${s.link}" target="_blank" rel="noopener">${s.linkLabel || 'Read full story →'}</a></div></div>`).join('');
@@ -1746,7 +1704,7 @@ function rpSetStoryPanelOpen(open) {
   rpHoldNationalCollapsed('story-panel', open);
 }
 
-// Opening a story (teaser popup, cluster panel, or tour) auto-collapses the
+// Opening a story (story side panel or tour) auto-collapses the
 // Nationwide Influence panel to give the story more room (client ask), then
 // restores it once nothing story-related is open — only if we collapsed it
 // and the user hasn't reopened it themselves. Skipped on mobile, where the
@@ -1762,7 +1720,7 @@ function rpHoldNationalCollapsed(key, held) {
     return;
   }
   rpNationalHolds.delete(key);
-  // Deferred so a hand-off (teaser closing as the cluster panel opens) doesn't flash the panel.
+  // Deferred so a hand-off between holders doesn't flash the panel.
   setTimeout(() => {
     if (rpNationalHolds.size || !rpNationalAutoCollapsed) return;
     rpNationalAutoCollapsed = false;
@@ -1775,7 +1733,6 @@ function rpShowExitBtn() { document.getElementById('rp-exit-tour-btn').classList
 function rpHideExitBtn() { document.getElementById('rp-exit-tour-btn').classList.remove('visible'); }
 
 function rpOpenClusterPanel(geoId) {
-  rpCloseActivePopup();
   rpClusterOpen = true;
   rpRenderStoryPanel({ geoId, mode: 'cluster' });
   rpSetStoryPanelOpen(true);
@@ -1817,7 +1774,6 @@ function rpRenderStoryPanel({ geoId, mode, stepIndex: si, totalSteps }) {
 }
 
 function rpStartTour() {
-  rpCloseActivePopup();
   rpTourActive = true; rpClusterOpen = false; rpStepIndex = 0;
   rpHideBanner(); rpShowExitBtn();
   map.dragPan.disable(); map.scrollZoom.disable(); map.boxZoom.disable(); map.doubleClickZoom.disable(); map.touchZoomRotate.disable(); map.keyboard.disable(); map.dragRotate.disable();
@@ -1871,15 +1827,12 @@ onMapReady(() => {
     map.on('mouseleave', 'rp-story-points-layer', () => (map.getCanvas().style.cursor = ''));
     map.on('click', 'rp-story-points-layer', (e) => {
       if (rpTourActive) return;
-      const feature = e.features[0];
-      const storyIds = JSON.parse(feature.properties.storyIds);
-      if (storyIds.length > 1) rpOpenClusterPanel(feature.properties.geoId);
-      else rpOpenStoryTeaser(feature);
+      // Every location — one story or several — opens the same side panel (client ask, round 3).
+      rpOpenClusterPanel(e.features[0].properties.geoId);
     });
     map.on('click', (e) => {
       const hits = map.queryRenderedFeatures(e.point, { layers: ['rp-story-points-layer', 'network-pins-local', 'network-pins-statewide'] });
       if (hits.length > 0) return;
-      rpCloseActivePopup();
       if (rpClusterOpen) rpCloseClusterPanel();
     });
 

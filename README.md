@@ -57,8 +57,8 @@ prototype when presenting — see [`live-copy/README.md`](live-copy/README.md).
   cluster test cases; New Hampshire is a statewide, non-regional example).
 - `js/map-common.js` — shared map setup: base layers, story-marker icon
   registration (book/person × 3 colors), the multi-story hotspot pulse, the
-  blob/circle shading layers, media-embed rendering, and the teaser
-  popup/story-card markup.
+  blob/circle shading layers, media-embed rendering, and the story-card
+  markup.
 - `js/mode-story.js` — the unified story layer: self-guided base + opt-in
   guided tour, the multi-story cluster panel, and the dynamic map-resize
   behavior when a panel is open. See "How it works" below.
@@ -76,7 +76,7 @@ prototype when presenting — see [`live-copy/README.md`](live-copy/README.md).
 ## How it works (merged Guided Tour + Self-Guided)
 
 1. **Self-guided is the default.** On load, the map is fully navigable and
-   story markers are clickable for a teaser popup — never an auto-advancing
+   story markers open the story side panel on click — never an auto-advancing
    walkthrough.
 2. **The guided tour is an explicit, visible choice.** A banner
    ("🧭 Prefer a guided walkthrough? → Take a guided tour of stories") is
@@ -92,9 +92,10 @@ prototype when presenting — see [`live-copy/README.md`](live-copy/README.md).
    alone won't stay a reliable signal once the real map is showing many more
    categories, so this needs to read as "different kind of thing" regardless
    of palette.
-5. **A single-story location opens a teaser popup; a multi-story location
-   opens the cluster panel** listing every story there, without locking the
-   map. The guided tour advances per **location**, not per story, using
+5. **Every story location opens the same side panel** listing the
+   story or stories there, without locking the map. (Single-story locations
+   used to open a small floating teaser popup instead; per round 3 client
+   feedback they now use the side panel too, for consistency.) The guided tour advances per **location**, not per story, using
    that same list view for every step — a multi-story stop just shows more
    than one card.
 
@@ -179,7 +180,7 @@ topic, matching how the feedback was organized:
 - Stories can carry an optional `media: { type: "youtube"|"video", url,
   autoplay }` field (`js/data.js`); when present, `js/map-common.js`
   `renderMedia()` embeds a real player in place of the static image, in
-  both the single-story popup and cluster/tour cards.
+  the story panel's cards (self-guided and tour alike).
 - The South Texas real story embeds a real YouTube video (found via public
   search, not invented) as the live example: default is click-to-play, no
   autoplay.
@@ -201,15 +202,15 @@ topic, matching how the feedback was organized:
   is a needed input from the client before this can go further.
 
 **Layout / responsiveness**
-- **Round 3 (2026-10-01):** opening a story — single-story teaser,
-  cluster panel, or guided tour — auto-collapses the Nationwide Influence
+- **Round 3 (2026-10-01):** opening a story — the story side panel or
+  the guided tour — auto-collapses the Nationwide Influence
   panel to give the story more room, and reopens it on close (only if it
   was auto-collapsed and the user hasn't reopened it themselves; skipped
-  on mobile). The story panel is wider (480px, was 360px) and so is the
-  single-story teaser (340px, was 240px). The tour banner and Design
+  on mobile). The story panel is wider (480px, was 360px), and every
+  location — single- or multi-story — now opens it. The tour banner and Design
   Options bar now center on the visible map area instead of the screen.
 - Cluster/tour panel bodies already scroll on overflow (`.guided-panel`'s
-  existing `overflow-y: auto`); same for the single-story popup.
+  existing `overflow-y: auto`).
 - This prototype had **zero** `@media` rules before this round — the
   client's note that panels "already default to collapsed on mobile"
   describes the live production site, not this static demo. This round

@@ -319,39 +319,6 @@ function renderMedia(story, imgClass) {
   return `<div class="story-media-embed"><video src="${story.media.url}" ${attrs} poster="${story.image || ""}"></video></div>`;
 }
 
-// Single-story floating popup (self-guided click on a location with exactly
-// one story). Multi-story locations use the cluster panel instead — see
-// js/mode-story.js.
-function buildTeaserHTML(story) {
-  return `
-    <div class="teaser-popup">
-      <div class="teaser-series-tag">Stories of Communities Thriving Together</div>
-      ${renderMedia(story, "teaser-image")}
-      <div class="teaser-body">
-        ${formatBadge(story)}
-        <h3>${story.title}</h3>
-        <p class="teaser-geo">${story.geography}</p>
-        <p class="teaser-excerpt">${story.excerpt}</p>
-        <a class="teaser-link" href="${story.link}" target="_blank" rel="noopener">${story.linkLabel || "Read full story →"}</a>
-      </div>
-    </div>
-  `;
-}
-
-function openStoryTeaser(map, feature) {
-  const storyIds = JSON.parse(feature.properties.storyIds);
-  const story = getStoryById(storyIds[0]);
-  const popup = openPopup(map, feature.geometry.coordinates, buildTeaserHTML(story), {
-    closeButton: true,
-    maxWidth: "360px",
-    offset: 14,
-    className: "teaser-popup-wrap",
-  });
-  holdInfluenceCollapsed("teaser", true);
-  popup.on("close", () => holdInfluenceCollapsed("teaser", false));
-  return popup;
-}
-
 // Stacked list of story cards — shared by the cluster panel (self-guided
 // click on a multi-story location) and every guided-tour step, so a
 // multi-story stop shows "everything going on here" in one place instead of

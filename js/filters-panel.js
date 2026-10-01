@@ -97,7 +97,7 @@ function wireStoryLayerToggle() {
   });
 }
 
-// Opening a story (teaser popup, cluster panel, or tour) auto-collapses the
+// Opening a story (story side panel or tour) auto-collapses the
 // Nationwide Influence panel to give the story more room (client ask), then
 // restores it once nothing story-related is open. Each caller holds/releases
 // under its own key; the panel is only reopened if *we* collapsed it and the
@@ -117,8 +117,8 @@ function holdInfluenceCollapsed(key, held) {
     return;
   }
   influenceHolds.delete(key);
-  // Deferred so a hand-off (the teaser closing as the cluster panel opens)
-  // doesn't flash the panel open and shut again.
+  // Deferred so a hand-off between holders doesn't flash the panel open
+  // and shut again.
   setTimeout(() => {
     if (influenceHolds.size || !influenceAutoCollapsed) return;
     influenceAutoCollapsed = false;

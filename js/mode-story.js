@@ -4,7 +4,8 @@
 // internal team feedback:
 //
 //   1. Defaults to self-guided: on load the map is fully navigable and
-//      story markers (open book icon) are clickable for a teaser popup. No
+//      story markers (open book icon) are clickable to open the story side
+//      panel. No
 //      auto-advancing walkthrough starts on its own.
 //   2. The guided tour is an explicit, visible choice — a banner/button
 //      ("Take a guided tour of stories") is shown as soon as the map loads,
@@ -103,13 +104,10 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   function wireStoryClicks() {
     map.on("click", "story-points-layer", (e) => {
       if (tourActive) return; // panel/Back/Next drive the map while touring
-      const feature = e.features[0];
-      const storyIds = JSON.parse(feature.properties.storyIds);
-      if (storyIds.length > 1) {
-        openClusterPanel(feature.properties.geoId);
-      } else {
-        openStoryTeaser(map, feature);
-      }
+      // Every location — one story or several — opens the same side panel,
+      // for consistency (client ask, round 3). A single-story location just
+      // renders a list of one.
+      openClusterPanel(e.features[0].properties.geoId);
     });
     map.on("mouseenter", "story-points-layer", () => (map.getCanvas().style.cursor = tourActive ? "" : "pointer"));
     map.on("mouseleave", "story-points-layer", () => (map.getCanvas().style.cursor = ""));
@@ -129,8 +127,8 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   }
 
   // ----------------------------- Cluster panel ------------------------------
-  // Self-guided-only: a multi-story location opens one panel listing every
-  // story there ("here's everything going on in X"), without locking the
+  // Self-guided-only: clicking any story location opens one panel listing
+  // every story there ("here's everything going on in X"), without locking the
   // map — requirement #1 (fully navigable self-guided) still applies.
   function openClusterPanel(geoId) {
     closeActivePopup();
