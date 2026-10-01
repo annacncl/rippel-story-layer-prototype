@@ -54,6 +54,15 @@ different about running it on the real map instead of the recreation.
   button, reusing the live site's own `.network-toggle-btn` styling
   exactly rather than introducing new button chrome.
 
+- **Story icons take click priority over what's under them.** Mapbox fires
+  every layer's click handler at the cursor, so clicking a story icon on
+  top of a network pin used to also open the pin's popup and select the
+  county underneath. The story layer now claims those clicks before
+  Mapbox sees them (`rpWireStoryClickPriority()`), so the real site's code
+  stays untouched. Clicks on a pin that isn't under a story icon behave
+  exactly as before. A pin fully hidden under a story icon is reachable
+  by zooming in until they separate.
+
 ## Setup
 
 Same as the top-level prototype — no build step, just a static server:

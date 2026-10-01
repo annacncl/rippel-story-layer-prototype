@@ -1800,6 +1800,38 @@ function rpOnStoryToggle(active) {
   if (active) rpShowBanner(); else rpHideBanner();
 }
 
+// --------------------- Story icon click priority ---------------------
+// Mapbox fires every layer's click handler under the cursor, so a click on
+// a story icon sitting on/near a network pin also opened the pin's popup and
+// the real site's county selection + tooltip (its own guard only knows about
+// network pins). To keep the real site's code untouched, story clicks are
+// claimed *before* Mapbox sees them: a window capture-phase listener checks
+// whether a story icon is the topmost clickable feature at the click point
+// and, if so, stops the event and opens the story panel itself. Clicks where
+// a network pin (or bare map) is on top pass through to the real site as
+// before.
+function rpWireStoryClickPriority() {
+  const canvas = map.getCanvas();
+  const CLICK_TOLERANCE = 3; // px, mirrors Mapbox's own drag-vs-click threshold
+  let down = null;
+  window.addEventListener('mousedown', (e) => { down = e.target === canvas ? [e.clientX, e.clientY] : null; }, true);
+  window.addEventListener('click', (e) => {
+    if (e.target !== canvas || rpTourActive) return;
+    if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) > CLICK_TOLERANCE) return; // a drag, not a click
+    const rect = canvas.getBoundingClientRect();
+    const point = [e.clientX - rect.left, e.clientY - rect.top];
+    const layers = ['rp-story-points-layer', 'network-pins-local', 'network-pins-statewide'].filter((id) => map.getLayer(id));
+    const top = map.queryRenderedFeatures(point, { layers })[0]; // topmost-rendered first
+    if (!top || top.layer.id !== 'rp-story-points-layer') return;
+    e.stopPropagation();
+    // The suppressed map click would normally have closed these; close them via their own UI.
+    document.querySelectorAll('.network-popup .mapboxgl-popup-close-button').forEach((b) => b.click());
+    document.getElementById('tooltip').classList.remove('visible');
+    // Every location — one story or several — opens the same side panel (client ask, round 3).
+    rpOpenClusterPanel(top.properties.geoId);
+  }, true);
+}
+
 // --------------------------- Layer setup ---------------------------
 onMapReady(() => {
   map.addSource('rp-regions', { type: 'geojson', data: RP_REGIONS_GEOJSON });
@@ -1825,11 +1857,7 @@ onMapReady(() => {
 
     map.on('mouseenter', 'rp-story-points-layer', () => (map.getCanvas().style.cursor = 'pointer'));
     map.on('mouseleave', 'rp-story-points-layer', () => (map.getCanvas().style.cursor = ''));
-    map.on('click', 'rp-story-points-layer', (e) => {
-      if (rpTourActive) return;
-      // Every location — one story or several — opens the same side panel (client ask, round 3).
-      rpOpenClusterPanel(e.features[0].properties.geoId);
-    });
+    rpWireStoryClickPriority();
     map.on('click', (e) => {
       const hits = map.queryRenderedFeatures(e.point, { layers: ['rp-story-points-layer', 'network-pins-local', 'network-pins-statewide'] });
       if (hits.length > 0) return;
