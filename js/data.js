@@ -291,6 +291,24 @@ const STORIES = [
     image: "https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png",
     link: "https://rippel.org/foxcities/",
   },
+  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01):
+  // the Leonard Parker Pool Institute for Health's own YouTube video. Listed first
+  // at Lehigh Valley (client ask). Makes Lehigh Valley a 4-story cluster and mixes partner-produced video in with
+  // Rippel-produced podcasts/writing.
+  {
+    id: "lehigh-valley-video-franklin-park",
+    geoId: "lehigh-valley",
+    geography: "Lehigh Valley, PA",
+    title: "Welcome to Franklin Park",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "A video from the Leonard Parker Pool Institute for Health introducing Franklin Park.",
+    image: "https://img.youtube.com/vi/Os8kum9GgJE/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Os8kum9GgJE", autoplay: false },
+    link: "https://www.youtube.com/watch?v=Os8kum9GgJE",
+    linkLabel: "Watch on YouTube →",
+  },
   {
     id: "lehigh-valley-podcast-shaak",
     geoId: "lehigh-valley",
@@ -326,24 +344,6 @@ const STORIES = [
       "When Leonard Parker Pool set out to build a better health system for the Lehigh Valley in the 1960s, he laid the groundwork for a hospital network now stewarding equitable health for its entire community.",
     image: "https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png",
     link: "https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/",
-  },
-  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01):
-  // the Leonard Parker Pool Institute for Health's own YouTube video. Makes
-  // Lehigh Valley a 4-story cluster and mixes partner-produced video in with
-  // Rippel-produced podcasts/writing.
-  {
-    id: "lehigh-valley-video-franklin-park",
-    geoId: "lehigh-valley",
-    geography: "Lehigh Valley, PA",
-    title: "Welcome to Franklin Park",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "A video from the Leonard Parker Pool Institute for Health introducing Franklin Park.",
-    image: "https://img.youtube.com/vi/Os8kum9GgJE/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Os8kum9GgJE", autoplay: false },
-    link: "https://www.youtube.com/watch?v=Os8kum9GgJE",
-    linkLabel: "Watch on YouTube →",
   },
   // Real content, found via public search (2026-08-31): Rippel's "Unsung
   // Stewards" podcast, Season 5 Episode 2, featuring Yvonne Pacheco of
