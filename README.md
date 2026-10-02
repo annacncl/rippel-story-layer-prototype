@@ -312,6 +312,36 @@ topic, matching how the feedback was organized:
   built here; needs a design answer before it's worth prototyping.
 - The Sept 4 follow-up call logistics.
 
+## Round 3 (Oct 2026): partner media + design pass
+
+`live-copy/` is the design reference for this round (it's what the live
+map actually looks like); every change is mirrored here too.
+
+- **Partner videos** (Rippel comms, 2026-10-01) — see "Where the story
+  content comes from"; "Welcome to Franklin Park" leads Lehigh Valley.
+- **One side panel for every location**, single- or multi-story; the
+  floating teaser popup is gone. Opening it auto-collapses the Nationwide
+  Influence panel (restored on close) and the panel is 480px wide.
+- **Story markers are a solid badge** — colored rounded square, white
+  glyph, white rim + shadow, ~30px at "Small" — instead of a bare outlined
+  glyph that was smaller and darker than the network pins. Multi-story
+  locations get a white "+" chip on the corner.
+- **The panel is tied to its place**: the selected location gets a white
+  selection ring, and the map pans only if the location would otherwise
+  sit hidden under the panel or against an edge.
+- **One card system**: every card has the same 16:9 media slot; only the
+  cue changes — play button (video; the real player loads on click),
+  play + "on <source> ↗" (link-out video), "Listen" chip (podcast),
+  nothing (written). Stories with no photo get a designed fallback tile.
+  Link text defaults by format ("Listen to the episode →", etc.).
+- `live-copy/` only: story icons take click priority over pins/counties
+  underneath, and Design Options has a **Pin size** switch (Current /
+  Smaller) to compare a possible change to the live map's own pins.
+
+Still open: the prototype controls (tour banner, Design Options, Network
+Relationships) crowd the map; busy locations would read better with one
+featured card + a compact list; podcast headshots/audio from Rippel.
+
 ## Network relationships (concept) — built in `live-copy/` only
 
 A new, separate client ask: a layer showing "relationships between

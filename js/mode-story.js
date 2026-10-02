@@ -26,7 +26,8 @@
 //     open question about tour sequencing once a location can hold several
 //     stories.
 //   - An intro/preamble step now precedes Story 1, and the active tour stop
-//     gets a highlight ring (js/map-common.js `showTourHighlight`) so a
+//     gets a highlight ring (js/map-common.js `showTourHighlight`; also
+//     marks the selected location while the story panel is open) so a
 //     future narration track has an obvious visual anchor. No actual
 //     voiceover audio is included — there's no narration recording to
 //     embed; see README for what's still needed from the client here.
@@ -135,11 +136,30 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
     clusterOpen = true;
     renderStoryPanel(document.getElementById(panelId), { geoId, mode: "cluster" });
     setStoryPanelOpen(true);
+    // Tie the panel back to its place (round 3): ring the selected location
+    // (same ring the tour uses for its active stop), and once the map has
+    // resized to make room for the panel, pan only if the location ended up
+    // hidden or jammed against an edge — no jarring re-center when it's
+    // already comfortably in view.
+    const center = STORY_GEOGRAPHIES[geoId].center;
+    showTourHighlight(map, center);
+    setTimeout(() => revealLocation(center), 240);
   }
   function closeClusterPanel() {
     clusterOpen = false;
     document.getElementById(panelId).classList.add("hidden");
     setStoryPanelOpen(false);
+    hideTourHighlight();
+  }
+  function revealLocation(center) {
+    const MARGIN = 60;
+    const { x, y } = map.project(center);
+    const canvas = map.getCanvas();
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    if (x < MARGIN || y < MARGIN || x > w - MARGIN || y > h - MARGIN) {
+      map.easeTo({ center, duration: 600 });
+    }
   }
 
   // ------------------------------ Guided tour ------------------------------

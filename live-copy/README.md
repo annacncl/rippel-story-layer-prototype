@@ -26,7 +26,7 @@ into three clearly-marked blocks (search `STORY LAYER PROTOTYPE` in
 appended after the real site's own script. Delete those three blocks to
 get back to a pristine copy of the live site.
 
-The story layer content itself (5 locations, 8 stories, the Design
+The story layer content itself (5 locations, 11 stories, the Design
 Variants panel) is the same content as the top-level prototype — see
 `../README.md` for the full write-up of what it does, what's mock vs.
 real, and the client feedback it responds to. This file only covers what's
@@ -62,6 +62,11 @@ different about running it on the real map instead of the recreation.
   stays untouched. Clicks on a pin that isn't under a story icon behave
   exactly as before. A pin fully hidden under a story icon is reachable
   by zooming in until they separate.
+
+- **Design Options → Pin size** (Current / Smaller) resizes the real
+  site's network pins from the story-layer block (`rpApplyPinSize()`),
+  for a side-by-side on whether the live map's pins should shrink.
+  "Current" is exactly what production shows today.
 
 ## Setup
 

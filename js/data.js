@@ -235,11 +235,12 @@ const NATIONWIDE_NETWORKS = [
 // Story records. Lehigh Valley (4 stories), South Texas (3) and Inland
 // Empire (2) are the multi-story "cluster" test locations. Each story may carry an optional
 // `media` field ({type: "youtube"|"video"|"external", url, autoplay}) — when
-// present, the teaser/cluster card embeds a real player instead of a static
-// image. "external" is for partner video with no official embed player (e.g.
+// present, the card shows a play button and loads the real player on
+// click. "external" is for partner video with no official embed player (e.g.
 // TV-station clips): it shows the thumbnail with a play overlay that opens
 // the source page in a new tab. Optional `linkLabel` overrides the default
-// "Read full story →" text (video-only stories link to the video itself).
+// per-format link text (see storyLinkLabel()); `image` is optional — a
+// story without one gets a designed fallback tile, not a placeholder.
 // ---------------------------------------------------------------------------
 const STORIES = [
   {
@@ -318,7 +319,10 @@ const STORIES = [
     formatIcon: "🎙️",
     excerpt:
       "Samantha Shaak, PhD, Executive Director of the Leonard Parker Pool Institute for Health, explains how stewardship starts with connecting the dots between people, partners, and place.",
-    image: "img/samantha-shaak.webp",
+    // Cropped from the episode artwork (img/samantha-shaak.webp) to drop its
+    // baked-in frame, which read as letterboxing in the 16:9 card slot.
+    image: "img/samantha-shaak-photo.jpg",
+    imagePosition: "center 30%",
     link: "https://rippel.org/podcasts/?podcast-id=7691",
   },
   {
@@ -330,7 +334,6 @@ const STORIES = [
     formatIcon: "🎙️",
     excerpt:
       "Nate Boateng, VP for Community Impact and Engagement at Valley Health Partners, traces his stewardship journey as an Allentown native building coalitions among the region's community health centers.",
-    image: "https://placehold.co/480x300/4b6b8a/ffffff?text=Nate+Boateng",
     link: "https://rippel.org/podcasts/?podcast-id=5337",
   },
   {
@@ -405,7 +408,6 @@ const STORIES = [
     formatIcon: "📝",
     excerpt:
       "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
-    image: "https://placehold.co/480x300/2f6b4f/ffffff?text=Statewide+(placeholder)",
     link: "#",
   },
 ];
