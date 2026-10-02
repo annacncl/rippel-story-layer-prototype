@@ -150,6 +150,15 @@ multiple statewide networks in the same state share one representative
 coordinate, so a same-state relationship is called out as "(same map
 point)" instead of drawing a zero-length line to itself.
 
+Cleanup (Oct 2026): the panel now sits beside the real left sidebar
+instead of covering its "Regional Networks and Initiatives" list; lines
+and rings hide with the real "Show Networks & Initiatives" toggle (and
+come back with it, selection intact); rings scale with Design Options'
+Pin size so they stay on the pin head; and clicking empty map clears the
+selection, like every other click-away. Still open, pending whether the
+client pursues this concept: no marker on the selected network itself,
+and the mode defaults to Off, so a first pin click shows nothing new.
+
 This only exists here, not in the top-level recreation — it needs the real
 per-org `networks` array, and inventing that structure with mock data
 would just be fake relationships that don't tell the client anything real.

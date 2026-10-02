@@ -460,7 +460,7 @@
     position: fixed; bottom: 64px; left: 12px; z-index: 120;
     background: rgba(26,36,46,0.96); border: 1px dashed #d68a2e;
     border-radius: var(--radius-lg); padding: 10px 14px; font-size: 11px;
-    color: var(--text); max-width: 260px;
+    color: var(--text); max-width: 260px; transition: left 0.3s ease;
   }
   .rp-nr-panel.rp-hidden { display: none; }
   .rp-nr-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #f5b866; white-space: nowrap; }
@@ -1955,6 +1955,7 @@ onMapReady(() => {
       const hits = map.queryRenderedFeatures(e.point, { layers: ['rp-story-points-layer', 'network-pins-local', 'network-pins-statewide'] });
       if (hits.length > 0) return;
       if (rpClusterOpen) rpCloseClusterPanel();
+      if (rpSelectedNetworkName) rpClearNetworkRel(); // same "click away to dismiss" as everything else
     });
 
     document.dispatchEvent(new Event('rp-story-layer-ready'));
@@ -2005,6 +2006,7 @@ function rpApplyIconAndColor() {
 function rpApplyPinSize() {
   const value = RP_PIN_SIZE_OPTS.find((s) => s.id === rpVariantState.pinSize).value;
   ['network-pins-local', 'network-pins-statewide'].forEach((id) => { if (map.getLayer(id)) map.setLayoutProperty(id, 'icon-size', value); });
+  rpSyncNetworkRelRings();
 }
 function rpApplySize() { map.setLayoutProperty('rp-story-points-layer', 'icon-size', RP_SIZE_OPTS.find((s) => s.id === rpVariantState.size).value); }
 function rpRenderVariantGroup(el, options, current, onPick) {
@@ -2108,6 +2110,20 @@ function rpSelectNetwork(name) {
 
   rpRenderNetworkRelResults(name, rels, geoRels, origin);
 }
+// The ring sits on the pin's head, which is a fixed pixel height above the
+// pin's anchor -- so its offset (and size) scale with Design Options' Pin size.
+const RP_PIN_HEAD_OFFSET = 20; // px above the anchor at icon-size 1.0
+function rpSyncNetworkRelRings() {
+  if (!map.getLayer('rp-network-rel-points')) return;
+  const scale = map.getLayoutProperty('network-pins-local', 'icon-size') || 1;
+  map.setPaintProperty('rp-network-rel-points', 'circle-translate', [0, -RP_PIN_HEAD_OFFSET * scale]);
+  map.setPaintProperty('rp-network-rel-points', 'circle-radius', 10 * scale);
+}
+function rpSyncNetworkRelVisibility() {
+  const vis = map.getLayoutProperty('network-pins-local', 'visibility') === 'none' ? 'none' : 'visible';
+  ['rp-network-rel-lines', 'rp-network-rel-points'].forEach((id) => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
+}
+
 function rpClearNetworkRel() {
   rpSelectedNetworkName = null;
   if (map.getSource('rp-network-rel-points')) map.getSource('rp-network-rel-points').setData({ type: 'FeatureCollection', features: [] });
@@ -2135,6 +2151,14 @@ onMapReady(() => {
       'circle-stroke-width': 3, 'circle-stroke-color': '#f59e0b',
       'circle-translate': [0, -20], 'circle-translate-anchor': 'viewport',
     } });
+  rpSyncNetworkRelRings();
+
+  // Follow the real "Show Networks & Initiatives" toggle: with the pins
+  // hidden, lines/rings pointing at them are meaningless. Hidden rather than
+  // cleared, so the selection comes back when the pins do. Listens to the
+  // real button (after its own handler runs) rather than editing its code.
+  document.getElementById('network-toggle-btn').addEventListener('click', () => setTimeout(rpSyncNetworkRelVisibility, 0));
+  rpSyncNetworkRelVisibility();
 
   ['network-pins-local', 'network-pins-statewide'].forEach((layerId) => {
     map.on('click', layerId, (e) => rpSelectNetwork(e.features[0].properties.name));
@@ -2166,6 +2190,22 @@ function rpInitNetworkRelPanel() {
   render();
 }
 rpInitNetworkRelPanel();
+
+// Keep the concept panel (and its collapsed button) beside the real left
+// sidebar instead of on top of it -- it was covering the very "Regional
+// Networks and Initiatives" list its hint tells you to click. Watches the
+// sidebar's own "collapsed" class rather than touching the real toggle code.
+// On mobile the sidebar is a full overlay, so the panel stays put there.
+function rpPositionNetworkRelPanel() {
+  const sidebar = document.getElementById('sidebar');
+  const open = !sidebar.classList.contains('collapsed') && window.innerWidth > 768;
+  const left = (open ? sidebar.offsetWidth : 0) + 12 + 'px';
+  document.getElementById('rp-nr-panel').style.left = left;
+  document.getElementById('rp-nr-toggle-collapsed').style.left = left;
+}
+new MutationObserver(rpPositionNetworkRelPanel).observe(document.getElementById('sidebar'), { attributes: true, attributeFilter: ['class'] });
+window.addEventListener('resize', rpPositionNetworkRelPanel);
+rpPositionNetworkRelPanel();
 </script>
 <!-- =================== END STORY LAYER PROTOTYPE (new) ==================== -->
 </body>
