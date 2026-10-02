@@ -1802,7 +1802,24 @@ function rpRevealLocation(center) {
   }
 }
 
+// Closing the story panel puts the map back where it was before the panel
+// opened (client ask) -- undoing the reveal pan -- unless the user moved
+// the map themselves in the meantime, in which case their view is kept.
+// Switching between locations while the panel stays open keeps the
+// original "before" view.
+let rpViewBeforePanel = null;
+let rpUserMovedMap = false;
+map.on('movestart', (e) => { if (e.originalEvent) rpUserMovedMap = true; });
+function rpRestoreViewBeforePanel() {
+  if (rpViewBeforePanel && !rpUserMovedMap) map.easeTo({ ...rpViewBeforePanel, duration: 700 });
+  rpViewBeforePanel = null;
+}
+
 function rpOpenClusterPanel(geoId) {
+  if (!rpViewBeforePanel) {
+    rpViewBeforePanel = { center: map.getCenter(), zoom: map.getZoom() };
+    rpUserMovedMap = false;
+  }
   rpClusterOpen = true;
   rpRenderStoryPanel({ geoId, mode: 'cluster' });
   rpSetStoryPanelOpen(true);
@@ -1812,7 +1829,7 @@ function rpOpenClusterPanel(geoId) {
   rpShowTourHighlight(center);
   rpRevealLocation(center);
 }
-function rpCloseClusterPanel() { rpClusterOpen = false; rpSetStoryPanelOpen(false); rpHideTourHighlight(); }
+function rpCloseClusterPanel() { rpClusterOpen = false; rpSetStoryPanelOpen(false); rpHideTourHighlight(); rpRestoreViewBeforePanel(); }
 
 function rpRenderStep() {
   const geoId = rpTourGeoIds[rpStepIndex];
@@ -1849,6 +1866,7 @@ function rpRenderStoryPanel({ geoId, mode, stepIndex: si, totalSteps }) {
 }
 
 function rpStartTour() {
+  rpViewBeforePanel = null; // the tour has its own exit view
   rpTourActive = true; rpClusterOpen = false; rpStepIndex = 0;
   rpHideBanner(); rpShowExitBtn();
   map.dragPan.disable(); map.scrollZoom.disable(); map.boxZoom.disable(); map.doubleClickZoom.disable(); map.touchZoomRotate.disable(); map.keyboard.disable(); map.dragRotate.disable();

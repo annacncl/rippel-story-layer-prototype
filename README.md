@@ -328,7 +328,9 @@ map actually looks like); every change is mirrored here too.
   locations get a white "+" chip on the corner.
 - **The panel is tied to its place**: the selected location gets a white
   selection ring, and the map pans only if the location would otherwise
-  sit hidden under the panel or against an edge.
+  sit hidden under the panel or against an edge. Closing the panel
+  returns the map to the view it had before the panel opened, unless the
+  user panned/zoomed in the meantime (then their view is kept).
 - **One card system**: every card has the same 16:9 media slot; only the
   cue changes — play button (video; the real player loads on click),
   play + "on <source> ↗" (link-out video), "Listen" chip (podcast),

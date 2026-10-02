@@ -131,8 +131,29 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   // Self-guided-only: clicking any story location opens one panel listing
   // every story there ("here's everything going on in X"), without locking the
   // map — requirement #1 (fully navigable self-guided) still applies.
+  // Closing the story panel puts the map back where it was before the panel
+  // opened (client ask) — undoing the reveal pan and the panel's resize —
+  // unless the user moved the map themselves in the meantime. Switching
+  // locations while the panel stays open keeps the original "before" view.
+  let viewBeforePanel = null;
+  let userMovedMap = false;
+  map.on("movestart", (e) => {
+    if (e.originalEvent) userMovedMap = true;
+  });
+  function restoreViewBeforePanel() {
+    const view = viewBeforePanel;
+    viewBeforePanel = null;
+    if (!view || userMovedMap) return;
+    // After the map has grown back to full width (setStoryPanelOpen's resize).
+    setTimeout(() => map.easeTo({ ...view, duration: 700 }), 240);
+  }
+
   function openClusterPanel(geoId) {
     closeActivePopup();
+    if (!viewBeforePanel) {
+      viewBeforePanel = { center: map.getCenter(), zoom: map.getZoom() };
+      userMovedMap = false;
+    }
     clusterOpen = true;
     renderStoryPanel(document.getElementById(panelId), { geoId, mode: "cluster" });
     setStoryPanelOpen(true);
@@ -150,6 +171,7 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
     document.getElementById(panelId).classList.add("hidden");
     setStoryPanelOpen(false);
     hideTourHighlight();
+    restoreViewBeforePanel();
   }
   function revealLocation(center) {
     const MARGIN = 60;
@@ -243,6 +265,7 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   // Explicit, user-chosen entry point — never triggered automatically.
   function startTour() {
     closeActivePopup();
+    viewBeforePanel = null; // the tour has its own exit view
     tourActive = true;
     clusterOpen = false;
     stepIndex = 0;
