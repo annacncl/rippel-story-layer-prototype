@@ -401,6 +401,21 @@
   .rp-media-fallback { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #1f3a2b 0%, #2f6b4f 100%); }
   .rp-media-fallback-icon { font-size: 34px; line-height: 1; }
   .rp-media-fallback-geo { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
+  /* Podcast audio: episode art stays, native audio bar along the bottom. */
+  .rp-media-audio audio { position: absolute; left: 8px; right: 8px; bottom: 8px; width: calc(100% - 16px); height: 36px; inset: auto 8px 8px 8px; object-fit: initial; }
+  /* "Open the full experience" cue: expand glyph instead of the play triangle. */
+  .rp-media-expand::after { content: "⤢"; border: 0; left: 50%; font-size: 24px; line-height: 1; color: #fff; }
+  /* Large viewer over the map for a full multimedia piece. */
+  .rp-viewer { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15,17,20,0.72); backdrop-filter: blur(3px); }
+  .rp-viewer-frame { display: flex; flex-direction: column; width: min(1280px, 100%); height: min(860px, 100%); background: #0f1114; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .rp-viewer-bar { display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 18px; background: #1a1d22; color: #e8eaed; font-size: 13px; flex-shrink: 0; }
+  .rp-viewer-title { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rp-viewer-newtab { color: #9aa3ad; text-decoration: none; font-size: 12px; white-space: nowrap; }
+  .rp-viewer-newtab:hover { color: #fff; text-decoration: underline; }
+  .rp-viewer-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+  .rp-viewer-close:hover, .rp-viewer-close:focus-visible { background: rgba(255,255,255,0.12); }
+  .rp-viewer-frame iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+  @media (max-width: 768px) { .rp-viewer { padding: 0; } .rp-viewer-frame { border-radius: 0; height: 100%; } .rp-viewer-newtab { display: none; } }
   .rp-nav {
     display: flex; justify-content: space-between; position: sticky; bottom: 0;
     margin: 20px -22px 0; padding: 12px 22px 20px;
@@ -585,6 +600,7 @@
   <div class="rp-dv-group"><span>Story size</span><div id="rp-dv-size"></div></div>
   <div class="rp-dv-group"><span>Pin size</span><div id="rp-dv-pin-size"></div></div>
   <div class="rp-dv-group"><span>Shading</span><div id="rp-dv-shading"></div></div>
+  <div class="rp-dv-group"><span>Podcast player</span><div id="rp-dv-podcast"></div></div>
   <button id="rp-dv-close" title="Hide">×</button>
 </div>
 <button id="rp-dv-toggle-collapsed" class="rp-dv-toggle-collapsed rp-hidden">Design options ▾</button>
@@ -1554,6 +1570,8 @@ const RP_GEOGRAPHIES = {
   'fox-cities': { label: 'Fox Cities, WI', shortName: 'Fox Cities', subtitle: 'Greater Appleton area, northeast Wisconsin', center: [-88.4, 44.28] },
   'lehigh-valley': { label: 'Lehigh Valley, PA', shortName: 'Lehigh Valley', subtitle: 'Allentown–Bethlehem–Easton area, eastern Pennsylvania', center: [-75.5, 40.62] },
   'south-texas': { label: 'South Texas (PJTT)', shortName: 'South Texas', subtitle: '19 counties along the Texas–Mexico border, from Laredo to the Rio Grande Valley', center: [-99.5, 27.5] },
+  // Partner-supplied 2026-10-20 "to cover the southeast."
+  'palm-beach': { label: 'Palm Beach County, FL', shortName: 'Palm Beach County', subtitle: 'Southeast Florida, from Boca Raton to Jupiter and the Glades', center: [-80.45, 26.65] },
   'granite-state': { label: 'New Hampshire (statewide)', shortName: 'New Hampshire', subtitle: 'Statewide initiative — not tied to one metro area', center: [-71.5, 43.65], anchor: [-71.55, 43.2], statewide: true },
 };
 
@@ -1566,6 +1584,7 @@ const RP_REGION_DEFS = [
   // location, per consistency feedback -- a real-state-boundary fill was
   // tried and dropped. Sized bigger to suggest a larger area.
   { id: 'granite-state', name: 'New Hampshire (statewide)', rx: 1.0, ry: 1.3 },
+  { id: 'palm-beach', name: 'Palm Beach County, FL', rx: 0.5, ry: 0.35 },
 ];
 
 const RP_REGIONS_GEOJSON = {
@@ -1587,7 +1606,21 @@ const RP_REGION_CIRCLES_GEOJSON = {
 const RP_STORIES = [
   { id: 'inland-empire-podcast', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Building Belonging and Civic Muscle Through Journalism', format: 'Podcast', formatIcon: '🎙️',
     excerpt: "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
-    image: '../img/inland-empire-unsung-stewards.jpg', link: 'https://rippel.org/podcasts/?podcast-id=7828' },
+    image: '../img/inland-empire-unsung-stewards.jpg', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE' },
+    link: 'https://rippel.org/podcasts/?podcast-id=7828' },
+  // Partner-supplied 2026-10-20: IECF's own videos.
+  { id: 'inland-empire-video-iecf-summit', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'IECF Policy & Philanthropy Summit 2026', format: 'Video', formatIcon: '▶️',
+    excerpt: "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
+    image: 'https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ' },
+    link: 'https://www.youtube.com/watch?v=Vc-rRXNMedQ', linkLabel: 'Watch on YouTube →' },
+  { id: 'inland-empire-video-belonging-civic-muscle', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Vital Conditions: Belonging & Civic Muscle', format: 'Video', formatIcon: '▶️',
+    excerpt: 'The Inland Empire Community Foundation on the vital condition of belonging and civic muscle: the social fabric and civic power that build a stronger Inland Empire for all.',
+    image: 'https://img.youtube.com/vi/exLwdsRGp6o/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/exLwdsRGp6o' },
+    link: 'https://www.youtube.com/watch?v=exLwdsRGp6o', linkLabel: 'Watch on YouTube →' },
+  { id: 'inland-empire-playlist-ievcn', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Inland Empire Vital Conditions Network', format: 'Video Series', formatIcon: '▶️',
+    excerpt: "A playlist from the Inland Empire Community Foundation on the Inland Empire Vital Conditions Network (IEVCN). Plays here in order; use the player's playlist menu to pick a video.",
+    image: 'https://i.ytimg.com/vi/FZr9fsleQOw/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/videoseries?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA' },
+    link: 'https://www.youtube.com/playlist?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA', linkLabel: 'View the playlist on YouTube →' },
   // Partner-supplied 2026-10-01; no official NBC embed, so "external" (link-out) media. NBC places Hijas del Campo in Contra Costa County, not the Inland Empire — confirm with Rippel.
   { id: 'inland-empire-video-hijas-del-campo', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Hijas del Campo Works to Support Farmworkers', format: 'Video', formatIcon: '▶️',
     excerpt: 'What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.',
@@ -1596,7 +1629,9 @@ const RP_STORIES = [
     link: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', linkLabel: 'Watch on NBC Bay Area →' },
   { id: 'fox-cities-multimedia', geoId: 'fox-cities', geography: 'Fox Cities, WI', title: 'Imagine Fox Cities: Creating a Community Where Everyone Belongs', format: 'Multimedia', formatIcon: '🎬',
     excerpt: 'Fox Cities, a region of 19 municipalities in central Wisconsin, is bringing together residents, businesses, and institutions around one question: how do we build a community where everyone belongs?',
-    image: 'https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png', link: 'https://rippel.org/foxcities/' },
+    // Opens the full scrolling experience in a large viewer over the map (keeps people on the map).
+    image: 'https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png', media: { type: 'experience', url: 'https://rippel.org/foxcities/' },
+    link: 'https://rippel.org/foxcities/', linkLabel: 'Or open it in a new tab ↗' },
   // Partner-supplied 2026-10-01 (Leonard Parker Pool Institute for Health's own video). Listed first at Lehigh Valley (client ask).
   { id: 'lehigh-valley-video-franklin-park', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'Welcome to Franklin Park', format: 'Video', formatIcon: '▶️',
     excerpt: 'A video from the Leonard Parker Pool Institute for Health introducing Franklin Park.',
@@ -1604,16 +1639,18 @@ const RP_STORIES = [
     link: 'https://www.youtube.com/watch?v=Os8kum9GgJE', linkLabel: 'Watch on YouTube →' },
   { id: 'lehigh-valley-podcast-shaak', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'Relationships Strengthen Health and Well-Being in the Lehigh Valley', format: 'Podcast', formatIcon: '🎙️',
     excerpt: 'Samantha Shaak, PhD, Executive Director of the Leonard Parker Pool Institute for Health, explains how stewardship starts with connecting the dots between people, partners, and place.',
-    image: '../img/samantha-shaak-photo.jpg', imagePosition: 'center 30%', link: 'https://rippel.org/podcasts/?podcast-id=7691' },
+    image: '../img/samantha-shaak-photo.jpg', imagePosition: 'center 30%', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/2152943/c1e-m8dwuqj22rbov43q-47x8m0q3fmdz-5c52oc.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/68myEgOTEfA' },
+    link: 'https://rippel.org/podcasts/?podcast-id=7691' },
   { id: 'lehigh-valley-podcast-boateng', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'Strong Partnerships Are Helping to Create a Thriving Lehigh Valley', format: 'Podcast', formatIcon: '🎙️',
     excerpt: 'Nate Boateng, VP for Community Impact and Engagement at Valley Health Partners, traces his stewardship journey as an Allentown native building coalitions among the region\'s community health centers.',
+    image: 'https://img.youtube.com/vi/53VFuJO4HvA/hqdefault.jpg', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/1855526/c1e-npxvu5x52xc9z41g-25kk29d3sk5g-twkocy.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/53VFuJO4HvA' },
     link: 'https://rippel.org/podcasts/?podcast-id=5337' },
   { id: 'lehigh-valley-written', geoId: 'lehigh-valley', geography: 'Lehigh Valley, PA', title: 'A Pennsylvania Health Care System Stewards Equitable Health and Well-Being', format: 'Written Story', formatIcon: '📝',
     excerpt: 'When Leonard Parker Pool set out to build a better health system for the Lehigh Valley in the 1960s, he laid the groundwork for a hospital network now stewarding equitable health for its entire community.',
     image: 'https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png', link: 'https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/' },
   { id: 'south-texas-podcast-pacheco', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'Stewardship Begins with Listening in South Texas', format: 'Podcast', formatIcon: '🎙️',
     excerpt: 'Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.',
-    image: 'https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/T7wdBXB5RUc', autoplay: false },
+    image: 'https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/T7wdBXB5RUc' },
     link: 'https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/' },
   // Partner-supplied 2026-10-01; "Hope Heals SA" (MHM-produced) replaces the invented "PJTT Network Update" mock.
   { id: 'south-texas-video-hope-heals', geoId: 'south-texas', geography: 'South Texas (PJTT)', title: 'Hope Heals San Antonio', format: 'Video', formatIcon: '▶️',
@@ -1624,6 +1661,11 @@ const RP_STORIES = [
     excerpt: 'Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.',
     image: 'https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/0oPep3N5mIk', autoplay: false },
     link: 'https://www.youtube.com/watch?v=0oPep3N5mIk', linkLabel: 'Watch on YouTube →' },
+  // Partner-supplied 2026-10-20.
+  { id: 'palm-beach-video-bewellpbc', geoId: 'palm-beach', geography: 'Palm Beach County, FL', title: 'BeWellPBC: Stewards Leading Change', format: 'Video', formatIcon: '▶️',
+    excerpt: 'As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.',
+    image: 'https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/tXXlmbzcEOU' },
+    link: 'https://www.youtube.com/watch?v=tXXlmbzcEOU', linkLabel: 'Watch on YouTube →' },
   { id: 'granite-state-mock', geoId: 'granite-state', geography: 'New Hampshire (statewide)', title: 'A Statewide Network Comes Together Across New Hampshire', format: 'Written Story', formatIcon: '📝',
     excerpt: "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
     link: '#' },
@@ -1699,7 +1741,8 @@ function rpFormatBadge(s) { return `<span class="rp-format-badge">${s.formatIcon
 // Story card media: one 16:9 slot on every card; only the cue on top changes --
 // play button for playable video (the real player loads on click, so a
 // 3-video location no longer boots 3 YouTube iframes), play + "on <source> ↗"
-// for link-out video, a "Listen" chip for podcasts, nothing for written
+// for link-out video, play + "Listen" chip for podcasts (audio or YouTube, in the
+// panel), an expand cue for a full multimedia piece (opens a viewer over the map), nothing for written
 // stories. No image -> a designed fallback tile instead of a placeholder.
 const RP_HEADPHONES_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="5" height="7" rx="2" fill="currentColor"/><rect x="16" y="13" width="5" height="7" rx="2" fill="currentColor"/></svg>';
 function rpAttr(t) { return t.replace(/"/g, '&quot;'); }
@@ -1707,8 +1750,24 @@ function rpMediaImage(s) {
   if (s.image) return `<img src="${s.image}" alt="" loading="lazy"${s.imagePosition ? ` style="object-position: ${s.imagePosition}"` : ''} />`;
   return `<span class="rp-media-fallback" aria-hidden="true"><span class="rp-media-fallback-icon">${s.formatIcon}</span><span class="rp-media-fallback-geo">${s.geography}</span></span>`;
 }
+// Podcast player (Design Options): 'audio' = Rippel's own MP3 in an audio bar
+// (lightweight, no YouTube branding/tracking); 'youtube' = the episode's YouTube version.
+let rpPodcastPlayer = 'audio';
+function rpSetPodcastPlayer(mode) {
+  rpPodcastPlayer = mode;
+  document.querySelectorAll('[data-podcast-id]').forEach((el) => { el.outerHTML = rpRenderMedia(rpStoryById(el.dataset.podcastId)); });
+}
 function rpRenderMedia(s) {
   const m = s.media;
+  // Podcasts play in the panel (audio or YouTube): same play button as video, plus the "Listen" chip.
+  if (s.format === 'Podcast' && (s.audio || m)) {
+    const useAudio = s.audio && (rpPodcastPlayer === 'audio' || !m);
+    return `<button type="button" class="rp-media rp-media-playable" data-podcast-id="${s.id}" data-media-type="${useAudio ? 'audio' : m.type}" data-media-url="${useAudio ? s.audio : m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Listen to ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span></button>`;
+  }
+  // A full multimedia piece (Fox Cities): opens in a large viewer over the map, not a new tab.
+  if (m && m.type === 'experience') {
+    return `<button type="button" class="rp-media rp-media-playable" data-media-type="experience" data-media-url="${m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Open ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play rp-media-expand" aria-hidden="true"></span><span class="rp-media-source">Open the full experience</span></button>`;
+  }
   if (m && (m.type === 'youtube' || m.type === 'video')) {
     return `<button type="button" class="rp-media rp-media-playable" data-media-type="${m.type}" data-media-url="${m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Play ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span></button>`;
   }
@@ -1716,18 +1775,37 @@ function rpRenderMedia(s) {
     const src = m.source || 'source site';
     return `<a class="rp-media rp-media-playable" href="${m.url}" target="_blank" rel="noopener" aria-label="Watch ${rpAttr(s.title)} on ${src} (opens in a new tab)">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-source">on ${src} ↗</span></a>`;
   }
-  const chip = s.format === 'Podcast' ? `<span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span>` : '';
-  return `<div class="rp-media">${rpMediaImage(s)}${chip}</div>`;
+  return `<div class="rp-media">${rpMediaImage(s)}</div>`;
 }
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.rp-media-playable[data-media-url]');
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, podcastId } = btn.dataset;
+  if (mediaType === 'experience') { rpOpenViewer(mediaUrl, mediaTitle); return; }
+  const keep = podcastId ? ` data-podcast-id="${podcastId}"` : ''; // so the Podcast player switch can still swap it
+  if (mediaType === 'audio') {
+    const art = btn.querySelector('img, .rp-media-fallback').outerHTML; // episode art stays, audio bar along the bottom
+    btn.outerHTML = `<div class="rp-media rp-media-audio"${keep}>${art}<audio src="${mediaUrl}" controls autoplay preload="none"></audio></div>`;
+    return;
+  }
+  const sep = mediaUrl.includes('?') ? '&' : '?'; // playlist URLs already carry ?list=
   const player = mediaType === 'youtube'
-    ? `<iframe src="${mediaUrl}?rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+    ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
     : `<video src="${mediaUrl}" controls autoplay playsinline></video>`;
-  btn.outerHTML = `<div class="rp-media">${player}</div>`;
+  btn.outerHTML = `<div class="rp-media"${keep}>${player}</div>`;
 });
+// Large viewer over the map for a full multimedia piece; ×, Esc, or a backdrop click returns to the map.
+function rpOpenViewer(url, title) {
+  rpCloseViewer();
+  const el = document.createElement('div');
+  el.className = 'rp-viewer';
+  el.innerHTML = `<div class="rp-viewer-frame" role="dialog" aria-modal="true" aria-label="${title}"><div class="rp-viewer-bar"><span class="rp-viewer-title">${title}</span><a class="rp-viewer-newtab" href="${url}" target="_blank" rel="noopener">Open in new tab ↗</a><button type="button" class="rp-viewer-close" aria-label="Close and return to the map">×</button></div><iframe src="${url}" title="${title}" allow="autoplay; fullscreen"></iframe></div>`;
+  el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('.rp-viewer-close')) rpCloseViewer(); });
+  document.body.appendChild(el);
+  el.querySelector('.rp-viewer-close').focus();
+}
+function rpCloseViewer() { document.querySelectorAll('.rp-viewer').forEach((v) => v.remove()); }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') rpCloseViewer(); });
 function rpLinkLabel(s) {
   if (s.linkLabel) return s.linkLabel;
   if (s.format === 'Podcast') return 'Listen to the episode →';
@@ -1984,7 +2062,9 @@ const RP_SHADING_OPTS = [{ id: 'blob', label: 'Blob' }, { id: 'circle', label: '
 // via setLayoutProperty so the real site's code stays untouched; "Current" is
 // exactly what production shows today.
 const RP_PIN_SIZE_OPTS = [{ id: 'current', label: 'Current', value: 1.0 }, { id: 'smaller', label: 'Smaller', value: 0.75 }];
-const rpVariantState = { icon: 'book', color: 'green', size: 'small', shading: 'blob', pinSize: 'current' };
+// How podcasts play inside the story panel (client question, Oct 2026).
+const RP_PODCAST_OPTS = [{ id: 'audio', label: 'Audio' }, { id: 'youtube', label: 'YouTube' }];
+const rpVariantState = { icon: 'book', color: 'green', size: 'small', shading: 'blob', pinSize: 'current', podcast: 'audio' };
 
 function rpApplyIconAndColor() {
   const colorHex = RP_COLORS[rpVariantState.color];
@@ -2019,6 +2099,7 @@ function rpInitDesignVariants() {
     rpRenderVariantGroup(document.getElementById('rp-dv-color'), RP_COLOR_OPTS, rpVariantState.color, (id) => { rpVariantState.color = id; rpApplyIconAndColor(); render(); });
     rpRenderVariantGroup(document.getElementById('rp-dv-size'), RP_SIZE_OPTS, rpVariantState.size, (id) => { rpVariantState.size = id; rpApplySize(); render(); });
     rpRenderVariantGroup(document.getElementById('rp-dv-pin-size'), RP_PIN_SIZE_OPTS, rpVariantState.pinSize, (id) => { rpVariantState.pinSize = id; rpApplyPinSize(); render(); });
+    rpRenderVariantGroup(document.getElementById('rp-dv-podcast'), RP_PODCAST_OPTS, rpVariantState.podcast, (id) => { rpVariantState.podcast = id; rpSetPodcastPlayer(id); render(); });
     rpRenderVariantGroup(document.getElementById('rp-dv-shading'), RP_SHADING_OPTS, rpVariantState.shading, (id) => { rpVariantState.shading = id; rpSetShadingStyle(id); render(); });
   }
   document.getElementById('rp-dv-close').addEventListener('click', () => {

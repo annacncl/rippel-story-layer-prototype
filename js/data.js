@@ -63,6 +63,14 @@ const STORY_GEOGRAPHIES = {
     subtitle: "19 counties along the Texas–Mexico border, from Laredo to the Rio Grande Valley",
     center: [-99.5, 27.5],
   },
+  // Real content, partner-supplied (Rippel, 2026-10-20) "to cover the
+  // southeast." Marker at the county's center.
+  "palm-beach": {
+    label: "Palm Beach County, FL",
+    shortName: "Palm Beach County",
+    subtitle: "Southeast Florida, from Boca Raton to Jupiter and the Glades",
+    center: [-80.45, 26.65],
+  },
   // MOCK — statewide example (no tight metro center) added to test how
   // shading/anchoring should work when a story isn't a small region. `anchor`
   // (state capital) intentionally differs from the shaded blob's broad
@@ -102,6 +110,7 @@ const REGION_DEFS = [
   // meant New Hampshire was the one location without a shaded area at
   // all). Sized bigger than the regional blobs to suggest a larger area.
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
+  { id: "palm-beach", hasStory: true, name: "Palm Beach County, FL", rx: 0.5, ry: 0.35 },
   { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
   { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },
   { id: "front-range", hasStory: false, name: "Front Range, CO", rx: 0.8, ry: 0.65, center: [-104.9, 39.6] },
@@ -232,8 +241,10 @@ const NATIONWIDE_NETWORKS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Story records. Lehigh Valley (4 stories), South Texas (3) and Inland
-// Empire (2) are the multi-story "cluster" test locations. Each story may carry an optional
+// Story records. Inland Empire (5 stories), Lehigh Valley (4) and South
+// Texas (3) are the multi-story "cluster" locations. Podcasts carry both an
+// `audio` MP3 (Rippel's Castos feed) and a YouTube `media` version; Design
+// Options' "Podcast player" picks which one plays in the panel. Each story may carry an optional
 // `media` field ({type: "youtube"|"video"|"external", url, autoplay}) — when
 // present, the card shows a play button and loads the real player on
 // click. "external" is for partner video with no official embed player (e.g.
@@ -253,7 +264,52 @@ const STORIES = [
     excerpt:
       "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
     image: "img/inland-empire-unsung-stewards.jpg",
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE" },
     link: "https://rippel.org/podcasts/?podcast-id=7828",
+  },
+  // Real content, partner-supplied (Rippel, 2026-10-20): IECF's own videos.
+  {
+    id: "inland-empire-video-iecf-summit",
+    geoId: "inland-empire",
+    geography: "Inland Empire, CA",
+    title: "IECF Policy & Philanthropy Summit 2026",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
+    image: "https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ" },
+    link: "https://www.youtube.com/watch?v=Vc-rRXNMedQ",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "inland-empire-video-belonging-civic-muscle",
+    geoId: "inland-empire",
+    geography: "Inland Empire, CA",
+    title: "Vital Conditions: Belonging & Civic Muscle",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "The Inland Empire Community Foundation on the vital condition of belonging and civic muscle: the social fabric and civic power that build a stronger Inland Empire for all.",
+    image: "https://img.youtube.com/vi/exLwdsRGp6o/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/exLwdsRGp6o" },
+    link: "https://www.youtube.com/watch?v=exLwdsRGp6o",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "inland-empire-playlist-ievcn",
+    geoId: "inland-empire",
+    geography: "Inland Empire, CA",
+    title: "Inland Empire Vital Conditions Network",
+    format: "Video Series",
+    formatIcon: "▶️",
+    excerpt:
+      "A playlist from the Inland Empire Community Foundation on the Inland Empire Vital Conditions Network (IEVCN). Plays here in order; use the player's playlist menu to pick a video.",
+    image: "https://i.ytimg.com/vi/FZr9fsleQOw/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/videoseries?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA" },
+    link: "https://www.youtube.com/playlist?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA",
+    linkLabel: "View the playlist on YouTube →",
   },
   // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
   // NBC Bay Area offers no official embed player for this clip, so it uses
@@ -290,7 +346,11 @@ const STORIES = [
     excerpt:
       "Fox Cities, a region of 19 municipalities in central Wisconsin, is bringing together residents, businesses, and institutions around one question: how do we build a community where everyone belongs?",
     image: "https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png",
+    // Opens the full scrolling experience in a large viewer over the map
+    // (keeps people on the map; rippel.org allows it to be framed today).
+    media: { type: "experience", url: "https://rippel.org/foxcities/" },
     link: "https://rippel.org/foxcities/",
+    linkLabel: "Or open it in a new tab ↗",
   },
   // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01):
   // the Leonard Parker Pool Institute for Health's own YouTube video. Listed first
@@ -323,6 +383,8 @@ const STORIES = [
     // baked-in frame, which read as letterboxing in the 16:9 card slot.
     image: "img/samantha-shaak-photo.jpg",
     imagePosition: "center 30%",
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2152943/c1e-m8dwuqj22rbov43q-47x8m0q3fmdz-5c52oc.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/68myEgOTEfA" },
     link: "https://rippel.org/podcasts/?podcast-id=7691",
   },
   {
@@ -334,6 +396,9 @@ const STORIES = [
     formatIcon: "🎙️",
     excerpt:
       "Nate Boateng, VP for Community Impact and Engagement at Valley Health Partners, traces his stewardship journey as an Allentown native building coalitions among the region's community health centers.",
+    image: "https://img.youtube.com/vi/53VFuJO4HvA/hqdefault.jpg",
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/1855526/c1e-npxvu5x52xc9z41g-25kk29d3sk5g-twkocy.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/53VFuJO4HvA" },
     link: "https://rippel.org/podcasts/?podcast-id=5337",
   },
   {
@@ -362,7 +427,8 @@ const STORIES = [
     excerpt:
       "Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.",
     image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc", autoplay: false },
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc" },
     link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
   },
   // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
@@ -396,6 +462,21 @@ const STORIES = [
     image: "https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg",
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/0oPep3N5mIk", autoplay: false },
     link: "https://www.youtube.com/watch?v=0oPep3N5mIk",
+    linkLabel: "Watch on YouTube →",
+  },
+  // Real content, partner-supplied (Rippel, 2026-10-20).
+  {
+    id: "palm-beach-video-bewellpbc",
+    geoId: "palm-beach",
+    geography: "Palm Beach County, FL",
+    title: "BeWellPBC: Stewards Leading Change",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.",
+    image: "https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/tXXlmbzcEOU" },
+    link: "https://www.youtube.com/watch?v=tXXlmbzcEOU",
     linkLabel: "Watch on YouTube →",
   },
   // MOCK — statewide example (see STORY_GEOGRAPHIES["granite-state"] above).

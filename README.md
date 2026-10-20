@@ -407,6 +407,33 @@ audio/video meant to play directly in the map window:
 | Creating Belonging Where It Matters (Tim Barr) | South Texas | YouTube, Rippel's channel | Embedded |
 | Welcome to Franklin Park | Lehigh Valley | YouTube, LPPIH's channel | Embedded |
 
+Round 3b, partner-supplied by Rippel on 2026-10-20:
+
+| Story | Location | Playback |
+|---|---|---|
+| IECF Policy & Philanthropy Summit 2026 | Inland Empire | YouTube, in panel |
+| Vital Conditions: Belonging & Civic Muscle | Inland Empire | YouTube, in panel |
+| Inland Empire Vital Conditions Network (playlist) | Inland Empire | YouTube playlist, in panel |
+| BeWellPBC: Stewards Leading Change | Palm Beach County (new location) | YouTube, in panel |
+| Paulette Brown-Hinds, Samantha Shaak, Nate Boateng, Yvonne Pacheco podcasts | existing cards | In panel: Rippel's own MP3 (Castos) or the episode's YouTube version |
+| Imagine Fox Cities | Fox Cities | Full experience in a large viewer over the map |
+
+**Podcasts play in the panel.** Each podcast carries both its MP3 (from
+the episode's own rippel.org page, hosted on Castos) and its YouTube
+version; Design Options → "Podcast player: Audio / YouTube" switches
+between them live. Audio is the default: a native audio bar over the
+episode art, lighter than a YouTube embed and free of YouTube branding/
+tracking. Either way nobody is sent off the map to listen.
+
+**Fox Cities** is a full-screen scrolling multimedia page, too big for the
+480px panel, so "Open the full experience" plays it in a large viewer over
+the map (×, Esc, or clicking the dimmed backdrop returns to the map). This
+works because rippel.org currently allows the page to be framed by other
+sites; if Rippel ever adds a frame restriction, the viewer would show a
+blank page and the "open in new tab" fallback would be needed. The earlier
+"wouldn't open" report couldn't be reproduced — the page loads normally in
+a browser, though it's heavy (~850 KB of HTML plus autoplaying video).
+
 Open question: NBC's own description places Hijas del Campo in Contra Costa
 County (East Bay, near Brentwood), not the Inland Empire. It's filed under
 Inland Empire as sent, pending confirmation from Rippel.

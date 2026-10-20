@@ -26,7 +26,7 @@ into three clearly-marked blocks (search `STORY LAYER PROTOTYPE` in
 appended after the real site's own script. Delete those three blocks to
 get back to a pristine copy of the live site.
 
-The story layer content itself (5 locations, 11 stories, the Design
+The story layer content itself (6 locations, 15 stories, the Design
 Variants panel) is the same content as the top-level prototype — see
 `../README.md` for the full write-up of what it does, what's mock vs.
 real, and the client feedback it responds to. This file only covers what's

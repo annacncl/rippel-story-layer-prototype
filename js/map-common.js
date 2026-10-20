@@ -305,7 +305,8 @@ function formatBadge(story) {
 //     clash with the other cards until someone actually presses play.
 //   - video with no embeddable player ("external"): same play button plus
 //     an "on <source> ↗" label; opens the source page.
-//   - podcast with no in-panel audio: headphones chip.
+//   - podcast: play button + "Listen" chip; plays as audio or YouTube.
+//   - multimedia piece ("experience"): opens in a large viewer over the map.
 //   - written / multimedia: the image alone.
 // A story with no image gets a designed fallback tile instead of a
 // placeholder graphic, so a missing photo looks intentional, not broken.
@@ -323,8 +324,42 @@ function mediaImage(story) {
     </span>`;
 }
 
+// Which player a podcast uses in the panel (Design Options "Podcast player"):
+// "audio" = Rippel's own MP3 in a plain audio bar (lightweight, no YouTube
+// branding or tracking); "youtube" = the episode's YouTube version.
+let podcastPlayer = "audio";
+function setPodcastPlayer(mode) {
+  podcastPlayer = mode;
+  // Re-render any podcast cards already on screen so the switch is live.
+  document.querySelectorAll("[data-podcast-id]").forEach((el) => {
+    el.outerHTML = renderMedia(getStoryById(el.dataset.podcastId));
+  });
+}
+
 function renderMedia(story) {
   const m = story.media;
+  // Podcasts play in the panel too — as audio or via YouTube — so nobody is
+  // sent off the map to listen. Same play button as video, plus the
+  // "Listen" chip so it's clear it's an episode, not a video.
+  if (story.format === "Podcast" && (story.audio || m)) {
+    const useAudio = story.audio && (podcastPlayer === "audio" || !m);
+    const type = useAudio ? "audio" : m.type;
+    const url = useAudio ? story.audio : m.url;
+    return `<button type="button" class="story-media story-media-playable" data-podcast-id="${story.id}" data-media-type="${type}" data-media-url="${url}"
+        data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Listen to ${story.title.replace(/"/g, "&quot;")}">
+      ${mediaImage(story)}<span class="story-media-play" aria-hidden="true"></span>
+      <span class="story-media-chip">${HEADPHONES_SVG} Listen</span>
+    </button>`;
+  }
+  // A full multimedia piece (e.g. Fox Cities): too big for the panel, so it
+  // opens in a large viewer over the map instead of a new tab.
+  if (m && m.type === "experience") {
+    return `<button type="button" class="story-media story-media-playable" data-media-type="experience" data-media-url="${m.url}"
+        data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Open ${story.title.replace(/"/g, "&quot;")}">
+      ${mediaImage(story)}<span class="story-media-play story-media-expand" aria-hidden="true"></span>
+      <span class="story-media-source">Open the full experience</span>
+    </button>`;
+  }
   if (m && (m.type === "youtube" || m.type === "video")) {
     return `<button type="button" class="story-media story-media-playable" data-media-type="${m.type}" data-media-url="${m.url}"
         data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Play ${story.title.replace(/"/g, "&quot;")}">
@@ -339,8 +374,7 @@ function renderMedia(story) {
       <span class="story-media-source">on ${source} ↗</span>
     </a>`;
   }
-  const chip = story.format === "Podcast" ? `<span class="story-media-chip">${HEADPHONES_SVG} Listen</span>` : "";
-  return `<div class="story-media">${mediaImage(story)}${chip}</div>`;
+  return `<div class="story-media">${mediaImage(story)}</div>`;
 }
 
 // Swap a clicked facade for the real player, autoplaying (the click is the
@@ -348,13 +382,54 @@ function renderMedia(story) {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".story-media-playable[data-media-url]");
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, podcastId } = btn.dataset;
+  if (mediaType === "experience") {
+    openStoryViewer(mediaUrl, mediaTitle);
+    return;
+  }
+  // Keep the podcast marker so the Design Options switch can still swap it.
+  const keep = podcastId ? ` data-podcast-id="${podcastId}"` : "";
+  if (mediaType === "audio") {
+    // Episode art stays; a native audio bar sits along its bottom edge.
+    const art = btn.querySelector("img, .story-media-fallback").outerHTML;
+    btn.outerHTML = `<div class="story-media story-media-audio"${keep}>${art}<audio src="${mediaUrl}" controls autoplay preload="none"></audio></div>`;
+    return;
+  }
+  const sep = mediaUrl.includes("?") ? "&" : "?"; // playlist URLs already carry ?list=
   const player =
     mediaType === "youtube"
-      ? `<iframe src="${mediaUrl}?rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}"
+      ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
       : `<video src="${mediaUrl}" controls autoplay playsinline></video>`;
-  btn.outerHTML = `<div class="story-media">${player}</div>`;
+  btn.outerHTML = `<div class="story-media"${keep}>${player}</div>`;
+});
+
+// Large viewer over the map for a full multimedia piece. Closing (×, Esc, or
+// a click on the dimmed backdrop) drops straight back to the map.
+function openStoryViewer(url, title) {
+  closeStoryViewer();
+  const el = document.createElement("div");
+  el.className = "story-viewer";
+  el.innerHTML = `
+    <div class="story-viewer-frame" role="dialog" aria-modal="true" aria-label="${title}">
+      <div class="story-viewer-bar">
+        <span class="story-viewer-title">${title}</span>
+        <a class="story-viewer-newtab" href="${url}" target="_blank" rel="noopener">Open in new tab ↗</a>
+        <button type="button" class="story-viewer-close" aria-label="Close and return to the map">×</button>
+      </div>
+      <iframe src="${url}" title="${title}" allow="autoplay; fullscreen"></iframe>
+    </div>`;
+  el.addEventListener("click", (e) => {
+    if (e.target === el || e.target.closest(".story-viewer-close")) closeStoryViewer();
+  });
+  document.body.appendChild(el);
+  el.querySelector(".story-viewer-close").focus();
+}
+function closeStoryViewer() {
+  document.querySelectorAll(".story-viewer").forEach((v) => v.remove());
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeStoryViewer();
 });
 
 // Default call-to-action wording per format; a story's own `linkLabel` wins.

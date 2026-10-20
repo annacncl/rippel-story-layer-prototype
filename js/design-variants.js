@@ -32,7 +32,14 @@ const SHADING_OPTIONS = [
   { id: "circle", label: "Circle" },
 ];
 
-const variantState = { icon: "book", color: "green", size: "small", shading: "blob" };
+// How podcasts play inside the story panel — Rippel's own MP3 in an audio
+// bar, or the episode's YouTube version (client question, Oct 2026).
+const PODCAST_OPTIONS = [
+  { id: "audio", label: "Audio" },
+  { id: "youtube", label: "YouTube" },
+];
+
+const variantState = { icon: "book", color: "green", size: "small", shading: "blob", podcast: "audio" };
 
 function applyIconAndColor(map) {
   const colorHex = MARKER_COLORS[variantState.color];
@@ -96,6 +103,11 @@ function initDesignVariants() {
     renderVariantGroup(document.getElementById("dv-shading"), SHADING_OPTIONS, variantState.shading, (id) => {
       variantState.shading = id;
       setShadingStyle(map, id);
+      render();
+    });
+    renderVariantGroup(document.getElementById("dv-podcast"), PODCAST_OPTIONS, variantState.podcast, (id) => {
+      variantState.podcast = id;
+      setPodcastPlayer(id);
       render();
     });
   }
