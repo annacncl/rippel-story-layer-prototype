@@ -1611,8 +1611,8 @@ const RP_STORIES = [
   // Partner-supplied 2026-10-20: IECF's own videos.
   { id: 'inland-empire-video-iecf-summit', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'IECF Policy & Philanthropy Summit 2026', format: 'Video', formatIcon: '▶️',
     excerpt: "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
-    image: 'https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ' },
-    link: 'https://www.youtube.com/watch?v=Vc-rRXNMedQ', linkLabel: 'Watch on YouTube →' },
+    image: 'https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ', start: '0:41' }, // start from Rippel's own link (&t=41s)
+    link: 'https://www.youtube.com/watch?v=Vc-rRXNMedQ&t=41s', linkLabel: 'Watch on YouTube →' },
   { id: 'inland-empire-video-belonging-civic-muscle', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Vital Conditions: Belonging & Civic Muscle', format: 'Video', formatIcon: '▶️',
     excerpt: 'The Inland Empire Community Foundation on the vital condition of belonging and civic muscle: the social fabric and civic power that build a stronger Inland Empire for all.',
     image: 'https://img.youtube.com/vi/exLwdsRGp6o/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/exLwdsRGp6o' },
@@ -1664,8 +1664,8 @@ const RP_STORIES = [
   // Partner-supplied 2026-10-20.
   { id: 'palm-beach-video-bewellpbc', geoId: 'palm-beach', geography: 'Palm Beach County, FL', title: 'BeWellPBC: Stewards Leading Change', format: 'Video', formatIcon: '▶️',
     excerpt: 'As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.',
-    image: 'https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/tXXlmbzcEOU' },
-    link: 'https://www.youtube.com/watch?v=tXXlmbzcEOU', linkLabel: 'Watch on YouTube →' },
+    image: 'https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/tXXlmbzcEOU', start: '0:32' }, // start from Rippel's own link (&t=32s)
+    link: 'https://www.youtube.com/watch?v=tXXlmbzcEOU&t=32s', linkLabel: 'Watch on YouTube →' },
   { id: 'granite-state-mock', geoId: 'granite-state', geography: 'New Hampshire (statewide)', title: 'A Statewide Network Comes Together Across New Hampshire', format: 'Written Story', formatIcon: '📝',
     excerpt: "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
     link: '#' },
@@ -1757,19 +1757,42 @@ function rpSetPodcastPlayer(mode) {
   rpPodcastPlayer = mode;
   document.querySelectorAll('[data-podcast-id]').forEach((el) => { el.outerHTML = rpRenderMedia(rpStoryById(el.dataset.podcastId)); });
 }
+// Optional clip times on any playable source (client ask): start/end as seconds or "m:ss" on a
+// `media` object, or audio: { url, start, end } for a podcast. YouTube gets start=/end= params;
+// audio/video files get a #t=start,end media fragment.
+function rpToSeconds(t) {
+  if (t === undefined || t === null || t === '') return null;
+  return typeof t === 'number' ? t : String(t).split(':').reduce((acc, part) => acc * 60 + Number(part), 0);
+}
+function rpFormatTime(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), ss = String(Math.floor(sec % 60)).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
+function rpClip(src) {
+  if (!src) return null;
+  return typeof src === 'string' ? { url: src, start: null, end: null } : { url: src.url, start: rpToSeconds(src.start), end: rpToSeconds(src.end) };
+}
+function rpClipAttrs(c) { return `${c.start !== null ? ` data-media-start="${c.start}"` : ''}${c.end !== null ? ` data-media-end="${c.end}"` : ''}`; }
+function rpClipLabel(c) { // "Clip 0:41–2:10" / "From 0:41", so a viewer knows it isn't the whole thing
+  if (c.start === null && c.end === null) return '';
+  return `<span class="rp-media-source">${c.end !== null ? `Clip ${rpFormatTime(c.start || 0)}–${rpFormatTime(c.end)}` : `From ${rpFormatTime(c.start)}`}</span>`;
+}
+function rpMediaFragment(start, end) { return !start && !end ? '' : `#t=${start || 0}${end ? `,${end}` : ''}`; }
 function rpRenderMedia(s) {
   const m = s.media;
   // Podcasts play in the panel (audio or YouTube): same play button as video, plus the "Listen" chip.
   if (s.format === 'Podcast' && (s.audio || m)) {
     const useAudio = s.audio && (rpPodcastPlayer === 'audio' || !m);
-    return `<button type="button" class="rp-media rp-media-playable" data-podcast-id="${s.id}" data-media-type="${useAudio ? 'audio' : m.type}" data-media-url="${useAudio ? s.audio : m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Listen to ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span></button>`;
+    const c = rpClip(useAudio ? s.audio : m);
+    return `<button type="button" class="rp-media rp-media-playable" data-podcast-id="${s.id}" data-media-type="${useAudio ? 'audio' : m.type}" data-media-url="${c.url}"${rpClipAttrs(c)} data-media-title="${rpAttr(s.title)}" aria-label="Listen to ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span>${rpClipLabel(c)}</button>`;
   }
   // A full multimedia piece (Fox Cities): opens in a large viewer over the map, not a new tab.
   if (m && m.type === 'experience') {
     return `<button type="button" class="rp-media rp-media-playable" data-media-type="experience" data-media-url="${m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Open ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play rp-media-expand" aria-hidden="true"></span><span class="rp-media-source">Open the full experience</span></button>`;
   }
   if (m && (m.type === 'youtube' || m.type === 'video')) {
-    return `<button type="button" class="rp-media rp-media-playable" data-media-type="${m.type}" data-media-url="${m.url}" data-media-title="${rpAttr(s.title)}" aria-label="Play ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span></button>`;
+    const c = rpClip(m);
+    return `<button type="button" class="rp-media rp-media-playable" data-media-type="${m.type}" data-media-url="${m.url}"${rpClipAttrs(c)} data-media-title="${rpAttr(s.title)}" aria-label="Play ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span>${rpClipLabel(c)}</button>`;
   }
   if (m && m.type === 'external') {
     const src = m.source || 'source site';
@@ -1780,18 +1803,19 @@ function rpRenderMedia(s) {
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.rp-media-playable[data-media-url]');
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle, podcastId } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, podcastId, mediaStart, mediaEnd } = btn.dataset;
   if (mediaType === 'experience') { rpOpenViewer(mediaUrl, mediaTitle); return; }
   const keep = podcastId ? ` data-podcast-id="${podcastId}"` : ''; // so the Podcast player switch can still swap it
   if (mediaType === 'audio') {
     const art = btn.querySelector('img, .rp-media-fallback').outerHTML; // episode art stays, audio bar along the bottom
-    btn.outerHTML = `<div class="rp-media rp-media-audio"${keep}>${art}<audio src="${mediaUrl}" controls autoplay preload="none"></audio></div>`;
+    btn.outerHTML = `<div class="rp-media rp-media-audio"${keep}>${art}<audio src="${mediaUrl}${rpMediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
     return;
   }
   const sep = mediaUrl.includes('?') ? '&' : '?'; // playlist URLs already carry ?list=
+  const clipParams = `${mediaStart ? `&start=${mediaStart}` : ''}${mediaEnd ? `&end=${mediaEnd}` : ''}`;
   const player = mediaType === 'youtube'
-    ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
-    : `<video src="${mediaUrl}" controls autoplay playsinline></video>`;
+    ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1${clipParams}" title="${mediaTitle}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+    : `<video src="${mediaUrl}${rpMediaFragment(mediaStart, mediaEnd)}" controls autoplay playsinline></video>`;
   btn.outerHTML = `<div class="rp-media"${keep}>${player}</div>`;
 });
 // Large viewer over the map for a full multimedia piece; ×, Esc, or a backdrop click returns to the map.

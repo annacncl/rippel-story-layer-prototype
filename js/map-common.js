@@ -336,6 +336,38 @@ function setPodcastPlayer(mode) {
   });
 }
 
+// Optional clip times on any playable source (client ask): `start`/`end`
+// as seconds or "m:ss" / "h:mm:ss" on a `media` object, or on `audio` when
+// it's given as { url, start, end } instead of a plain URL string. YouTube
+// gets its own start=/end= params; audio/video files use a #t=start,end
+// media fragment. Either way the player opens on just that segment.
+function toSeconds(t) {
+  if (t === undefined || t === null || t === "") return null;
+  if (typeof t === "number") return t;
+  return String(t).split(":").reduce((acc, part) => acc * 60 + Number(part), 0);
+}
+function formatTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = String(Math.floor(sec % 60)).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+}
+// Normalizes a source to { url, start, end } (seconds or null).
+function clipSource(src) {
+  if (!src) return null;
+  if (typeof src === "string") return { url: src, start: null, end: null };
+  return { url: src.url, start: toSeconds(src.start), end: toSeconds(src.end) };
+}
+function clipAttrs(clip) {
+  return `${clip.start !== null ? ` data-media-start="${clip.start}"` : ""}${clip.end !== null ? ` data-media-end="${clip.end}"` : ""}`;
+}
+// Small "Clip 0:41–2:10" / "From 0:41" label so a viewer knows it isn't the whole thing.
+function clipLabel(clip) {
+  if (clip.start === null && clip.end === null) return "";
+  const text = clip.end !== null ? `Clip ${formatTime(clip.start || 0)}–${formatTime(clip.end)}` : `From ${formatTime(clip.start)}`;
+  return `<span class="story-media-source">${text}</span>`;
+}
+
 function renderMedia(story) {
   const m = story.media;
   // Podcasts play in the panel too — as audio or via YouTube — so nobody is
@@ -344,11 +376,11 @@ function renderMedia(story) {
   if (story.format === "Podcast" && (story.audio || m)) {
     const useAudio = story.audio && (podcastPlayer === "audio" || !m);
     const type = useAudio ? "audio" : m.type;
-    const url = useAudio ? story.audio : m.url;
-    return `<button type="button" class="story-media story-media-playable" data-podcast-id="${story.id}" data-media-type="${type}" data-media-url="${url}"
+    const clip = clipSource(useAudio ? story.audio : m);
+    return `<button type="button" class="story-media story-media-playable" data-podcast-id="${story.id}" data-media-type="${type}" data-media-url="${clip.url}"${clipAttrs(clip)}
         data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Listen to ${story.title.replace(/"/g, "&quot;")}">
       ${mediaImage(story)}<span class="story-media-play" aria-hidden="true"></span>
-      <span class="story-media-chip">${HEADPHONES_SVG} Listen</span>
+      <span class="story-media-chip">${HEADPHONES_SVG} Listen</span>${clipLabel(clip)}
     </button>`;
   }
   // A full multimedia piece (e.g. Fox Cities): too big for the panel, so it
@@ -361,9 +393,10 @@ function renderMedia(story) {
     </button>`;
   }
   if (m && (m.type === "youtube" || m.type === "video")) {
-    return `<button type="button" class="story-media story-media-playable" data-media-type="${m.type}" data-media-url="${m.url}"
+    const clip = clipSource(m);
+    return `<button type="button" class="story-media story-media-playable" data-media-type="${m.type}" data-media-url="${m.url}"${clipAttrs(clip)}
         data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Play ${story.title.replace(/"/g, "&quot;")}">
-      ${mediaImage(story)}<span class="story-media-play" aria-hidden="true"></span>
+      ${mediaImage(story)}<span class="story-media-play" aria-hidden="true"></span>${clipLabel(clip)}
     </button>`;
   }
   if (m && m.type === "external") {
@@ -382,7 +415,7 @@ function renderMedia(story) {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".story-media-playable[data-media-url]");
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle, podcastId } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, podcastId, mediaStart, mediaEnd } = btn.dataset;
   if (mediaType === "experience") {
     openStoryViewer(mediaUrl, mediaTitle);
     return;
@@ -392,17 +425,24 @@ document.addEventListener("click", (e) => {
   if (mediaType === "audio") {
     // Episode art stays; a native audio bar sits along its bottom edge.
     const art = btn.querySelector("img, .story-media-fallback").outerHTML;
-    btn.outerHTML = `<div class="story-media story-media-audio"${keep}>${art}<audio src="${mediaUrl}" controls autoplay preload="none"></audio></div>`;
+    btn.outerHTML = `<div class="story-media story-media-audio"${keep}>${art}<audio src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
     return;
   }
   const sep = mediaUrl.includes("?") ? "&" : "?"; // playlist URLs already carry ?list=
+  const clipParams = `${mediaStart ? `&start=${mediaStart}` : ""}${mediaEnd ? `&end=${mediaEnd}` : ""}`;
   const player =
     mediaType === "youtube"
-      ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1" title="${mediaTitle}"
+      ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1${clipParams}" title="${mediaTitle}"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
-      : `<video src="${mediaUrl}" controls autoplay playsinline></video>`;
+      : `<video src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay playsinline></video>`;
   btn.outerHTML = `<div class="story-media"${keep}>${player}</div>`;
 });
+
+// "#t=start,end" media fragment for native audio/video (stops at `end`).
+function mediaFragment(start, end) {
+  if (!start && !end) return "";
+  return `#t=${start || 0}${end ? `,${end}` : ""}`;
+}
 
 // Large viewer over the map for a full multimedia piece. Closing (×, Esc, or
 // a click on the dimmed backdrop) drops straight back to the map.

@@ -244,7 +244,10 @@ const NATIONWIDE_NETWORKS = [
 // Story records. Inland Empire (5 stories), Lehigh Valley (4) and South
 // Texas (3) are the multi-story "cluster" locations. Podcasts carry both an
 // `audio` MP3 (Rippel's Castos feed) and a YouTube `media` version; Design
-// Options' "Podcast player" picks which one plays in the panel. Each story may carry an optional
+// Options' "Podcast player" picks which one plays in the panel. Any playable
+// source can be trimmed to a clip with `start` / `end` (seconds or "m:ss"),
+// e.g. media: { type: "youtube", url, start: "1:05", end: "3:30" }; for a
+// podcast's audio, use audio: { url, start, end } instead of a URL string. Each story may carry an optional
 // `media` field ({type: "youtube"|"video"|"external", url, autoplay}) — when
 // present, the card shows a play button and loads the real player on
 // click. "external" is for partner video with no official embed player (e.g.
@@ -279,8 +282,9 @@ const STORIES = [
     excerpt:
       "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
     image: "https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ" },
-    link: "https://www.youtube.com/watch?v=Vc-rRXNMedQ",
+    // Start time from Rippel's own link (&t=41s).
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ", start: "0:41" },
+    link: "https://www.youtube.com/watch?v=Vc-rRXNMedQ&t=41s",
     linkLabel: "Watch on YouTube →",
   },
   {
@@ -475,8 +479,9 @@ const STORIES = [
     excerpt:
       "As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.",
     image: "https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/tXXlmbzcEOU" },
-    link: "https://www.youtube.com/watch?v=tXXlmbzcEOU",
+    // Start time from Rippel's own link (&t=32s).
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/tXXlmbzcEOU", start: "0:32" },
+    link: "https://www.youtube.com/watch?v=tXXlmbzcEOU&t=32s",
     linkLabel: "Watch on YouTube →",
   },
   // MOCK — statewide example (see STORY_GEOGRAPHIES["granite-state"] above).

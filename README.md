@@ -425,6 +425,15 @@ between them live. Audio is the default: a native audio bar over the
 episode art, lighter than a YouTube embed and free of YouTube branding/
 tracking. Either way nobody is sent off the map to listen.
 
+**Clips: start/end times.** Any playable source can be trimmed with
+`start` / `end` (seconds or "m:ss") in `js/data.js` / `RP_STORIES`, e.g.
+`media: { type: "youtube", url, start: "1:05", end: "3:30" }`, or
+`audio: { url, start, end }` for a podcast. YouTube gets its own
+`start=`/`end=` player params; audio/video files use a `#t=start,end`
+media fragment and stop on their own at `end`. The card shows a small
+"From 0:41" / "Clip 1:05–3:30" label. The IECF Summit (0:41) and BeWellPBC
+(0:32) start where Rippel's own links pointed (`&t=41s`, `&t=32s`).
+
 **Fox Cities** is a full-screen scrolling multimedia page, too big for the
 480px panel, so "Open the full experience" plays it in a large viewer over
 the map (×, Esc, or clicking the dimmed backdrop returns to the map). This
