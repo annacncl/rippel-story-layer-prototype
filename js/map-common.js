@@ -147,7 +147,7 @@ function addBaseLayers(map, onReady) {
     type: "circle",
     source: "region-circles",
     paint: {
-      "circle-radius": 34,
+      "circle-radius": 26, // scaled with the ~23px badge (Oct 22)
       "circle-color": ["case", ["get", "hasStory"], STORY_COLOR, "#8a8a8a"],
       "circle-opacity": 0.14,
       "circle-stroke-width": 2,

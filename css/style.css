@@ -528,8 +528,8 @@ html, body {
    3). White ring + dark outline rather than teal, so it reads as "selected"
    against the light basemap without echoing the network pins' teal. */
 .story-tour-highlight {
-  width: 46px;
-  height: 46px;
+  width: 36px; /* sits inside the 52px region circle */
+  height: 36px;
   border-radius: 50%;
   border: 3px solid #fff;
   box-shadow: 0 0 0 2px #0f1114, 0 0 0 6px rgba(15, 17, 20, 0.18);

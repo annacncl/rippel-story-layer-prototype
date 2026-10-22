@@ -437,7 +437,7 @@
   /* Also marks the selected location while the story panel is open. White ring + dark
      outline rather than teal, so it doesn't echo the real site's teal network pins. */
   .rp-tour-highlight {
-    width: 46px; height: 46px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%; /* sits inside the 52px region circle */
     border: 3px solid #fff; box-shadow: 0 0 0 2px #0f1114, 0 0 0 6px rgba(15,17,20,0.18);
     background: transparent; pointer-events: none; animation: rp-glow 1.6s ease-in-out infinite;
   }
@@ -1990,7 +1990,8 @@ function rpWireStoryClickPriority() {
 onMapReady(() => {
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
   map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles',
-    paint: { 'circle-radius': 34, 'circle-color': RP_STORY_COLOR, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_STORY_COLOR, 'circle-stroke-opacity': 0.8 } });
+    paint: { 'circle-radius': 26, // scaled with the ~23px badge (Oct 22)
+       'circle-color': RP_STORY_COLOR, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_STORY_COLOR, 'circle-stroke-opacity': 0.8 } });
 
   // No halo behind the story icon -- it competed with the region circle
   // above, making both read as the same kind of thing. Multi-story locations now get a "+"
