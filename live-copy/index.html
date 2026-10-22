@@ -314,8 +314,10 @@
      Safe to delete this block + the matching HTML/JS blocks (also fenced
      and rp-prefixed) to get back to a pristine copy of the real site.
      ========================================================================= */
+  /* Straddles the bottom edge of the real header (75px tall), so the header
+     itself stays free for the "Add your organization" link. */
   .rp-demo-badge {
-    position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 63px; left: 50%; transform: translateX(-50%);
     z-index: 150; pointer-events: none;
     background: repeating-linear-gradient(135deg, #241a2e, #241a2e 10px, #2a1f36 10px, #2a1f36 20px);
     border: 1px dashed #6b4f8a; border-radius: 20px;
@@ -444,33 +446,22 @@
     50% { box-shadow: 0 0 0 2px #0f1114, 0 0 0 11px rgba(15,17,20,0.08); }
   }
 
-  .rp-design-variants {
-    position: fixed; top: 158px; left: 50%; transform: translateX(-50%);
-    z-index: 120; background: rgba(36,26,46,0.96); border: 1px dashed #8a6bb0;
-    border-radius: var(--radius-lg); padding: 10px 14px; font-size: 11px;
-    color: var(--text); display: flex; flex-wrap: wrap; align-items: center;
-    gap: 10px; max-width: 90vw;
+  .rp-nr-toggle-collapsed {
+    position: fixed; left: 12px; bottom: 64px; z-index: 120;
+    background: rgba(26,36,46,0.96); border: 1px dashed #d68a2e; border-radius: 20px;
+    padding: 6px 12px; font-size: 11px; font-weight: 700; color: #f5b866; cursor: pointer;
   }
-  .rp-design-variants.rp-hidden { display: none; }
-  .rp-dv-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #c9a8f0; white-space: nowrap; }
-  .rp-dv-group { display: flex; align-items: center; gap: 4px; }
-  .rp-dv-group span { color: var(--text-dim); margin-right: 2px; white-space: nowrap; }
-  .rp-design-variants button {
-    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
-    padding: 4px 9px; border-radius: 20px; font-family: inherit; font-size: 11px; cursor: pointer;
+  .rp-nr-toggle-collapsed.rp-hidden { display: none; }
+  /* "Add your organization" call to action in the real header (links to the Count Me In form). */
+  .rp-header-cta {
+    margin-left: auto; margin-right: 28px; padding: 7px 14px; border-radius: 20px;
+    background: var(--rippel-teal); color: var(--bg); font-size: 13px; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
   }
-  .rp-design-variants button:hover { color: var(--text); }
-  .rp-design-variants button.active { background: var(--rippel-teal-dim); border-color: var(--rippel-teal); color: var(--rippel-teal); font-weight: 600; }
-  .rp-dv-toggle-collapsed {
-    position: fixed; top: 158px; left: 50%; transform: translateX(-50%); z-index: 120;
-    background: rgba(36,26,46,0.96); border: 1px dashed #8a6bb0; border-radius: 20px;
-    padding: 6px 12px; font-size: 11px; font-weight: 700; color: #c9a8f0; cursor: pointer;
-  }
-  .rp-dv-toggle-collapsed.rp-hidden { display: none; }
+  .rp-header-cta:hover { background: var(--accent-light); }
 
-  /* Network relationships (concept) -- separate panel from Design Variants
-     on purpose: this is a different, unrelated layer idea (client asked
-     for "relationships between networks"), not another icon/color option. */
+  /* Network relationships (concept): a separate, unrelated layer idea (client
+     asked for "relationships between networks"). */
   .rp-nr-panel {
     position: fixed; bottom: 64px; left: 12px; z-index: 120;
     background: rgba(26,36,46,0.96); border: 1px dashed #d68a2e;
@@ -500,7 +491,7 @@
   @media (max-width: 768px) {
     .rp-story-panel { width: 100%; right: 0 !important; }
     .rp-exit-tour-btn { right: 12px; }
-    .rp-design-variants, .rp-dv-toggle-collapsed { top: 190px; max-width: calc(100vw - 20px); font-size: 10px; }
+    .rp-header-cta { display: none; }
     .rp-nr-panel { bottom: 8px; max-width: calc(100vw - 40px); }
   }
 </style>
@@ -593,17 +584,6 @@
 <button id="rp-exit-tour-btn" class="rp-exit-tour-btn">Exit tour ×</button>
 <aside id="rp-story-panel" class="rp-story-panel rp-hidden"></aside>
 
-<div id="rp-design-variants" class="rp-design-variants">
-  <span class="rp-dv-label">Design options</span>
-  <div class="rp-dv-group"><span>Icon</span><div id="rp-dv-icon"></div></div>
-  <div class="rp-dv-group"><span>Color</span><div id="rp-dv-color"></div></div>
-  <div class="rp-dv-group"><span>Story size</span><div id="rp-dv-size"></div></div>
-  <div class="rp-dv-group"><span>Pin size</span><div id="rp-dv-pin-size"></div></div>
-  <div class="rp-dv-group"><span>Shading</span><div id="rp-dv-shading"></div></div>
-  <div class="rp-dv-group"><span>Podcast player</span><div id="rp-dv-podcast"></div></div>
-  <button id="rp-dv-close" title="Hide">×</button>
-</div>
-<button id="rp-dv-toggle-collapsed" class="rp-dv-toggle-collapsed rp-hidden">Design options ▾</button>
 
 <div id="rp-nr-panel" class="rp-nr-panel">
   <span class="rp-nr-label">Network relationships (concept)</span>
@@ -613,7 +593,7 @@
   <div id="rp-nr-hint" class="rp-nr-hint">Click a network pin on the map, or a name in the sidebar list, to see it.</div>
   <div id="rp-nr-results" class="rp-nr-results"></div>
 </div>
-<button id="rp-nr-toggle-collapsed" class="rp-dv-toggle-collapsed rp-hidden" style="left:12px;transform:none;bottom:64px;top:auto;">Network relationships ▾</button>
+<button id="rp-nr-toggle-collapsed" class="rp-nr-toggle-collapsed rp-hidden">Network relationships ▾</button>
 <!-- =================== END STORY LAYER PROTOTYPE (new) ==================== -->
 
 <div class="legend" id="legend">
@@ -1547,54 +1527,41 @@ document.getElementById('about-bar-header').addEventListener('click', () => {
 function onMapReady(cb) { if (map.loaded()) cb(); else map.on('load', cb); }
 
 // --------------------------- Story data (mock) ---------------------------
-// orange matches the real site's own accent (.network-toggle-btn.active,
-// statewide scope tags: #fb923c) -- reusing it, not inventing a new color.
-// Teal and purple dropped per client feedback (teal read too close to the
-// real site's own teal accent/network pins); blue added, picked distinctly
-// apart from the real site's existing network-pin blue.
-const RP_COLORS = { green: '#5fae6b', orange: '#fb923c', blue: '#38bdf8' };
+// Story-layer look, settled with Rippel on the Oct 21 call (replaces the
+// earlier Design Options comparison panel): book icon, orange, small,
+// circle shading, YouTube for podcasts, slightly smaller network pins.
+// Orange is the real site's own accent (.network-toggle-btn.active,
+// statewide scope tags), not a new color.
+const RP_STORY_COLOR = '#fb923c';
+const RP_STORY_ICON_SIZE = 0.5;   // ~30px badge
+const RP_NETWORK_PIN_SIZE = 0.75; // the real site draws its pins at 1.0 (24x33px); shrunk so clusters overlap less
 
-function rpMakeBlob(center, rxDeg, ryDeg, steps = 24) {
-  const [cx, cy] = center;
-  const coords = [];
-  for (let i = 0; i <= steps; i++) {
-    const angle = (i / steps) * Math.PI * 2;
-    const wobble = 1 + 0.08 * Math.sin(angle * 3);
-    coords.push([cx + Math.cos(angle) * rxDeg * wobble, cy + Math.sin(angle) * ryDeg * wobble]);
-  }
-  return [coords];
-}
 
 const RP_GEOGRAPHIES = {
   'inland-empire': { label: 'Inland Empire, CA', shortName: 'Inland Empire', subtitle: 'Riverside & San Bernardino counties, Southern California', center: [-117.25, 34.05] },
   'fox-cities': { label: 'Fox Cities, WI', shortName: 'Fox Cities', subtitle: 'Greater Appleton area, northeast Wisconsin', center: [-88.4, 44.28] },
   'lehigh-valley': { label: 'Lehigh Valley, PA', shortName: 'Lehigh Valley', subtitle: 'Allentown–Bethlehem–Easton area, eastern Pennsylvania', center: [-75.5, 40.62] },
   'south-texas': { label: 'South Texas (PJTT)', shortName: 'South Texas', subtitle: '19 counties along the Texas–Mexico border, from Laredo to the Rio Grande Valley', center: [-99.5, 27.5] },
+  // Hijas del Campo's own location (agreed Oct 21; it was filed under Inland Empire). Marker near Brentwood, per NBC's report.
+  'contra-costa': { label: 'Contra Costa County, CA', shortName: 'Contra Costa County', subtitle: 'East Bay, San Francisco Bay Area', center: [-121.75, 37.93] },
   // Partner-supplied 2026-10-20 "to cover the southeast."
   'palm-beach': { label: 'Palm Beach County, FL', shortName: 'Palm Beach County', subtitle: 'Southeast Florida, from Boca Raton to Jupiter and the Glades', center: [-80.45, 26.65] },
   'granite-state': { label: 'New Hampshire (statewide)', shortName: 'New Hampshire', subtitle: 'Statewide initiative — not tied to one metro area', center: [-71.5, 43.65], anchor: [-71.55, 43.2], statewide: true },
 };
 
 const RP_REGION_DEFS = [
-  { id: 'inland-empire', name: 'Inland Empire, CA', rx: 0.85, ry: 0.6 },
-  { id: 'fox-cities', name: 'Fox Cities, WI', rx: 0.7, ry: 0.45 },
-  { id: 'lehigh-valley', name: 'Lehigh Valley, PA', rx: 0.65, ry: 0.4 },
-  { id: 'south-texas', name: 'South Texas (PJTT)', rx: 0.75, ry: 0.55 },
+  { id: 'inland-empire', name: 'Inland Empire, CA' },
+  { id: 'fox-cities', name: 'Fox Cities, WI' },
+  { id: 'lehigh-valley', name: 'Lehigh Valley, PA' },
+  { id: 'south-texas', name: 'South Texas (PJTT)' },
   // Statewide (New Hampshire) gets the same blob treatment as every other
   // location, per consistency feedback -- a real-state-boundary fill was
   // tried and dropped. Sized bigger to suggest a larger area.
-  { id: 'granite-state', name: 'New Hampshire (statewide)', rx: 1.0, ry: 1.3 },
-  { id: 'palm-beach', name: 'Palm Beach County, FL', rx: 0.5, ry: 0.35 },
+  { id: 'granite-state', name: 'New Hampshire (statewide)' },
+  { id: 'palm-beach', name: 'Palm Beach County, FL' },
+  { id: 'contra-costa', name: 'Contra Costa County, CA' },
 ];
 
-const RP_REGIONS_GEOJSON = {
-  type: 'FeatureCollection',
-  features: RP_REGION_DEFS.map((r) => ({
-    type: 'Feature',
-    properties: { id: r.id, name: r.name },
-    geometry: { type: 'Polygon', coordinates: rpMakeBlob(RP_GEOGRAPHIES[r.id].center, r.rx, r.ry) },
-  })),
-};
 const RP_REGION_CIRCLES_GEOJSON = {
   type: 'FeatureCollection',
   features: RP_REGION_DEFS.map((r) => {
@@ -1604,10 +1571,7 @@ const RP_REGION_CIRCLES_GEOJSON = {
 };
 
 const RP_STORIES = [
-  { id: 'inland-empire-podcast', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Building Belonging and Civic Muscle Through Journalism', format: 'Podcast', formatIcon: '🎙️',
-    excerpt: "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
-    image: '../img/inland-empire-unsung-stewards.jpg', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE' },
-    link: 'https://rippel.org/podcasts/?podcast-id=7828' },
+  // Inland Empire order set by Rippel on Oct 21: Summit first, Vital Conditions second (not opening on the podcast).
   // Partner-supplied 2026-10-20: IECF's own videos.
   { id: 'inland-empire-video-iecf-summit', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'IECF Policy & Philanthropy Summit 2026', format: 'Video', formatIcon: '▶️',
     excerpt: "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
@@ -1617,16 +1581,14 @@ const RP_STORIES = [
     excerpt: 'The Inland Empire Community Foundation on the vital condition of belonging and civic muscle: the social fabric and civic power that build a stronger Inland Empire for all.',
     image: 'https://img.youtube.com/vi/exLwdsRGp6o/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/exLwdsRGp6o' },
     link: 'https://www.youtube.com/watch?v=exLwdsRGp6o', linkLabel: 'Watch on YouTube →' },
+  { id: 'inland-empire-podcast', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Building Belonging and Civic Muscle Through Journalism', format: 'Podcast', formatIcon: '🎙️',
+    excerpt: "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
+    image: '../img/inland-empire-unsung-stewards.jpg', audio: 'https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE' },
+    link: 'https://rippel.org/podcasts/?podcast-id=7828' },
   { id: 'inland-empire-playlist-ievcn', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Inland Empire Vital Conditions Network', format: 'Video Series', formatIcon: '▶️',
     excerpt: "A playlist from the Inland Empire Community Foundation on the Inland Empire Vital Conditions Network (IEVCN). Plays here in order; use the player's playlist menu to pick a video.",
     image: 'https://i.ytimg.com/vi/FZr9fsleQOw/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/videoseries?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA' },
     link: 'https://www.youtube.com/playlist?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA', linkLabel: 'View the playlist on YouTube →' },
-  // Partner-supplied 2026-10-01; no official NBC embed, so "external" (link-out) media. NBC places Hijas del Campo in Contra Costa County, not the Inland Empire — confirm with Rippel.
-  { id: 'inland-empire-video-hijas-del-campo', geoId: 'inland-empire', geography: 'Inland Empire, CA', title: 'Hijas del Campo Works to Support Farmworkers', format: 'Video', formatIcon: '▶️',
-    excerpt: 'What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.',
-    image: 'https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675',
-    media: { type: 'external', url: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', source: 'NBC Bay Area' },
-    link: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', linkLabel: 'Watch on NBC Bay Area →' },
   { id: 'fox-cities-multimedia', geoId: 'fox-cities', geography: 'Fox Cities, WI', title: 'Imagine Fox Cities: Creating a Community Where Everyone Belongs', format: 'Multimedia', formatIcon: '🎬',
     excerpt: 'Fox Cities, a region of 19 municipalities in central Wisconsin, is bringing together residents, businesses, and institutions around one question: how do we build a community where everyone belongs?',
     // Opens the full scrolling experience in a large viewer over the map (keeps people on the map).
@@ -1661,6 +1623,12 @@ const RP_STORIES = [
     excerpt: 'Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.',
     image: 'https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg', media: { type: 'youtube', url: 'https://www.youtube-nocookie.com/embed/0oPep3N5mIk', autoplay: false },
     link: 'https://www.youtube.com/watch?v=0oPep3N5mIk', linkLabel: 'Watch on YouTube →' },
+  // Partner-supplied 2026-10-01; no official NBC embed, so "external" (link-out) media. Moved to its own Contra Costa County location (Oct 21).
+  { id: 'inland-empire-video-hijas-del-campo', geoId: 'contra-costa', geography: 'Contra Costa County, CA', title: 'Hijas del Campo Works to Support Farmworkers', format: 'Video', formatIcon: '▶️',
+    excerpt: 'What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.',
+    image: 'https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675',
+    media: { type: 'external', url: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', source: 'NBC Bay Area' },
+    link: 'https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/', linkLabel: 'Watch on NBC Bay Area →' },
   // Partner-supplied 2026-10-20.
   { id: 'palm-beach-video-bewellpbc', geoId: 'palm-beach', geography: 'Palm Beach County, FL', title: 'BeWellPBC: Stewards Leading Change', format: 'Video', formatIcon: '▶️',
     excerpt: 'As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.',
@@ -1727,14 +1695,12 @@ function rpShowTourHighlight(coords) {
 }
 function rpHideTourHighlight() { if (rpTourHighlightMarker) { rpTourHighlightMarker.remove(); rpTourHighlightMarker = null; } }
 
-// --------------------------- Shading style ---------------------------
-let rpShadingStyle = 'blob';
+// --------------------------- Region circles ---------------------------
+// Each story location gets a soft circle (not a drawn boundary); follows the "Show Story Layer" toggle.
 function rpApplyRegionsVisibility() {
   const visible = document.getElementById('rp-story-toggle-btn').classList.contains('active');
-  map.setLayoutProperty('rp-regions-fill', 'visibility', visible && rpShadingStyle === 'blob' ? 'visible' : 'none');
-  map.setLayoutProperty('rp-regions-circle', 'visibility', visible && rpShadingStyle === 'circle' ? 'visible' : 'none');
+  map.setLayoutProperty('rp-regions-circle', 'visibility', visible ? 'visible' : 'none');
 }
-function rpSetShadingStyle(style) { rpShadingStyle = style; rpApplyRegionsVisibility(); }
 
 
 function rpFormatBadge(s) { return `<span class="rp-format-badge">${s.formatIcon} ${s.format}</span>`; }
@@ -1749,13 +1715,6 @@ function rpAttr(t) { return t.replace(/"/g, '&quot;'); }
 function rpMediaImage(s) {
   if (s.image) return `<img src="${s.image}" alt="" loading="lazy"${s.imagePosition ? ` style="object-position: ${s.imagePosition}"` : ''} />`;
   return `<span class="rp-media-fallback" aria-hidden="true"><span class="rp-media-fallback-icon">${s.formatIcon}</span><span class="rp-media-fallback-geo">${s.geography}</span></span>`;
-}
-// Podcast player (Design Options): 'audio' = Rippel's own MP3 in an audio bar
-// (lightweight, no YouTube branding/tracking); 'youtube' = the episode's YouTube version.
-let rpPodcastPlayer = 'audio';
-function rpSetPodcastPlayer(mode) {
-  rpPodcastPlayer = mode;
-  document.querySelectorAll('[data-podcast-id]').forEach((el) => { el.outerHTML = rpRenderMedia(rpStoryById(el.dataset.podcastId)); });
 }
 // Optional clip times on any playable source (client ask): start/end as seconds or "m:ss" on a
 // `media` object, or audio: { url, start, end } for a podcast. YouTube gets start=/end= params;
@@ -1780,11 +1739,12 @@ function rpClipLabel(c) { // "Clip 0:41–2:10" / "From 0:41", so a viewer knows
 function rpMediaFragment(start, end) { return !start && !end ? '' : `#t=${start || 0}${end ? `,${end}` : ''}`; }
 function rpRenderMedia(s) {
   const m = s.media;
-  // Podcasts play in the panel (audio or YouTube): same play button as video, plus the "Listen" chip.
+  // Podcasts play in the panel: their YouTube version (Rippel's pick -- it shows the picture), or the
+  // episode's own MP3 (s.audio) if there's no YouTube version. Same play button as video, plus the "Listen" chip.
   if (s.format === 'Podcast' && (s.audio || m)) {
-    const useAudio = s.audio && (rpPodcastPlayer === 'audio' || !m);
+    const useAudio = !m;
     const c = rpClip(useAudio ? s.audio : m);
-    return `<button type="button" class="rp-media rp-media-playable" data-podcast-id="${s.id}" data-media-type="${useAudio ? 'audio' : m.type}" data-media-url="${c.url}"${rpClipAttrs(c)} data-media-title="${rpAttr(s.title)}" aria-label="Listen to ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span>${rpClipLabel(c)}</button>`;
+    return `<button type="button" class="rp-media rp-media-playable" data-media-type="${useAudio ? 'audio' : m.type}" data-media-url="${c.url}"${rpClipAttrs(c)} data-media-title="${rpAttr(s.title)}" aria-label="Listen to ${rpAttr(s.title)}">${rpMediaImage(s)}<span class="rp-media-play" aria-hidden="true"></span><span class="rp-media-chip">${RP_HEADPHONES_SVG} Listen</span>${rpClipLabel(c)}</button>`;
   }
   // A full multimedia piece (Fox Cities): opens in a large viewer over the map, not a new tab.
   if (m && m.type === 'experience') {
@@ -1803,12 +1763,11 @@ function rpRenderMedia(s) {
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.rp-media-playable[data-media-url]');
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle, podcastId, mediaStart, mediaEnd } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, mediaStart, mediaEnd } = btn.dataset;
   if (mediaType === 'experience') { rpOpenViewer(mediaUrl, mediaTitle); return; }
-  const keep = podcastId ? ` data-podcast-id="${podcastId}"` : ''; // so the Podcast player switch can still swap it
   if (mediaType === 'audio') {
     const art = btn.querySelector('img, .rp-media-fallback').outerHTML; // episode art stays, audio bar along the bottom
-    btn.outerHTML = `<div class="rp-media rp-media-audio"${keep}>${art}<audio src="${mediaUrl}${rpMediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
+    btn.outerHTML = `<div class="rp-media rp-media-audio">${art}<audio src="${mediaUrl}${rpMediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
     return;
   }
   const sep = mediaUrl.includes('?') ? '&' : '?'; // playlist URLs already carry ?list=
@@ -1816,7 +1775,7 @@ document.addEventListener('click', (e) => {
   const player = mediaType === 'youtube'
     ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1${clipParams}" title="${mediaTitle}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
     : `<video src="${mediaUrl}${rpMediaFragment(mediaStart, mediaEnd)}" controls autoplay playsinline></video>`;
-  btn.outerHTML = `<div class="rp-media"${keep}>${player}</div>`;
+  btn.outerHTML = `<div class="rp-media">${player}</div>`;
 });
 // Large viewer over the map for a full multimedia piece; ×, Esc, or a backdrop click returns to the map.
 function rpOpenViewer(url, title) {
@@ -2029,24 +1988,20 @@ function rpWireStoryClickPriority() {
 
 // --------------------------- Layer setup ---------------------------
 onMapReady(() => {
-  map.addSource('rp-regions', { type: 'geojson', data: RP_REGIONS_GEOJSON });
-  map.addLayer({ id: 'rp-regions-fill', type: 'fill', source: 'rp-regions', paint: { 'fill-color': RP_COLORS.green, 'fill-opacity': 0.16 } });
-
   map.addSource('rp-region-circles', { type: 'geojson', data: RP_REGION_CIRCLES_GEOJSON });
-  map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles', layout: { visibility: 'none' },
-    paint: { 'circle-radius': 34, 'circle-color': RP_COLORS.green, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_COLORS.green, 'circle-stroke-opacity': 0.8 } });
+  map.addLayer({ id: 'rp-regions-circle', type: 'circle', source: 'rp-region-circles',
+    paint: { 'circle-radius': 34, 'circle-color': RP_STORY_COLOR, 'circle-opacity': 0.14, 'circle-stroke-width': 2, 'circle-stroke-color': RP_STORY_COLOR, 'circle-stroke-opacity': 0.8 } });
 
-  // No circular halo behind the story icon either -- it competed
-  // visually with the region "circle" shading option above, making both
-  // read as the same kind of thing. Multi-story locations now get a "+"
+  // No halo behind the story icon -- it competed with the region circle
+  // above, making both read as the same kind of thing. Multi-story locations now get a "+"
   // baked into the icon artwork instead -- see RP_MULTI_BADGE above.
   const storyPoints = rpStoryPointsGeoJSON();
   map.addSource('rp-story-points', { type: 'geojson', data: storyPoints });
 
-  rpEnsureIcon('book', RP_COLORS.green, false, (normalId) => {
-    rpEnsureIcon('book', RP_COLORS.green, true, (multiId) => {
+  rpEnsureIcon('book', RP_STORY_COLOR, false, (normalId) => {
+    rpEnsureIcon('book', RP_STORY_COLOR, true, (multiId) => {
     map.addLayer({ id: 'rp-story-points-layer', type: 'symbol', source: 'rp-story-points',
-      layout: { 'icon-image': ['case', ['>', ['get', 'count'], 1], multiId, normalId], 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
+      layout: { 'icon-image': ['case', ['>', ['get', 'count'], 1], multiId, normalId], 'icon-size': RP_STORY_ICON_SIZE, 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
 
     rpApplyRegionsVisibility();
 
@@ -2076,68 +2031,32 @@ document.querySelector('#rp-tour-banner .rp-tour-banner-dismiss').addEventListen
 document.getElementById('rp-exit-tour-btn').addEventListener('click', rpExitTour);
 onMapReady(rpShowBanner);
 
-// --------------------------- Design Variants panel (dev-only) ---------------------------
-const RP_ICON_OPTS = [{ id: 'book', label: 'Book' }, { id: 'person', label: 'Person' }];
-const RP_COLOR_OPTS = [{ id: 'green', label: 'Green' }, { id: 'orange', label: 'Orange' }, { id: 'blue', label: 'Blue' }];
-const RP_SIZE_OPTS = [{ id: 'small', label: 'Small', value: 0.5 }, { id: 'large', label: 'Large', value: 0.75 }];
-const RP_SHADING_OPTS = [{ id: 'blob', label: 'Blob' }, { id: 'circle', label: 'Circle' }];
-// Network pin size: a side-by-side for a possible change to the LIVE map's own
-// pins (the real site draws them at icon-size 1.0 = 24x33px). Applied from here
-// via setLayoutProperty so the real site's code stays untouched; "Current" is
-// exactly what production shows today.
-const RP_PIN_SIZE_OPTS = [{ id: 'current', label: 'Current', value: 1.0 }, { id: 'smaller', label: 'Smaller', value: 0.75 }];
-// How podcasts play inside the story panel (client question, Oct 2026).
-const RP_PODCAST_OPTS = [{ id: 'audio', label: 'Audio' }, { id: 'youtube', label: 'YouTube' }];
-const rpVariantState = { icon: 'book', color: 'green', size: 'small', shading: 'blob', pinSize: 'current', podcast: 'audio' };
-
-function rpApplyIconAndColor() {
-  const colorHex = RP_COLORS[rpVariantState.color];
-  rpEnsureIcon(rpVariantState.icon, colorHex, false, (normalId) => {
-    rpEnsureIcon(rpVariantState.icon, colorHex, true, (multiId) => {
-      if (map.getLayer('rp-story-points-layer')) {
-        map.setLayoutProperty('rp-story-points-layer', 'icon-image', ['case', ['>', ['get', 'count'], 1], multiId, normalId]);
-      }
-    });
-  });
-  // Region shading tracks the icon color -- a location's blob/circle and
-  // its marker should read as the same color, not two independent choices.
-  if (map.getLayer('rp-regions-fill')) map.setPaintProperty('rp-regions-fill', 'fill-color', colorHex);
-  if (map.getLayer('rp-regions-circle')) {
-    map.setPaintProperty('rp-regions-circle', 'circle-color', colorHex);
-    map.setPaintProperty('rp-regions-circle', 'circle-stroke-color', colorHex);
-  }
-}
+// --------------------------- Network pin size ---------------------------
+// Shrinks the real site's own pins (agreed Oct 21: they sit on top of each
+// other in busy areas). Applied from here so the real site's code stays
+// untouched; production would just change its own icon-size.
 function rpApplyPinSize() {
-  const value = RP_PIN_SIZE_OPTS.find((s) => s.id === rpVariantState.pinSize).value;
-  ['network-pins-local', 'network-pins-statewide'].forEach((id) => { if (map.getLayer(id)) map.setLayoutProperty(id, 'icon-size', value); });
+  ['network-pins-local', 'network-pins-statewide'].forEach((id) => { if (map.getLayer(id)) map.setLayoutProperty(id, 'icon-size', RP_NETWORK_PIN_SIZE); });
   rpSyncNetworkRelRings();
 }
-function rpApplySize() { map.setLayoutProperty('rp-story-points-layer', 'icon-size', RP_SIZE_OPTS.find((s) => s.id === rpVariantState.size).value); }
-function rpRenderVariantGroup(el, options, current, onPick) {
-  el.innerHTML = options.map((o) => `<button data-id="${o.id}" class="${o.id === current ? 'active' : ''}">${o.label}</button>`).join('');
-  el.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => onPick(btn.dataset.id)));
-}
-function rpInitDesignVariants() {
-  function render() {
-    rpRenderVariantGroup(document.getElementById('rp-dv-icon'), RP_ICON_OPTS, rpVariantState.icon, (id) => { rpVariantState.icon = id; rpApplyIconAndColor(); render(); });
-    rpRenderVariantGroup(document.getElementById('rp-dv-color'), RP_COLOR_OPTS, rpVariantState.color, (id) => { rpVariantState.color = id; rpApplyIconAndColor(); render(); });
-    rpRenderVariantGroup(document.getElementById('rp-dv-size'), RP_SIZE_OPTS, rpVariantState.size, (id) => { rpVariantState.size = id; rpApplySize(); render(); });
-    rpRenderVariantGroup(document.getElementById('rp-dv-pin-size'), RP_PIN_SIZE_OPTS, rpVariantState.pinSize, (id) => { rpVariantState.pinSize = id; rpApplyPinSize(); render(); });
-    rpRenderVariantGroup(document.getElementById('rp-dv-podcast'), RP_PODCAST_OPTS, rpVariantState.podcast, (id) => { rpVariantState.podcast = id; rpSetPodcastPlayer(id); render(); });
-    rpRenderVariantGroup(document.getElementById('rp-dv-shading'), RP_SHADING_OPTS, rpVariantState.shading, (id) => { rpVariantState.shading = id; rpSetShadingStyle(id); render(); });
-  }
-  document.getElementById('rp-dv-close').addEventListener('click', () => {
-    document.getElementById('rp-design-variants').classList.add('rp-hidden');
-    document.getElementById('rp-dv-toggle-collapsed').classList.remove('rp-hidden');
-  });
-  document.getElementById('rp-dv-toggle-collapsed').addEventListener('click', () => {
-    document.getElementById('rp-design-variants').classList.remove('rp-hidden');
-    document.getElementById('rp-dv-toggle-collapsed').classList.add('rp-hidden');
-  });
-  rpApplySize();
-  render();
-}
-document.addEventListener('rp-story-layer-ready', rpInitDesignVariants);
+document.addEventListener('rp-story-layer-ready', rpApplyPinSize);
+
+// ------------------- "Add your organization" header link -------------------
+// Agreed Oct 21: an obvious way into the Count Me In form from the map.
+// rippel.org/count-me-in/ is Rippel's own short link (it redirects to the
+// Airtable form). Inserted from here so the real header markup is untouched.
+(function rpAddHeaderCta() {
+  const header = document.querySelector('header.header');
+  const stats = header && header.querySelector('.header-stats');
+  if (!stats) return;
+  const a = document.createElement('a');
+  a.className = 'rp-header-cta';
+  a.href = 'https://rippel.org/count-me-in/';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = 'Add your organization to the map';
+  header.insertBefore(a, stats);
+})();
 
 // --------------------------- Network relationships (concept) ---------------------------
 // Client asked to see "relationships between networks" as a new layer, without a precise
@@ -2216,7 +2135,7 @@ function rpSelectNetwork(name) {
   rpRenderNetworkRelResults(name, rels, geoRels, origin);
 }
 // The ring sits on the pin's head, which is a fixed pixel height above the
-// pin's anchor -- so its offset (and size) scale with Design Options' Pin size.
+// pin's anchor -- so its offset (and size) scale with the network pin size.
 const RP_PIN_HEAD_OFFSET = 20; // px above the anchor at icon-size 1.0
 function rpSyncNetworkRelRings() {
   if (!map.getLayer('rp-network-rel-points')) return;
@@ -2238,8 +2157,9 @@ function rpClearNetworkRel() {
 }
 
 onMapReady(() => {
-  // Amber, not teal/green -- this needs to read as clearly distinct from
-  // the site's own teal network pins and the Design Variants "Green" story
+  // Amber, not teal -- distinct from the site's own teal network pins.
+  // (Now close to the story orange; revisit if this concept continues.)
+  // Was: distinct from the site's own teal network pins and the green story
   // color, not a third shade of the same color family.
   map.addSource('rp-network-rel-lines', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
   map.addLayer({ id: 'rp-network-rel-lines', type: 'line', source: 'rp-network-rel-lines',
@@ -2274,6 +2194,10 @@ document.getElementById('network-list').addEventListener('click', (e) => {
   if (item) rpSelectNetwork(item.dataset.name);
 });
 
+function rpRenderVariantGroup(el, options, current, onPick) {
+  el.innerHTML = options.map((o) => `<button data-id="${o.id}" class="${o.id === current ? 'active' : ''}">${o.label}</button>`).join('');
+  el.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => onPick(btn.dataset.id)));
+}
 const RP_NR_MODE_OPTS = [{ id: 'off', label: 'Off' }, { id: 'lines', label: 'Lines' }, { id: 'highlight', label: 'Highlight' }];
 function rpInitNetworkRelPanel() {
   function render() {

@@ -18,6 +18,12 @@ Design Variants panel for live icon/color/size comparisons, media embeds,
 and a first mobile pass. See "Round 2: client meeting feedback" below for
 the full rundown, including what's still open.
 
+**Current state (Oct 21 call with Rippel):** the design is settled and
+the Design Options comparison panel is gone: book icon, orange (#fb923c),
+small (~30px), circle shading, podcasts play their YouTube version, and
+the live map's network pins are shown at 75% size. Sections below that
+describe the Design Options / Design Variants panel are history.
+
 **Also available: [`live-copy/`](live-copy/)** — the same story layer,
 overlaid on an exact, unmodified copy of the real live map (real data,
 real county density heat map, real filters) instead of this folder's
@@ -69,9 +75,9 @@ prototype when presenting — see [`live-copy/README.md`](live-copy/README.md).
 - `js/app.js` — boots the single story mode and exposes
   `window.currentStoryToggleHandler` for the Filters panel's "Show Story
   Layer" checkbox.
-- `js/design-variants.js` — **dev-only** comparison tool for the client
-  call (icon/color/size/shading). Not part of the pitched product — see
-  "Round 2" below.
+- (`js/design-variants.js`, the Design Options comparison panel, was
+  removed after the Oct 21 call; the chosen look is set in
+  `js/map-common.js` as `STORY_COLOR` / `STORY_ICON_SIZE`.)
 
 ## How it works (merged Guided Tour + Self-Guided)
 
@@ -340,8 +346,8 @@ map actually looks like); every change is mirrored here too.
   underneath, and Design Options has a **Pin size** switch (Current /
   Smaller) to compare a possible change to the live map's own pins.
 
-Still open: the prototype controls (tour banner, Design Options, Network
-Relationships) crowd the map; busy locations would read better with one
+Still open: the prototype controls (tour banner, Network Relationships)
+crowd the map; busy locations would read better with one
 featured card + a compact list; podcast headshots/audio from Rippel.
 
 ## Network relationships (concept) — built in `live-copy/` only
@@ -434,6 +440,17 @@ media fragment and stop on their own at `end`. The card shows a small
 "From 0:41" / "Clip 1:05–3:30" label. The IECF Summit (0:41) and BeWellPBC
 (0:32) start where Rippel's own links pointed (`&t=41s`, `&t=32s`).
 
+**Oct 21 call with Rippel (Bobby):**
+- Design settled (see "Current state" at the top); Design Options removed.
+- Hijas del Campo moved to its own location, Contra Costa County, CA (it
+  had been filed under Inland Empire).
+- Inland Empire order: IECF Summit, Vital Conditions: Belonging & Civic
+  Muscle, then the Paulette Brown-Hinds podcast and the IEVCN playlist.
+- "Add your organization to the map" in the header, linking to
+  rippel.org/count-me-in/ (Rippel's short link to the Count Me In form).
+- More than one clip from the same video = a second story entry with its
+  own `start` / `end`.
+
 **Fox Cities** is a full-screen scrolling multimedia page, too big for the
 480px panel, so "Open the full experience" plays it in a large viewer over
 the map (×, Esc, or clicking the dimmed backdrop returns to the map). This
@@ -499,6 +516,7 @@ URL if you have access to it for even closer fidelity.
   tuning (e.g. touch gesture handling, font-size sweep). Still built
   primarily for a laptop-in-a-meeting demo.
 - No real narration audio/voiceover — see "Round 2" above.
-- The Design Variants panel (`js/design-variants.js`) is dev-only scaffolding
-  for the client call, not a real settings UI — no persistence, no
-  production styling polish.
+- Story content is written directly in `js/data.js` (and `RP_STORIES` in
+  `live-copy/index.html`), so reordering or retiming clips is a code edit.
+  Moving stories into an Airtable table, synced like the live map's orgs,
+  would let Rippel edit them without code.

@@ -8,28 +8,11 @@
 // such in their own comments — swap for real content once available.
 // ---------------------------------------------------------------------------
 
-// Rough elliptical "blob" polygon generator so we don't need real boundary
-// data for the demo — good enough to read as a shaded geography at US scale.
-function makeBlob(center, rxDeg, ryDeg, steps = 24) {
-  const [cx, cy] = center;
-  const coords = [];
-  for (let i = 0; i <= steps; i++) {
-    const angle = (i / steps) * Math.PI * 2;
-    // slight irregularity so it doesn't look like a perfect ellipse
-    const wobble = 1 + 0.08 * Math.sin(angle * 3);
-    coords.push([
-      cx + Math.cos(angle) * rxDeg * wobble,
-      cy + Math.sin(angle) * ryDeg * wobble,
-    ]);
-  }
-  return [coords];
-}
-
 // ---------------------------------------------------------------------------
 // Story geographies (also get a shaded region + are the featured locations).
 // `subtitle` orients users unfamiliar with a regional name (client ask).
-// `anchor` is the representative point used by the alternate "circle" shading
-// mode (Design Variants panel) — usually same as `center`, but can differ
+// `anchor` is the point the location's region circle sits on — usually the
+// same as `center`, but can differ
 // for a non-adjacent or statewide geography where the marker's map point and
 // the "best single dot to represent this on the map" aren't the same thing.
 // ---------------------------------------------------------------------------
@@ -71,10 +54,17 @@ const STORY_GEOGRAPHIES = {
     subtitle: "Southeast Florida, from Boca Raton to Jupiter and the Glades",
     center: [-80.45, 26.65],
   },
+  // Hijas del Campo's own location (agreed Oct 21; it had been filed under
+  // Inland Empire). Marker near Brentwood, per NBC's report.
+  "contra-costa": {
+    label: "Contra Costa County, CA",
+    shortName: "Contra Costa County",
+    subtitle: "East Bay, San Francisco Bay Area",
+    center: [-121.75, 37.93],
+  },
   // MOCK — statewide example (no tight metro center) added to test how
   // shading/anchoring should work when a story isn't a small region. `anchor`
-  // (state capital) intentionally differs from the shaded blob's broad
-  // centroid, since "where does a statewide story anchor" was the client's
+  // (state capital) intentionally differs from the state's broad centroid, since "where does a statewide story anchor" was the client's
   // open question.
   "granite-state": {
     label: "New Hampshire (statewide)",
@@ -87,58 +77,33 @@ const STORY_GEOGRAPHIES = {
 };
 
 // ---------------------------------------------------------------------------
-// Raw region definitions, kept separate from the derived GeoJSON below so
-// both the blob-shading layer AND the alternate circle-shading layer (Design
-// Variants comparison) can be built from the same source data.
+// Region definitions: one circle per location (see REGION_CIRCLES_GEOJSON).
+// Story locations take their point from STORY_GEOGRAPHIES; the non-story
+// network regions carry their own `center`.
 // ---------------------------------------------------------------------------
 const REGION_DEFS = [
-  { id: "inland-empire", hasStory: true, name: "Inland Empire, CA", rx: 0.85, ry: 0.6 },
-  { id: "fox-cities", hasStory: true, name: "Fox Cities, WI", rx: 0.7, ry: 0.45 },
-  { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA", rx: 0.65, ry: 0.4 },
-  // South Texas (PJTT) gets the same single-blob treatment as every other
-  // location, sized comparably — not the 19-scattered-blob mock geometry
-  // from the first pass, which read as visual noise rather than "19
-  // counties" and, worse, looked inconsistent next to every other location
-  // having one plain shape. The 19-county, non-adjacent framing is carried
-  // by the text subtitle instead (see STORY_GEOGRAPHIES above); if PJTT's
-  // real non-contiguous footprint needs depicting on the map later, that
-  // likely wants real boundary data, not a second mock geometry style.
-  { id: "south-texas", hasStory: true, name: "South Texas (PJTT)", rx: 0.75, ry: 0.55 },
-  // Statewide (New Hampshire) gets the same blob treatment as every other
-  // location, per consistency feedback — a real-state-boundary fill was
-  // tried and dropped (didn't read as "statewide" any more clearly, and
-  // meant New Hampshire was the one location without a shaded area at
-  // all). Sized bigger than the regional blobs to suggest a larger area.
-  { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)", rx: 1.0, ry: 1.3 },
-  { id: "palm-beach", hasStory: true, name: "Palm Beach County, FL", rx: 0.5, ry: 0.35 },
-  { id: "north-sound", hasStory: false, name: "North Sound, WA", rx: 0.9, ry: 0.55, center: [-122.25, 48.35] },
-  { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", rx: 0.75, ry: 0.5, center: [-93.25, 44.98] },
-  { id: "front-range", hasStory: false, name: "Front Range, CO", rx: 0.8, ry: 0.65, center: [-104.9, 39.6] },
-  { id: "piedmont-triad", hasStory: false, name: "Piedmont Triad, NC", rx: 0.7, ry: 0.4, center: [-79.9, 36.1] },
-  { id: "gulf-coast", hasStory: false, name: "Gulf Coast, MS", rx: 0.75, ry: 0.45, center: [-89.1, 30.6] },
+  { id: "inland-empire", hasStory: true, name: "Inland Empire, CA" },
+  { id: "fox-cities", hasStory: true, name: "Fox Cities, WI" },
+  { id: "lehigh-valley", hasStory: true, name: "Lehigh Valley, PA" },
+  // South Texas (PJTT) gets one circle like every other location; its
+  // 19-county, non-adjacent footprint is carried by the text subtitle (see
+  // STORY_GEOGRAPHIES). Depicting the real footprint later would want real
+  // boundary data.
+  { id: "south-texas", hasStory: true, name: "South Texas (PJTT)" },
+  { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)" },
+  { id: "palm-beach", hasStory: true, name: "Palm Beach County, FL" },
+  { id: "contra-costa", hasStory: true, name: "Contra Costa County, CA" },
+  { id: "north-sound", hasStory: false, name: "North Sound, WA", center: [-122.25, 48.35] },
+  { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", center: [-93.25, 44.98] },
+  { id: "front-range", hasStory: false, name: "Front Range, CO", center: [-104.9, 39.6] },
+  { id: "piedmont-triad", hasStory: false, name: "Piedmont Triad, NC", center: [-79.9, 36.1] },
+  { id: "gulf-coast", hasStory: false, name: "Gulf Coast, MS", center: [-89.1, 30.6] },
 ];
 
 // ---------------------------------------------------------------------------
-// Shaded regions layer (mirrors the live map's shaded geography regions).
-// ---------------------------------------------------------------------------
-const REGIONS_GEOJSON = {
-  type: "FeatureCollection",
-  features: REGION_DEFS.map((r) => {
-    const center = r.center || STORY_GEOGRAPHIES[r.id].center;
-    return {
-      type: "Feature",
-      properties: { id: r.id, name: r.name, hasStory: r.hasStory },
-      geometry: { type: "Polygon", coordinates: makeBlob(center, r.rx, r.ry) },
-    };
-  }),
-};
-
-// ---------------------------------------------------------------------------
-// Alternate "circle" shading mode (Design Variants comparison) — a plain
-// anchor point instead of a soft blob polygon, so it reads as "just a
-// locator" rather than an implied boundary. The statewide example is a
-// single dot at a representative point (its `anchor`) rather than
-// state-wide shading.
+// Region circles — one soft circle per location (story or not), placed at
+// the location's `anchor` (statewide examples get a single representative
+// point rather than state-wide shading).
 // ---------------------------------------------------------------------------
 const REGION_CIRCLES_GEOJSON = {
   type: "FeatureCollection",
@@ -257,20 +222,8 @@ const NATIONWIDE_NETWORKS = [
 // story without one gets a designed fallback tile, not a placeholder.
 // ---------------------------------------------------------------------------
 const STORIES = [
-  {
-    id: "inland-empire-podcast",
-    geoId: "inland-empire",
-    geography: "Inland Empire, CA",
-    title: "Building Belonging and Civic Muscle Through Journalism",
-    format: "Podcast",
-    formatIcon: "🎙️",
-    excerpt:
-      "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
-    image: "img/inland-empire-unsung-stewards.jpg",
-    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE" },
-    link: "https://rippel.org/podcasts/?podcast-id=7828",
-  },
+  // Inland Empire order set by Rippel on Oct 21: Summit first, Vital
+  // Conditions second (not opening on the podcast).
   // Real content, partner-supplied (Rippel, 2026-10-20): IECF's own videos.
   {
     id: "inland-empire-video-iecf-summit",
@@ -302,6 +255,20 @@ const STORIES = [
     linkLabel: "Watch on YouTube →",
   },
   {
+    id: "inland-empire-podcast",
+    geoId: "inland-empire",
+    geography: "Inland Empire, CA",
+    title: "Building Belonging and Civic Muscle Through Journalism",
+    format: "Podcast",
+    formatIcon: "🎙️",
+    excerpt:
+      "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
+    image: "img/inland-empire-unsung-stewards.jpg",
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE" },
+    link: "https://rippel.org/podcasts/?podcast-id=7828",
+  },
+  {
     id: "inland-empire-playlist-ievcn",
     geoId: "inland-empire",
     geography: "Inland Empire, CA",
@@ -314,31 +281,6 @@ const STORIES = [
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/videoseries?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA" },
     link: "https://www.youtube.com/playlist?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA",
     linkLabel: "View the playlist on YouTube →",
-  },
-  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
-  // NBC Bay Area offers no official embed player for this clip, so it uses
-  // the "external" media type (thumbnail + play overlay that links out) —
-  // the test case for partner video we can't play in-window. NOTE: NBC's
-  // own description places Hijas del Campo in Contra Costa County / East
-  // Bay (near Brentwood), not the Inland Empire — filed under Inland Empire
-  // as sent; confirm the intended location with Rippel.
-  {
-    id: "inland-empire-video-hijas-del-campo",
-    geoId: "inland-empire",
-    geography: "Inland Empire, CA",
-    title: "Hijas del Campo Works to Support Farmworkers",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.",
-    image: "https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675",
-    media: {
-      type: "external",
-      url: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
-      source: "NBC Bay Area",
-    },
-    link: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
-    linkLabel: "Watch on NBC Bay Area →",
   },
   {
     id: "fox-cities-multimedia",
@@ -467,6 +409,28 @@ const STORIES = [
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/0oPep3N5mIk", autoplay: false },
     link: "https://www.youtube.com/watch?v=0oPep3N5mIk",
     linkLabel: "Watch on YouTube →",
+  },
+  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
+  // NBC Bay Area offers no official embed player for this clip, so it uses
+  // the "external" media type (thumbnail + play overlay that links out).
+  // Moved to its own Contra Costa County location (Oct 21).
+  {
+    id: "inland-empire-video-hijas-del-campo",
+    geoId: "contra-costa",
+    geography: "Contra Costa County, CA",
+    title: "Hijas del Campo Works to Support Farmworkers",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.",
+    image: "https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675",
+    media: {
+      type: "external",
+      url: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
+      source: "NBC Bay Area",
+    },
+    link: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
+    linkLabel: "Watch on NBC Bay Area →",
   },
   // Real content, partner-supplied (Rippel, 2026-10-20).
   {

@@ -311,7 +311,7 @@ function initStoryMode(containerId, panelId, bannerId, exitBtnId) {
   map.on("load", () => {
     // story-points-layer registers its icon image asynchronously, so its
     // click/hover wiring — and anything else waiting on the layer actually
-    // existing, like js/design-variants.js — waits for this callback.
+    // existing — waits for this callback.
     addBaseLayers(map, () => {
       wireStoryClicks();
       document.dispatchEvent(new Event("story-layer-ready"));

@@ -70,9 +70,6 @@ function wireNetworksToggle() {
   box.addEventListener("change", () => {
     const map = window.getActiveMap && window.getActiveMap();
     if (!map) return;
-    // Only one of the two shading styles (blob/circle) is visible at a
-    // time — applyRegionsVisibility respects whichever the Design Variants
-    // panel currently has selected, rather than forcing both.
     applyRegionsVisibility(map);
   });
 }

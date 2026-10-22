@@ -26,7 +26,7 @@ into three clearly-marked blocks (search `STORY LAYER PROTOTYPE` in
 appended after the real site's own script. Delete those three blocks to
 get back to a pristine copy of the live site.
 
-The story layer content itself (6 locations, 15 stories, the Design
+The story layer content itself (7 locations, 15 stories, the Design
 Variants panel) is the same content as the top-level prototype — see
 `../README.md` for the full write-up of what it does, what's mock vs.
 real, and the client feedback it responds to. This file only covers what's
@@ -63,10 +63,17 @@ different about running it on the real map instead of the recreation.
   exactly as before. A pin fully hidden under a story icon is reachable
   by zooming in until they separate.
 
-- **Design Options → Pin size** (Current / Smaller) resizes the real
-  site's network pins from the story-layer block (`rpApplyPinSize()`),
-  for a side-by-side on whether the live map's pins should shrink.
-  "Current" is exactly what production shows today.
+- **Network pins are shown at 75% size** (agreed Oct 21: they pile up in
+  busy areas). Applied from the story-layer block (`rpApplyPinSize()`,
+  `RP_NETWORK_PIN_SIZE`) so the real site's code stays untouched;
+  production would just change its own `icon-size`.
+- **"Add your organization to the map"** sits in the real header, linking
+  to rippel.org/count-me-in/. Inserted from the story-layer block, so the
+  real header markup is unchanged; the prototype badge moved just below
+  the header to make room.
+- The Design Options comparison panel was removed after the Oct 21 call;
+  the chosen look is set once near the top of the story-layer script
+  (`RP_STORY_COLOR`, `RP_STORY_ICON_SIZE`, `RP_NETWORK_PIN_SIZE`).
 
 ## Setup
 
@@ -153,8 +160,7 @@ point)" instead of drawing a zero-length line to itself.
 Cleanup (Oct 2026): the panel now sits beside the real left sidebar
 instead of covering its "Regional Networks and Initiatives" list; lines
 and rings hide with the real "Show Networks & Initiatives" toggle (and
-come back with it, selection intact); rings scale with Design Options'
-Pin size so they stay on the pin head; and clicking empty map clears the
+come back with it, selection intact); rings scale with the network pin size so they stay on the pin head; and clicking empty map clears the
 selection, like every other click-away. Still open, pending whether the
 client pursues this concept: no marker on the selected network itself,
 and the mode defaults to Off, so a first pin click shows nothing new.

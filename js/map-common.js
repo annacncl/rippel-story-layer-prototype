@@ -10,18 +10,12 @@ const US_BOUNDS = [
   [-66, 50],
 ];
 
-// Design Variants palette (Design Variants panel, js/design-variants.js).
-// Placeholder hex values — swap for Rippel's exact brand colors once
-// confirmed; these are here so the client has something concrete to react
-// to on the call rather than a decision made unilaterally. Teal and purple
-// were dropped per client feedback (teal was easy to confuse with the
-// site's own teal accent/network-pin color); blue added as a replacement
-// option, picked distinctly apart from the existing network-pin blue below.
-const MARKER_COLORS = {
-  green: "#5fae6b",
-  orange: "#d97b3f", // matches --amber, already used elsewhere on this map (Networks & Initiatives toggle, statewide badges)
-  blue: "#38bdf8",
-};
+// Story-layer look, settled with Rippel on the Oct 21 call (replaces the
+// earlier Design Options comparison panel): book icon, orange, small,
+// circle shading, YouTube for podcasts. Same orange as live-copy/, which
+// takes it from the real site's own accent.
+const STORY_COLOR = "#fb923c";
+const STORY_ICON_SIZE = 0.5; // ~30px badge
 
 function createMap(containerId) {
   const map = new mapboxgl.Map({
@@ -36,8 +30,8 @@ function createMap(containerId) {
 
 // ---------------------------------------------------------------------------
 // Story marker icons — rasterized on demand from inline SVG and cached by
-// "shape-color" id, so the Design Variants panel can switch icon-image
-// live (map.setLayoutProperty) without re-decoding anything already shown.
+// "shape-color" id (book and person shapes are both kept; the map uses
+// the book).
 // Mapbox's hosted glyph service only covers pre-emoji Unicode symbol/dingbat
 // ranges, so a real book/person shape isn't renderable as a text-field glyph
 // — icon-image is the only reliable path to an exact shape.
@@ -63,7 +57,7 @@ const MULTI_BADGE = `<circle cx="26.5" cy="5.5" r="5" fill="#fff" stroke="{{colo
         <path d="M26.5 3 V8 M24 5.5 H29" stroke="{{color}}" stroke-width="1.8" stroke-linecap="round" />`;
 
 // 160px raster at pixelRatio 2 = 80 CSS px at icon-size 1; the badge tile
-// is 24/32 of that, so the Design Variants "Small" (0.5) marker is a ~30px
+// is 24/32 of that, so at STORY_ICON_SIZE (0.5) the marker is a ~30px
 // tile — on par with the 24x33px network pins instead of smaller than them.
 function storyIconSVG(shape, colorHex, multi) {
   return `
@@ -139,66 +133,26 @@ function hideTourHighlight() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Shading style (Design Variants panel): 'blob' (default, organic soft-edge
-// polygons) vs 'circle' (plain anchor-point dots — reads as "just a
-// locator," not an implied boundary). Both layer sets are always present;
-// this just controls which is visible, respecting the existing "Show
-// Networks & Initiatives" checkbox state.
-// ---------------------------------------------------------------------------
-let currentShadingStyle = "blob";
-
+// Region circles follow the "Show Networks & Initiatives" checkbox.
 function applyRegionsVisibility(map) {
   const box = document.getElementById("toggle-networks");
-  const visible = !box || box.checked;
-  setLayerVisibility(map, ["regions-fill"], visible && currentShadingStyle === "blob");
-  setLayerVisibility(map, ["regions-circle"], visible && currentShadingStyle === "circle");
-}
-
-function setShadingStyle(map, style) {
-  currentShadingStyle = style;
-  applyRegionsVisibility(map);
+  setLayerVisibility(map, ["regions-circle"], !box || box.checked);
 }
 
 function addBaseLayers(map, onReady) {
-  // Shaded geography regions — organic blob (default). Fill-only, no
-  // border line (internal team review, 2026-09-01: a hard outline made
-  // the shape read as a defined boundary rather than soft emphasis).
-  map.addSource("regions", { type: "geojson", data: REGIONS_GEOJSON });
-  map.addLayer({
-    id: "regions-fill",
-    type: "fill",
-    source: "regions",
-    paint: {
-      "fill-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
-      "fill-opacity": 0.16,
-    },
-  });
-
-  // New Hampshire (statewide) has no area shading right now — an oval
-  // blob and a real-state-boundary fill were both tried and both dropped
-  // (neither actually communicated "statewide" well). Still gets its
-  // marker + circle-mode anchor dot; flagged as an open design question
-  // in README.md rather than guessed at with a third geometry style.
-
-  // Shaded geography regions — plain circle alternative (Design Variants).
-  // Deliberately bigger than the per-marker halo (17-24px radius) and
-  // drawn as a lighter fill + crisp stroke, not a small solid dot — a
-  // same-size-as-the-halo circle here was visually indistinguishable from
-  // the halo that's already on every marker, making the blob/circle
-  // toggle look like it wasn't doing anything.
+  // Each location gets a soft circle (a locator, not an implied boundary):
+  // story locations in the story color, the other networks in gray.
   map.addSource("region-circles", { type: "geojson", data: REGION_CIRCLES_GEOJSON });
   map.addLayer({
     id: "regions-circle",
     type: "circle",
     source: "region-circles",
-    layout: { visibility: "none" },
     paint: {
       "circle-radius": 34,
-      "circle-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
+      "circle-color": ["case", ["get", "hasStory"], STORY_COLOR, "#8a8a8a"],
       "circle-opacity": 0.14,
       "circle-stroke-width": 2,
-      "circle-stroke-color": ["case", ["get", "hasStory"], MARKER_COLORS.green, "#8a8a8a"],
+      "circle-stroke-color": ["case", ["get", "hasStory"], STORY_COLOR, "#8a8a8a"],
       "circle-stroke-opacity": 0.8,
     },
   });
@@ -235,15 +189,15 @@ function addBaseLayers(map, onReady) {
   // async decode step (even from a data URI) — the rest of addBaseLayers
   // runs synchronously as before, and only this dependent layer (plus the
   // click/hover wiring that targets it) waits on it.
-  ensureStoryIcon(map, "book", MARKER_COLORS.green, false, (normalId) => {
-    ensureStoryIcon(map, "book", MARKER_COLORS.green, true, (multiId) => {
+  ensureStoryIcon(map, "book", STORY_COLOR, false, (normalId) => {
+    ensureStoryIcon(map, "book", STORY_COLOR, true, (multiId) => {
       map.addLayer({
         id: "story-points-layer",
         type: "symbol",
         source: "story-points",
         layout: {
           "icon-image": ["case", [">", ["get", "count"], 1], multiId, normalId],
-          "icon-size": 0.5,
+          "icon-size": STORY_ICON_SIZE,
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
         },
@@ -285,7 +239,7 @@ function setLayerVisibility(map, layerIds, visible) {
 }
 
 const LAYER_GROUPS = {
-  regions: ["regions-fill", "regions-circle"],
+  regions: ["regions-circle"],
   network: ["network-pins-layer"],
   stories: ["story-points-layer"],
 };
@@ -324,17 +278,6 @@ function mediaImage(story) {
     </span>`;
 }
 
-// Which player a podcast uses in the panel (Design Options "Podcast player"):
-// "audio" = Rippel's own MP3 in a plain audio bar (lightweight, no YouTube
-// branding or tracking); "youtube" = the episode's YouTube version.
-let podcastPlayer = "audio";
-function setPodcastPlayer(mode) {
-  podcastPlayer = mode;
-  // Re-render any podcast cards already on screen so the switch is live.
-  document.querySelectorAll("[data-podcast-id]").forEach((el) => {
-    el.outerHTML = renderMedia(getStoryById(el.dataset.podcastId));
-  });
-}
 
 // Optional clip times on any playable source (client ask): `start`/`end`
 // as seconds or "m:ss" / "h:mm:ss" on a `media` object, or on `audio` when
@@ -370,14 +313,15 @@ function clipLabel(clip) {
 
 function renderMedia(story) {
   const m = story.media;
-  // Podcasts play in the panel too — as audio or via YouTube — so nobody is
-  // sent off the map to listen. Same play button as video, plus the
-  // "Listen" chip so it's clear it's an episode, not a video.
+  // Podcasts play in the panel too, so nobody is sent off the map to
+  // listen: their YouTube version (Rippel's pick — it shows the picture),
+  // or the episode's own MP3 (`audio`) if there's no YouTube version. Same
+  // play button as video, plus the "Listen" chip.
   if (story.format === "Podcast" && (story.audio || m)) {
-    const useAudio = story.audio && (podcastPlayer === "audio" || !m);
+    const useAudio = !m;
     const type = useAudio ? "audio" : m.type;
     const clip = clipSource(useAudio ? story.audio : m);
-    return `<button type="button" class="story-media story-media-playable" data-podcast-id="${story.id}" data-media-type="${type}" data-media-url="${clip.url}"${clipAttrs(clip)}
+    return `<button type="button" class="story-media story-media-playable" data-media-type="${type}" data-media-url="${clip.url}"${clipAttrs(clip)}
         data-media-title="${story.title.replace(/"/g, "&quot;")}" aria-label="Listen to ${story.title.replace(/"/g, "&quot;")}">
       ${mediaImage(story)}<span class="story-media-play" aria-hidden="true"></span>
       <span class="story-media-chip">${HEADPHONES_SVG} Listen</span>${clipLabel(clip)}
@@ -415,17 +359,15 @@ function renderMedia(story) {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".story-media-playable[data-media-url]");
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle, podcastId, mediaStart, mediaEnd } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, mediaStart, mediaEnd } = btn.dataset;
   if (mediaType === "experience") {
     openStoryViewer(mediaUrl, mediaTitle);
     return;
   }
-  // Keep the podcast marker so the Design Options switch can still swap it.
-  const keep = podcastId ? ` data-podcast-id="${podcastId}"` : "";
   if (mediaType === "audio") {
     // Episode art stays; a native audio bar sits along its bottom edge.
     const art = btn.querySelector("img, .story-media-fallback").outerHTML;
-    btn.outerHTML = `<div class="story-media story-media-audio"${keep}>${art}<audio src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
+    btn.outerHTML = `<div class="story-media story-media-audio">${art}<audio src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay preload="none"></audio></div>`;
     return;
   }
   const sep = mediaUrl.includes("?") ? "&" : "?"; // playlist URLs already carry ?list=
@@ -435,7 +377,7 @@ document.addEventListener("click", (e) => {
       ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1${clipParams}" title="${mediaTitle}"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
       : `<video src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay playsinline></video>`;
-  btn.outerHTML = `<div class="story-media"${keep}>${player}</div>`;
+  btn.outerHTML = `<div class="story-media">${player}</div>`;
 });
 
 // "#t=start,end" media fragment for native audio/video (stops at `end`).

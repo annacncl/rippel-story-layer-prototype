@@ -52,6 +52,20 @@ html, body {
   color: var(--text);
 }
 .header-brand { display: flex; align-items: center; gap: 12px; }
+/* "Add your organization to the map" — links to the Count Me In form. */
+.header-cta {
+  margin-left: auto;
+  margin-right: 28px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: var(--teal);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.header-cta:hover { background: var(--accent-light); }
 .logo-mark {
   width: 26px;
   height: 32px;
@@ -460,9 +474,7 @@ html, body {
 
 /* Floating overlays center on the visible map area (not the full screen),
    so they track the side panels collapsing and the story panel opening. */
-.tour-banner,
-.design-variants,
-.design-variants-toggle-collapsed {
+.tour-banner {
   --map-center: calc(var(--filters-w) + (100% - var(--filters-w) - var(--influence-w) - var(--story-panel-w)) / 2);
   transition: left 0.2s;
 }
@@ -589,65 +601,6 @@ html, body {
 .story-card-body { padding: 10px 12px 12px; }
 .story-card-body h3 { margin: 6px 0 2px; font-size: 14px; font-family: var(--font-serif); font-weight: 500; color: var(--text); }
 
-/* ---------------------------- Design Variants panel -------------------------
-   Dev-only comparison tool for the client call — NOT part of the pitched
-   product, clearly labeled, safe to delete once decisions are made. */
-.design-variants {
-  position: absolute;
-  left: var(--map-center);
-  top: 78px; /* below .tour-banner, which shares the same centered top-14px slot */
-  transform: translateX(-50%);
-  z-index: 2; /* above the bare map, but tucks behind the story/cluster/tour panel (z-index 3) and side panels (4) when they overlap */
-  background: rgba(36, 26, 46, 0.96);
-  border: 1px dashed #8a6bb0;
-  border-radius: var(--radius-lg);
-  padding: 10px 14px;
-  font-size: 11px;
-  color: var(--text);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  max-width: 90vw;
-}
-.design-variants.hidden { display: none; }
-.design-variants-label {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #c9a8f0;
-  white-space: nowrap;
-}
-.design-variants-group { display: flex; align-items: center; gap: 4px; }
-.design-variants-group span { color: var(--text-dim); margin-right: 2px; white-space: nowrap; }
-.design-variants button {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  padding: 4px 9px;
-  border-radius: 20px;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  cursor: pointer;
-}
-.design-variants button:hover { color: var(--text); }
-.design-variants button.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); font-weight: 600; }
-.design-variants-toggle-collapsed {
-  position: absolute;
-  left: var(--map-center);
-  top: 78px;
-  transform: translateX(-50%);
-  z-index: 2;
-  background: rgba(36, 26, 46, 0.96);
-  border: 1px dashed #8a6bb0;
-  border-radius: 20px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #c9a8f0;
-  cursor: pointer;
-}
-.design-variants-toggle-collapsed.hidden { display: none; }
 
 /* ------------------------------- Mobile layout -------------------------------
    This prototype previously had zero @media rules at all — built for a
@@ -659,6 +612,5 @@ html, body {
 @media (max-width: 768px) {
   .guided-panel { width: 100%; right: 0; }
   .mode-caption { max-width: calc(100vw - 40px); }
-  .design-variants,
-  .design-variants-toggle-collapsed { max-width: calc(100vw - 20px); font-size: 10px; top: 96px; }
+  .header-cta { display: none; }
 }
