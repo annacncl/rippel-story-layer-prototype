@@ -52,20 +52,6 @@ html, body {
   color: var(--text);
 }
 .header-brand { display: flex; align-items: center; gap: 12px; }
-/* "Add your organization to the map" — links to the Count Me In form. */
-.header-cta {
-  margin-left: auto;
-  margin-right: 28px;
-  padding: 7px 14px;
-  border-radius: 20px;
-  background: var(--teal);
-  color: var(--bg);
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.header-cta:hover { background: var(--accent-light); }
 .logo-mark {
   width: 26px;
   height: 32px;
@@ -474,14 +460,38 @@ html, body {
 
 /* Floating overlays center on the visible map area (not the full screen),
    so they track the side panels collapsing and the story panel opening. */
-.tour-banner {
+.tour-banner,
+.map-cta {
   --map-center: calc(var(--filters-w) + (100% - var(--filters-w) - var(--influence-w) - var(--story-panel-w)) / 2);
   transition: left 0.2s;
+}
+/* "Add your organization to the map" — top of the map, above the tour banner. */
+.map-cta {
+  position: absolute;
+  left: var(--map-center);
+  top: 14px;
+  transform: translateX(-50%);
+  z-index: 6;
+  padding: 7px 16px;
+  border-radius: 20px;
+  background: var(--teal);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.map-cta:hover { background: var(--accent-light); }
+.map-cta-short { display: none; }
+@media (max-width: 1199px) {
+  .map-cta-full { display: none; }
+  .map-cta-short { display: inline; }
 }
 .tour-banner {
   position: absolute;
   left: var(--map-center);
-  top: 14px;
+  top: 58px; /* below .map-cta */
   transform: translateX(-50%);
   z-index: 6;
   display: flex;
@@ -612,5 +622,5 @@ html, body {
 @media (max-width: 768px) {
   .guided-panel { width: 100%; right: 0; }
   .mode-caption { max-width: calc(100vw - 40px); }
-  .header-cta { display: none; }
+  .map-cta { padding: 6px 12px; font-size: 12px; }
 }

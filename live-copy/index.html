@@ -314,10 +314,8 @@
      Safe to delete this block + the matching HTML/JS blocks (also fenced
      and rp-prefixed) to get back to a pristine copy of the real site.
      ========================================================================= */
-  /* Straddles the bottom edge of the real header (75px tall), so the header
-     itself stays free for the "Add your organization" link. */
   .rp-demo-badge {
-    position: fixed; top: 63px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
     z-index: 150; pointer-events: none;
     background: repeating-linear-gradient(135deg, #241a2e, #241a2e 10px, #2a1f36 10px, #2a1f36 20px);
     border: 1px dashed #6b4f8a; border-radius: 20px;
@@ -326,7 +324,7 @@
   }
 
   .rp-tour-banner {
-    position: fixed; top: 96px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 132px; /* below the "Add your organization" button */ left: 50%; transform: translateX(-50%);
     z-index: 140; display: flex; align-items: center; gap: 10px;
     background: rgba(26,29,34,0.96); border: 1px solid var(--border);
     border-radius: 22px; padding: 8px 8px 8px 16px;
@@ -452,13 +450,17 @@
     padding: 6px 12px; font-size: 11px; font-weight: 700; color: #f5b866; cursor: pointer;
   }
   .rp-nr-toggle-collapsed.rp-hidden { display: none; }
-  /* "Add your organization" call to action in the real header (links to the Count Me In form). */
-  .rp-header-cta {
-    margin-left: auto; margin-right: 28px; padding: 7px 14px; border-radius: 20px;
-    background: var(--rippel-teal); color: var(--bg); font-size: 13px; font-weight: 600;
-    text-decoration: none; white-space: nowrap;
+  /* "Add your organization to the map" (Count Me In form). Same rules as the live map's own
+     .map-cta: floats over the top of the map, centered just under the header. */
+  .rp-map-cta {
+    position: fixed; top: 88px; left: 50%; transform: translateX(-50%); z-index: 90;
+    padding: 7px 16px; border-radius: 20px; background: var(--rippel-teal); color: var(--bg);
+    font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   }
-  .rp-header-cta:hover { background: var(--accent-light); }
+  .rp-map-cta:hover { background: var(--accent-light); }
+  .rp-map-cta-short { display: none; }
+  @media (max-width: 1199px) { .rp-map-cta-full { display: none; } .rp-map-cta-short { display: inline; } }
 
   /* Network relationships (concept): a separate, unrelated layer idea (client
      asked for "relationships between networks"). */
@@ -491,7 +493,9 @@
   @media (max-width: 768px) {
     .rp-story-panel { width: 100%; right: 0 !important; }
     .rp-exit-tour-btn { right: 12px; }
-    .rp-header-cta { display: none; }
+    .rp-map-cta { top: 118px; padding: 6px 12px; font-size: 12px; }
+    .rp-tour-banner { top: 156px; }
+    body:has(.sidebar:not(.collapsed)) .rp-map-cta, body:has(.national-panel:not(.collapsed)) .rp-map-cta { display: none; }
     .rp-nr-panel { bottom: 8px; max-width: calc(100vw - 40px); }
   }
 </style>
@@ -2042,21 +2046,19 @@ function rpApplyPinSize() {
 }
 document.addEventListener('rp-story-layer-ready', rpApplyPinSize);
 
-// ------------------- "Add your organization" header link -------------------
-// Agreed Oct 21: an obvious way into the Count Me In form from the map.
-// rippel.org/count-me-in/ is Rippel's own short link (it redirects to the
-// Airtable form). Inserted from here so the real header markup is untouched.
-(function rpAddHeaderCta() {
-  const header = document.querySelector('header.header');
-  const stats = header && header.querySelector('.header-stats');
-  if (!stats) return;
+// ------------------- "Add your organization to the map" -------------------
+// Agreed with Rippel (Oct 21-22): an obvious way into the Count Me In form,
+// floating over the top of the map. rippel.org/count-me-in/ is Rippel's own
+// short link to the Airtable form. Mirrors the live map's own .map-cta;
+// inserted from here so this copy's real-site markup is untouched.
+(function rpAddMapCta() {
   const a = document.createElement('a');
-  a.className = 'rp-header-cta';
+  a.className = 'rp-map-cta';
   a.href = 'https://rippel.org/count-me-in/';
   a.target = '_blank';
   a.rel = 'noopener';
-  a.textContent = 'Add your organization to the map';
-  header.insertBefore(a, stats);
+  a.innerHTML = '<span class="rp-map-cta-full">Add your organization to the map</span><span class="rp-map-cta-short">Add your organization</span>';
+  document.querySelector('header.header').insertAdjacentElement('afterend', a);
 })();
 
 // --------------------------- Network relationships (concept) ---------------------------
