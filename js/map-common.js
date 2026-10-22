@@ -15,7 +15,7 @@ const US_BOUNDS = [
 // circle shading, YouTube for podcasts. Same orange as live-copy/, which
 // takes it from the real site's own accent.
 const STORY_COLOR = "#fb923c";
-const STORY_ICON_SIZE = 0.5; // ~30px badge
+const STORY_ICON_SIZE = 0.38; // ~23px badge, on par with the network pins (Oct 22)
 
 function createMap(containerId) {
   const map = new mapboxgl.Map({
@@ -57,8 +57,7 @@ const MULTI_BADGE = `<circle cx="26.5" cy="5.5" r="5" fill="#fff" stroke="{{colo
         <path d="M26.5 3 V8 M24 5.5 H29" stroke="{{color}}" stroke-width="1.8" stroke-linecap="round" />`;
 
 // 160px raster at pixelRatio 2 = 80 CSS px at icon-size 1; the badge tile
-// is 24/32 of that, so at STORY_ICON_SIZE (0.5) the marker is a ~30px
-// tile — on par with the 24x33px network pins instead of smaller than them.
+// is 24/32 of that, so the badge tile is 60px x STORY_ICON_SIZE (0.38 → ~23px).
 function storyIconSVG(shape, colorHex, multi) {
   return `
     <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 32 32">

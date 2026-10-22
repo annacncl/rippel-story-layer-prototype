@@ -20,7 +20,7 @@ the full rundown, including what's still open.
 
 **Current state (Oct 21 call with Rippel):** the design is settled and
 the Design Options comparison panel is gone: book icon, orange (#fb923c),
-small (~30px), circle shading, podcasts play their YouTube version, and
+small (~23px, on par with the network pins), circle shading, podcasts play their YouTube version, and
 the live map's network pins are shown at 75% size. Sections below that
 describe the Design Options / Design Variants panel are history.
 

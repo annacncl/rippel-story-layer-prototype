@@ -1533,7 +1533,7 @@ function onMapReady(cb) { if (map.loaded()) cb(); else map.on('load', cb); }
 // Orange is the real site's own accent (.network-toggle-btn.active,
 // statewide scope tags), not a new color.
 const RP_STORY_COLOR = '#fb923c';
-const RP_STORY_ICON_SIZE = 0.5;   // ~30px badge
+const RP_STORY_ICON_SIZE = 0.38;  // ~23px badge, on par with the smaller network pins (Oct 22)
 const RP_NETWORK_PIN_SIZE = 0.75; // the real site draws its pins at 1.0 (24x33px); shrunk so clusters overlap less
 
 
@@ -1666,7 +1666,7 @@ const RP_ICON_PATHS = {
   person: '<circle cx="12" cy="8" r="4.2" fill="#fff" /><path d="M4.5 20 C4.5 15.5 7.8 13.2 12 13.2 C16.2 13.2 19.5 15.5 19.5 20 Z" fill="#fff" />',
 };
 const RP_MULTI_BADGE = '<circle cx="26.5" cy="5.5" r="5" fill="#fff" stroke="{{color}}" stroke-width="1.6" /><path d="M26.5 3 V8 M24 5.5 H29" stroke="{{color}}" stroke-width="1.8" stroke-linecap="round" />';
-// 160px raster at pixelRatio 2 = 80 CSS px at icon-size 1; the tile is 24/32 of that, so "Small" (0.5) is a ~30px tile -- on par with the real site's 24x33px network pins.
+// 160px raster at pixelRatio 2 = 80 CSS px at icon-size 1; the tile is 24/32 of that, so the tile is 60px x RP_STORY_ICON_SIZE (0.38 -> ~23px).
 function rpStoryIconSVG(shape, colorHex, multi) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 32 32">`
     + `<defs><filter id="s" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#0f1114" flood-opacity="0.4" /></filter></defs>`
