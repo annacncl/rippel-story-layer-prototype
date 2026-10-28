@@ -88,17 +88,19 @@ folder's `index.html` already has the real site's own token, copied as-is
 (it's a public token, safe to ship in client-side code the same way the
 live site itself does).
 
-## Known gaps from this being a copy, not a live sync
+## Data: always current on GitHub Pages
 
-- `orgs.json`/`networks.json`/`tribal.geojson` are a **snapshot** from
-  whenever this copy was made — they will not reflect changes to the real
-  Airtable base going forward. The live site's own
-  `.github/workflows/update-map.yml` + Python fetch scripts weren't
-  copied here, since re-running those needs Airtable credentials this repo
-  doesn't have and isn't meant to.
-- If the live site's own `index.html` changes after this copy was made,
-  those changes won't appear here automatically — this is a snapshot, not
-  a live mirror.
+- On GitHub Pages, this copy reads the **live map's own published**
+  `orgs.json` / `networks.json` (`RP_LIVE_DATA_BASE` in `index.html`, the one
+  edit to the real site's code), so its numbers, lists and pins always match
+  the live map, which refreshes them from Airtable nightly. Both sites live on
+  annacncl.github.io, so no extra setup is needed. If the live map moves to
+  another address (e.g. a Rippel GitHub account), update that one line.
+- Run locally, it falls back to the snapshot files in this folder (refreshed
+  Oct 28, 2026). `tribal.geojson` is static and matches the live map.
+- The live map's own `index.html` changes don't flow in automatically. As of
+  Oct 28 the only changes since this copy was made are the "Add your
+  organization" button, which this copy already mirrors.
 
 ## Open question, not decided here
 
