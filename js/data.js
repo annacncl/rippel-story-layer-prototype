@@ -272,7 +272,7 @@ const STORIES = [
       "Dr. Paulette Brown-Hinds, second-generation publisher of Black Voice News, traces how her family's legacy of civic engagement shaped her work with the Inland Empire Community Foundation and the Inland Empire Journalism Innovation Hub + Fund.",
     image: "img/inland-empire-unsung-stewards.jpg",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2261842/c1e-557ds18p8dhnk673-7zxjxxzxsw99-qzhob4.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Qm6mMFq_gSE", start: "8:44", end: "14:47" },
     link: "https://rippel.org/podcasts/?podcast-id=7828",
   },
   {
@@ -314,7 +314,7 @@ const STORIES = [
       "Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.",
     image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc", start: "12:52", end: "15:30" },
     link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
   },
   {
@@ -345,7 +345,7 @@ const STORIES = [
     image: "img/samantha-shaak-photo.jpg",
     imagePosition: "center 30%",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2152943/c1e-m8dwuqj22rbov43q-47x8m0q3fmdz-5c52oc.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/68myEgOTEfA" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/68myEgOTEfA", start: "16:11", end: "19:02" },
     link: "https://rippel.org/podcasts/?podcast-id=7691",
   },
   {
@@ -359,7 +359,7 @@ const STORIES = [
       "Nate Boateng, VP for Community Impact and Engagement at Valley Health Partners, traces his stewardship journey as an Allentown native building coalitions among the region's community health centers.",
     image: "https://img.youtube.com/vi/53VFuJO4HvA/hqdefault.jpg",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/1855526/c1e-npxvu5x52xc9z41g-25kk29d3sk5g-twkocy.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/53VFuJO4HvA" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/53VFuJO4HvA", start: "11:48", end: "13:37" },
     link: "https://rippel.org/podcasts/?podcast-id=5337",
   },
   {
