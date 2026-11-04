@@ -3,9 +3,7 @@
 // pins, and regions are still mock — but story records marked "real content"
 // below use real titles/excerpts pulled from rippel.org (client-supplied
 // links, plus the South Texas episode found via public search on 2026-08-31),
-// with "Read full story" pointing at the real pages. Entries explicitly
-// marked MOCK are invented for this round's stress-testing and flagged as
-// such in their own comments — swap for real content once available.
+// with their links pointing at the real pages.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -54,22 +52,14 @@ const STORY_GEOGRAPHIES = {
     subtitle: "Southeast Florida, from Boca Raton to Jupiter and the Glades",
     center: [-80.45, 26.65],
   },
-  // Hijas del Campo's own location (agreed Oct 21; it had been filed under
-  // Inland Empire). Marker near Brentwood, per NBC's report.
-  "contra-costa": {
-    label: "Contra Costa County, CA",
-    shortName: "Contra Costa County",
-    subtitle: "East Bay, San Francisco Bay Area",
-    center: [-121.75, 37.93],
-  },
-  // MOCK — statewide example (no tight metro center) added to test how
+  // Statewide location (no tight metro center), originally added to test how
   // shading/anchoring should work when a story isn't a small region. `anchor`
   // (state capital) intentionally differs from the state's broad centroid, since "where does a statewide story anchor" was the client's
   // open question.
   "granite-state": {
     label: "New Hampshire (statewide)",
     shortName: "New Hampshire",
-    subtitle: "Statewide initiative — not tied to one metro area",
+    subtitle: "Statewide work across New Hampshire, not tied to one metro area",
     center: [-71.5, 43.65],
     anchor: [-71.55, 43.2],
     statewide: true,
@@ -92,7 +82,6 @@ const REGION_DEFS = [
   { id: "south-texas", hasStory: true, name: "South Texas (PJTT)" },
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)" },
   { id: "palm-beach", hasStory: true, name: "Palm Beach County, FL" },
-  { id: "contra-costa", hasStory: true, name: "Contra Costa County, CA" },
   { id: "north-sound", hasStory: false, name: "North Sound, WA", center: [-122.25, 48.35] },
   { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", center: [-93.25, 44.98] },
   { id: "front-range", hasStory: false, name: "Front Range, CO", center: [-104.9, 39.6] },
@@ -206,45 +195,63 @@ const NATIONWIDE_NETWORKS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Story records. Inland Empire (5 stories), Lehigh Valley (4) and South
-// Texas (3) are the multi-story "cluster" locations. Podcasts carry both an
-// `audio` MP3 (Rippel's Castos feed) and a YouTube `media` version; Design
-// Options' "Podcast player" picks which one plays in the panel. Any playable
-// source can be trimmed to a clip with `start` / `end` (seconds or "m:ss"),
-// e.g. media: { type: "youtube", url, start: "1:05", end: "3:30" }; for a
-// podcast's audio, use audio: { url, start, end } instead of a URL string. Each story may carry an optional
-// `media` field ({type: "youtube"|"video"|"external", url, autoplay}) — when
-// present, the card shows a play button and loads the real player on
-// click. "external" is for partner video with no official embed player (e.g.
-// TV-station clips): it shows the thumbnail with a play overlay that opens
-// the source page in a new tab. Optional `linkLabel` overrides the default
-// per-format link text (see storyLinkLabel()); `image` is optional — a
-// story without one gets a designed fallback tile, not a placeholder.
+// Story records, in the order they appear on the map and in the guided tour.
+// Video and audio only, so everything plays in the panel (Rippel, Nov 2026).
+// `media` is the YouTube player; `start` / `end` (seconds or "m:ss") trim it
+// to a clip, e.g. media: { type: "youtube", url, start: "1:05", end: "3:30" }.
+// For more than one clip from a video, add a second entry. Podcasts also keep
+// their MP3 as `audio`, used only if there's no YouTube version. `image` is
+// optional: a story without one gets a designed fallback tile.
 // ---------------------------------------------------------------------------
 const STORIES = [
-  // Inland Empire order set by Rippel on Oct 21: Summit first, Vital
-  // Conditions second (not opening on the podcast).
-  // Real content, partner-supplied (Rippel, 2026-10-20): IECF's own videos.
+  // Story order and contents follow Rippel's spreadsheet (Molly Belsky, Nov 2026): video and audio only, playable in the panel. Podcast clip times (start/end) go on `media`.
+  {
+    id: "fox-cities-video-summit",
+    geoId: "fox-cities",
+    geography: "Fox Cities, WI",
+    title: "Imagine Fox Cities Summit",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "Launched by community members for community members, Imagine Fox Cities is a coalition of local change-makers, working as stewards, to create a thriving region for the residents of today and for generations to come.",
+    image: "https://img.youtube.com/vi/mpGnbnlwLqg/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/mpGnbnlwLqg" },
+    link: "https://www.youtube.com/watch?v=mpGnbnlwLqg",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "palm-beach-video-bewellpbc",
+    geoId: "palm-beach",
+    geography: "Palm Beach County, FL",
+    title: "BeWell PBC Stewards Leading Change",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.",
+    image: "https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/tXXlmbzcEOU" },
+    link: "https://www.youtube.com/watch?v=tXXlmbzcEOU",
+    linkLabel: "Watch on YouTube →",
+  },
   {
     id: "inland-empire-video-iecf-summit",
     geoId: "inland-empire",
     geography: "Inland Empire, CA",
-    title: "IECF Policy & Philanthropy Summit 2026",
+    title: "IECF Policy and Philanthropy Summit 2026",
     format: "Video",
     formatIcon: "▶️",
     excerpt:
       "Scenes from the Inland Empire Community Foundation's 2026 Policy & Philanthropy Summit, “All Together.”",
     image: "https://img.youtube.com/vi/Vc-rRXNMedQ/hqdefault.jpg",
-    // Start time from Rippel's own link (&t=41s).
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ", start: "0:41" },
-    link: "https://www.youtube.com/watch?v=Vc-rRXNMedQ&t=41s",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/Vc-rRXNMedQ" },
+    link: "https://www.youtube.com/watch?v=Vc-rRXNMedQ",
     linkLabel: "Watch on YouTube →",
   },
   {
     id: "inland-empire-video-belonging-civic-muscle",
     geoId: "inland-empire",
     geography: "Inland Empire, CA",
-    title: "Vital Conditions: Belonging & Civic Muscle",
+    title: "Vital Conditions Overview: Belonging & Civic Muscle",
     format: "Video",
     formatIcon: "▶️",
     excerpt:
@@ -269,39 +276,47 @@ const STORIES = [
     link: "https://rippel.org/podcasts/?podcast-id=7828",
   },
   {
-    id: "inland-empire-playlist-ievcn",
-    geoId: "inland-empire",
-    geography: "Inland Empire, CA",
-    title: "Inland Empire Vital Conditions Network",
-    format: "Video Series",
+    id: "south-texas-video-tim-barr",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "Creating Belonging Where It Matters",
+    format: "Video",
     formatIcon: "▶️",
     excerpt:
-      "A playlist from the Inland Empire Community Foundation on the Inland Empire Vital Conditions Network (IEVCN). Plays here in order; use the player's playlist menu to pick a video.",
-    image: "https://i.ytimg.com/vi/FZr9fsleQOw/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/videoseries?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA" },
-    link: "https://www.youtube.com/playlist?list=PLlPB6KeAQoyyAu5PNQUzD7kSa_jWCUnnA",
-    linkLabel: "View the playlist on YouTube →",
+      "Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.",
+    image: "https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/0oPep3N5mIk", autoplay: false },
+    link: "https://www.youtube.com/watch?v=0oPep3N5mIk",
+    linkLabel: "Watch on YouTube →",
   },
   {
-    id: "fox-cities-multimedia",
-    geoId: "fox-cities",
-    geography: "Fox Cities, WI",
-    title: "Imagine Fox Cities: Creating a Community Where Everyone Belongs",
-    format: "Multimedia",
-    formatIcon: "🎬",
+    id: "south-texas-video-hope-heals",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "Hope Heals San Antonio",
+    format: "Video",
+    formatIcon: "▶️",
     excerpt:
-      "Fox Cities, a region of 19 municipalities in central Wisconsin, is bringing together residents, businesses, and institutions around one question: how do we build a community where everyone belongs?",
-    image: "https://rippel.org/foxcities/wp-content/themes/FoxCities/images/FC_loop_1000%201.png",
-    // Opens the full scrolling experience in a large viewer over the map
-    // (keeps people on the map; rippel.org allows it to be framed today).
-    media: { type: "experience", url: "https://rippel.org/foxcities/" },
-    link: "https://rippel.org/foxcities/",
-    linkLabel: "Or open it in a new tab ↗",
+      "A video from Methodist Healthcare Ministries of South Texas, the organization behind Prosperemos Juntos / Thriving Together.",
+    image: "https://img.youtube.com/vi/MM_CVMzC8Sw/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/MM_CVMzC8Sw", autoplay: false },
+    link: "https://www.youtube.com/watch?v=MM_CVMzC8Sw",
+    linkLabel: "Watch on YouTube →",
   },
-  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01):
-  // the Leonard Parker Pool Institute for Health's own YouTube video. Listed first
-  // at Lehigh Valley (client ask). Makes Lehigh Valley a 4-story cluster and mixes partner-produced video in with
-  // Rippel-produced podcasts/writing.
+  {
+    id: "south-texas-podcast-pacheco",
+    geoId: "south-texas",
+    geography: "South Texas (PJTT)",
+    title: "Stewardship Begins with Listening in South Texas",
+    format: "Podcast",
+    formatIcon: "🎙️",
+    excerpt:
+      "Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.",
+    image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
+    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc" },
+    link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
+  },
   {
     id: "lehigh-valley-video-franklin-park",
     geoId: "lehigh-valley",
@@ -348,117 +363,32 @@ const STORIES = [
     link: "https://rippel.org/podcasts/?podcast-id=5337",
   },
   {
-    id: "lehigh-valley-written",
-    geoId: "lehigh-valley",
-    geography: "Lehigh Valley, PA",
-    title: "A Pennsylvania Health Care System Stewards Equitable Health and Well-Being",
-    format: "Written Story",
-    formatIcon: "📝",
-    excerpt:
-      "When Leonard Parker Pool set out to build a better health system for the Lehigh Valley in the 1960s, he laid the groundwork for a hospital network now stewarding equitable health for its entire community.",
-    image: "https://rippel.org/wp-content/uploads/2024/05/Website-Carousel-Thumbnails-24.png",
-    link: "https://rippel.org/insights/a-pennsylvania-health-care-system-stewards-equitable-health-and-well-being/",
-  },
-  // Real content, found via public search (2026-08-31): Rippel's "Unsung
-  // Stewards" podcast, Season 5 Episode 2, featuring Yvonne Pacheco of
-  // Methodist Healthcare Ministries of South Texas (the org behind PJTT).
-  // Doubles as the real-media example for the audio/video embed feature.
-  {
-    id: "south-texas-podcast-pacheco",
-    geoId: "south-texas",
-    geography: "South Texas (PJTT)",
-    title: "Stewardship Begins with Listening in South Texas",
-    format: "Podcast",
-    formatIcon: "🎙️",
-    excerpt:
-      "Yvonne Pacheco, a lifelong Laredo resident and Community Connector with Methodist Healthcare Ministries, shares how growing up in a tight-knit border community shaped an approach to stewardship built on showing up consistently and listening deeply.",
-    image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
-    audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc" },
-    link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
-  },
-  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
-  // "Hope Heals SA" is MHM-produced (their own YouTube channel) and replaces
-  // the invented "PJTT Network Update" mock that previously stood in for
-  // partner-produced content at this location; the Tim Barr profile is
-  // Rippel-produced. South Texas is now a 3-story cluster, all real.
-  {
-    id: "south-texas-video-hope-heals",
-    geoId: "south-texas",
-    geography: "South Texas (PJTT)",
-    title: "Hope Heals San Antonio",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "A video from Methodist Healthcare Ministries of South Texas, the organization behind Prosperemos Juntos / Thriving Together.",
-    image: "https://img.youtube.com/vi/MM_CVMzC8Sw/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/MM_CVMzC8Sw", autoplay: false },
-    link: "https://www.youtube.com/watch?v=MM_CVMzC8Sw",
-    linkLabel: "Watch on YouTube →",
-  },
-  {
-    id: "south-texas-video-tim-barr",
-    geoId: "south-texas",
-    geography: "South Texas (PJTT)",
-    title: "Creating Belonging Where It Matters",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "Tim Barr, Communities of Solutions Director at Methodist Healthcare Ministries, supports community coalitions across South Texas. He shares how his rural origins shape his work, the changes Prosperemos Juntos is creating, and how he practices hope.",
-    image: "https://img.youtube.com/vi/0oPep3N5mIk/hqdefault.jpg",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/0oPep3N5mIk", autoplay: false },
-    link: "https://www.youtube.com/watch?v=0oPep3N5mIk",
-    linkLabel: "Watch on YouTube →",
-  },
-  // Real content, partner-supplied (Molly Belsky, Rippel comms, 2026-10-01).
-  // NBC Bay Area offers no official embed player for this clip, so it uses
-  // the "external" media type (thumbnail + play overlay that links out).
-  // Moved to its own Contra Costa County location (Oct 21).
-  {
-    id: "inland-empire-video-hijas-del-campo",
-    geoId: "contra-costa",
-    geography: "Contra Costa County, CA",
-    title: "Hijas del Campo Works to Support Farmworkers",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "What began five years ago as a group of women helping farmworkers near Brentwood has grown into a full-scale community service operation. An NBC Bay Area Hispanic Heritage Month feature.",
-    image: "https://media.nbcbayarea.com/2025/10/42419592470-1080pnbcstations.jpg?quality=85&strip=all&resize=1200%2C675",
-    media: {
-      type: "external",
-      url: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
-      source: "NBC Bay Area",
-    },
-    link: "https://www.nbcbayarea.com/video/hispanic-heritage-month/east-bay-women-support-farmworkers/3957990/",
-    linkLabel: "Watch on NBC Bay Area →",
-  },
-  // Real content, partner-supplied (Rippel, 2026-10-20).
-  {
-    id: "palm-beach-video-bewellpbc",
-    geoId: "palm-beach",
-    geography: "Palm Beach County, FL",
-    title: "BeWellPBC: Stewards Leading Change",
-    format: "Video",
-    formatIcon: "▶️",
-    excerpt:
-      "As BeWellPBC turns three, hear from the stewards leading change to transform behavioral health and wellness across Palm Beach County.",
-    image: "https://img.youtube.com/vi/tXXlmbzcEOU/hqdefault.jpg",
-    // Start time from Rippel's own link (&t=32s).
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/tXXlmbzcEOU", start: "0:32" },
-    link: "https://www.youtube.com/watch?v=tXXlmbzcEOU&t=32s",
-    linkLabel: "Watch on YouTube →",
-  },
-  // MOCK — statewide example (see STORY_GEOGRAPHIES["granite-state"] above).
-  {
-    id: "granite-state-mock",
+    id: "granite-state-video-data",
     geoId: "granite-state",
     geography: "New Hampshire (statewide)",
-    title: "A Statewide Network Comes Together Across New Hampshire",
-    format: "Written Story",
-    formatIcon: "📝",
+    title: "Data as Public Good",
+    format: "Video",
+    formatIcon: "▶️",
     excerpt:
-      "Illustrative placeholder for a statewide (not regional) story — used to test how shading and marker placement should work when a story isn't tied to one tight metro area.",
-    link: "#",
+      "Gene Martin, Executive Director of the New Hampshire Fiscal Policy Institute, explains how data can inform policies that can improve conditions for everyone who lives in New Hampshire.",
+    image: "https://img.youtube.com/vi/otzjdlNkg4A/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/otzjdlNkg4A" },
+    link: "https://www.youtube.com/watch?v=otzjdlNkg4A",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "granite-state-video-lgbtq-youth",
+    geoId: "granite-state",
+    geography: "New Hampshire (statewide)",
+    title: "Creating a Robust System of Care for LGBTQ+ Youth",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "Hershey Hirschkop, former executive director of Seacoast Outright, on why an integrated system of care requires training mental health professionals to be culturally competent when supporting LGBTQ+ youth.",
+    image: "https://img.youtube.com/vi/5ucSfse5QB0/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/5ucSfse5QB0" },
+    link: "https://www.youtube.com/watch?v=5ucSfse5QB0",
+    linkLabel: "Watch on YouTube →",
   },
 ];
 

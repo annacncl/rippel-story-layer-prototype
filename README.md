@@ -24,6 +24,16 @@ small (~23px, on par with the network pins), circle shading, podcasts play their
 the live map's network pins are shown at 75% size. Sections below that
 describe the Design Options / Design Variants panel are history.
 
+**Stories (Nov 2026):** the story list and order now follow Rippel's
+spreadsheet (Molly Belsky): video and audio only, all playable in the panel.
+Six regions, 13 stories. Removed: the Fox Cities multimedia piece and its
+viewer, the Lehigh Valley written story, Hijas del Campo (and its Contra Costa
+location), the IEVCN playlist, the New Hampshire mock. Added: Imagine Fox
+Cities Summit, Data as Public Good, Creating a Robust System of Care for
+LGBTQ+ Youth. Pending from Rippel: the "Volunteer Fox Cities" video link and
+the podcast clip time stamps (cell comments, which a CSV export drops). Older
+sections below describing the removed stories are history.
+
 **Also available: [`live-copy/`](live-copy/)** — the same story layer,
 overlaid on an exact, unmodified copy of the real live map (real data,
 real county density heat map, real filters) instead of this folder's
