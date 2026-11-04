@@ -206,6 +206,20 @@ const NATIONWIDE_NETWORKS = [
 const STORIES = [
   // Story order and contents follow Rippel's spreadsheet (Molly Belsky, Nov 2026): video and audio only, playable in the panel. Podcast clip times (start/end) go on `media`.
   {
+    id: "fox-cities-video-volunteer",
+    geoId: "fox-cities",
+    geography: "Fox Cities, WI",
+    title: "Volunteer Fox Cities",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt:
+      "A video from Imagine Fox Cities about volunteering across the Fox Cities.",
+    image: "https://img.youtube.com/vi/qSkza2_n3Io/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/qSkza2_n3Io" },
+    link: "https://www.youtube.com/watch?v=qSkza2_n3Io",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
     id: "fox-cities-video-summit",
     geoId: "fox-cities",
     geography: "Fox Cities, WI",

@@ -26,13 +26,13 @@ describe the Design Options / Design Variants panel are history.
 
 **Stories (Nov 2026):** the story list and order now follow Rippel's
 spreadsheet (Molly Belsky): video and audio only, all playable in the panel.
-Six regions, 13 stories. Removed: the Fox Cities multimedia piece and its
+Six regions, 14 stories. Removed: the Fox Cities multimedia piece and its
 viewer, the Lehigh Valley written story, Hijas del Campo (and its Contra Costa
 location), the IEVCN playlist, the New Hampshire mock. Added: Imagine Fox
 Cities Summit, Data as Public Good, Creating a Robust System of Care for
 LGBTQ+ Youth. Podcasts play Molly's selected clips (Paulette Brown-Hinds 8:44-14:47, Yvonne
 Pacheco 12:52-15:30, Samantha Shaak 16:11-19:02, Nate Boateng 11:48-13:37), with
-a link to the full episode. Pending from Rippel: the "Volunteer Fox Cities" link. Older
+a link to the full episode. Older
 sections below describing the removed stories are history.
 
 **Also available: [`live-copy/`](live-copy/)** — the same story layer,
