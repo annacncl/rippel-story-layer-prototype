@@ -288,10 +288,10 @@ function formatTime(sec) {
 function clipSource(src) {
   if (!src) return null;
   if (typeof src === "string") return { url: src, start: null, end: null };
-  return { url: src.url, start: toSeconds(src.start), end: toSeconds(src.end) };
+  return { url: src.url, start: toSeconds(src.start), end: toSeconds(src.end), volume: src.volume ?? null };
 }
 function clipAttrs(clip) {
-  return `${clip.start !== null ? ` data-media-start="${clip.start}"` : ""}${clip.end !== null ? ` data-media-end="${clip.end}"` : ""}`;
+  return `${clip.start !== null ? ` data-media-start="${clip.start}"` : ""}${clip.end !== null ? ` data-media-end="${clip.end}"` : ""}${clip.volume != null ? ` data-media-volume="${clip.volume}"` : ""}`;
 }
 // Small "Clip 0:41–2:10" / "From 0:41" label so a viewer knows it isn't the whole thing.
 function clipLabel(clip) {
@@ -331,7 +331,7 @@ function renderMedia(story) {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".story-media-playable[data-media-url]");
   if (!btn) return;
-  const { mediaType, mediaUrl, mediaTitle, mediaStart, mediaEnd } = btn.dataset;
+  const { mediaType, mediaUrl, mediaTitle, mediaStart, mediaEnd, mediaVolume } = btn.dataset;
   if (mediaType === "audio") {
     // Episode art stays; a native audio bar sits along its bottom edge.
     const art = btn.querySelector("img, .story-media-fallback").outerHTML;
@@ -339,14 +339,38 @@ document.addEventListener("click", (e) => {
     return;
   }
   const sep = mediaUrl.includes("?") ? "&" : "?"; // playlist URLs already carry ?list=
-  const clipParams = `${mediaStart ? `&start=${mediaStart}` : ""}${mediaEnd ? `&end=${mediaEnd}` : ""}`;
+  const clipParams = `${mediaStart ? `&start=${mediaStart}` : ""}${mediaEnd ? `&end=${mediaEnd}` : ""}${mediaVolume ? "&enablejsapi=1" : ""}`;
   const player =
     mediaType === "youtube"
       ? `<iframe src="${mediaUrl}${sep}rel=0&modestbranding=1&autoplay=1${clipParams}" title="${mediaTitle}"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
       : `<video src="${mediaUrl}${mediaFragment(mediaStart, mediaEnd)}" controls autoplay playsinline></video>`;
-  btn.outerHTML = `<div class="story-media">${player}</div>`;
+  const wrap = document.createElement("div");
+  wrap.className = "story-media";
+  wrap.innerHTML = player;
+  btn.replaceWith(wrap);
+  if (mediaVolume) setPlayerVolume(wrap.querySelector("iframe, video"), Number(mediaVolume));
 });
+
+// Per-story volume (0–100), for a recording that plays louder than the
+// rest. YouTube has no volume URL parameter, so it's sent to the player
+// (enablejsapi=1) as a message, repeated until the player is ready.
+function setPlayerVolume(el, volume) {
+  if (!el) return;
+  if (el.tagName === "VIDEO") {
+    el.volume = volume / 100;
+    return;
+  }
+  const send = () =>
+    el.contentWindow &&
+    el.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [volume] }), "*");
+  el.addEventListener("load", send);
+  let tries = 0;
+  const timer = setInterval(() => {
+    send();
+    if (++tries >= 24) clearInterval(timer);
+  }, 250);
+}
 
 // "#t=start,end" media fragment for native audio/video (stops at `end`).
 function mediaFragment(start, end) {

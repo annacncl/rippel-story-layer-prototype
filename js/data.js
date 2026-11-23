@@ -64,6 +64,19 @@ const STORY_GEOGRAPHIES = {
     anchor: [-71.55, 43.2],
     statewide: true,
   },
+  // Added from Rippel's spreadsheet (Nov 2026).
+  cincinnati: {
+    label: "Cincinnati, OH",
+    shortName: "Cincinnati",
+    subtitle: "Greater Cincinnati, southwest Ohio",
+    center: [-84.51, 39.1],
+  },
+  "north-sound": {
+    label: "North Sound, WA",
+    shortName: "North Sound",
+    subtitle: "Island, San Juan, Skagit, Snohomish & Whatcom counties, northwest Washington",
+    center: [-122.25, 48.35],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -82,7 +95,8 @@ const REGION_DEFS = [
   { id: "south-texas", hasStory: true, name: "South Texas (PJTT)" },
   { id: "granite-state", hasStory: true, name: "New Hampshire (statewide)" },
   { id: "palm-beach", hasStory: true, name: "Palm Beach County, FL" },
-  { id: "north-sound", hasStory: false, name: "North Sound, WA", center: [-122.25, 48.35] },
+  { id: "cincinnati", hasStory: true, name: "Cincinnati, OH" },
+  { id: "north-sound", hasStory: true, name: "North Sound, WA" },
   { id: "twin-cities", hasStory: false, name: "Twin Cities, MN", center: [-93.25, 44.98] },
   { id: "front-range", hasStory: false, name: "Front Range, CO", center: [-104.9, 39.6] },
   { id: "piedmont-triad", hasStory: false, name: "Piedmont Triad, NC", center: [-79.9, 36.1] },
@@ -329,7 +343,7 @@ const STORIES = [
     image: "https://img.youtube.com/vi/T7wdBXB5RUc/hqdefault.jpg",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2058706/c1e-wg1pb395zobx3kd2-wwx0m92zh3zz-vanddc.mp3",
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/T7wdBXB5RUc", start: "12:52", end: "15:30" },
-    link: "https://rippel.org/podcast/stewardship-begins-with-listening-in-south-texas/",
+    link: "https://rippel.org/podcasts/?podcast-id=7047",
   },
   {
     id: "lehigh-valley-video-franklin-park",
@@ -359,7 +373,7 @@ const STORIES = [
     image: "img/samantha-shaak-photo.jpg",
     imagePosition: "center 30%",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/2152943/c1e-m8dwuqj22rbov43q-47x8m0q3fmdz-5c52oc.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/68myEgOTEfA", start: "16:11", end: "19:02" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/68myEgOTEfA", start: "16:12", end: "19:02" },
     link: "https://rippel.org/podcasts/?podcast-id=7691",
   },
   {
@@ -373,7 +387,7 @@ const STORIES = [
       "Nate Boateng, VP for Community Impact and Engagement at Valley Health Partners, traces his stewardship journey as an Allentown native building coalitions among the region's community health centers.",
     image: "https://img.youtube.com/vi/53VFuJO4HvA/hqdefault.jpg",
     audio: "https://episodes.castos.com/5fdcb63fbdb699-82532580/1855526/c1e-npxvu5x52xc9z41g-25kk29d3sk5g-twkocy.mp3",
-    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/53VFuJO4HvA", start: "11:48", end: "13:37" },
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/53VFuJO4HvA", start: "11:49", end: "13:37", volume: 50 },
     link: "https://rippel.org/podcasts/?podcast-id=5337",
   },
   {
@@ -402,6 +416,32 @@ const STORIES = [
     image: "https://img.youtube.com/vi/5ucSfse5QB0/hqdefault.jpg",
     media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/5ucSfse5QB0" },
     link: "https://www.youtube.com/watch?v=5ucSfse5QB0",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "cincinnati-video-belonging",
+    geoId: "cincinnati",
+    geography: "Cincinnati, OH",
+    title: "Building Belonging Together",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt: "Interact for Health on building belonging together in Greater Cincinnati.",
+    image: "https://img.youtube.com/vi/94DewgRUyMQ/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/94DewgRUyMQ" },
+    link: "https://www.youtube.com/watch?v=94DewgRUyMQ",
+    linkLabel: "Watch on YouTube →",
+  },
+  {
+    id: "north-sound-video-about",
+    geoId: "north-sound",
+    geography: "North Sound, WA",
+    title: "About North Sound ACH",
+    format: "Video",
+    formatIcon: "▶️",
+    excerpt: "Who is North Sound ACH? An introduction to the Accountable Community of Health working across northwest Washington.",
+    image: "https://img.youtube.com/vi/9Hg5rZ7Bg0I/hqdefault.jpg",
+    media: { type: "youtube", url: "https://www.youtube-nocookie.com/embed/9Hg5rZ7Bg0I" },
+    link: "https://www.youtube.com/watch?v=9Hg5rZ7Bg0I",
     linkLabel: "Watch on YouTube →",
   },
 ];
