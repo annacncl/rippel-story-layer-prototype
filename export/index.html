@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map Image Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<style>
+  :root { --bg: #f7f7f8; --card: #ffffff; --ink: #2b2a35; --muted: #6b6880; --line: #e4e3ea; --accent: #5b21b6; --accent-ink: #ffffff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 Inter, Helvetica, Arial, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .lede { color: var(--muted); margin: 0 0 20px; max-width: 760px; }
+  .lede a { color: var(--accent); }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .layers { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .layers label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+  .layers input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; font-weight: 500; border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); }
+  button.secondary { background: var(--card); color: var(--accent); }
+  button:disabled { opacity: .5; cursor: wait; }
+  .frame { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .frame svg { display: block; width: 100%; height: auto; }
+  .status { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .status.error { color: #b42318; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Map image export</h1>
+  <p class="lede">A static, high-resolution image of the <a href="https://annacncl.github.io/Count-Me-In-Live-Map/">Count Me In map</a>, with Alaska and Hawai‘i placed below the continental US. It's drawn from the live map's current data each time this page opens. Choose the layers to include, then download.</p>
+
+  <div class="controls">
+    <div class="layers" id="layers">
+      <label><input type="checkbox" data-layer="county-shading" checked> County shading</label>
+      <label><input type="checkbox" data-layer="network-pins" checked> Network pins</label>
+      <label><input type="checkbox" data-layer="story-circles" checked> Story locations</label>
+      <label><input type="checkbox" data-layer="tribal-nations" checked> Tribal nations</label>
+      <label><input type="checkbox" data-layer="legend" checked> Legend</label>
+    </div>
+    <div class="buttons">
+      <button class="primary" id="dl-png" disabled>Download PNG</button>
+      <button class="secondary" id="dl-svg" disabled>Download SVG (vector)</button>
+    </div>
+  </div>
+
+  <div class="frame"><svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" font-family="Helvetica, Arial, sans-serif"></svg></div>
+  <p class="status" id="status">Loading the latest map data…</p>
+</main>
+
+<script>
+// Draws the Count Me In map as a vector (SVG) from the live map's own published data,
+// using the same rules as the live map:
+//  - County shading: local orgs shade their counties, statewide orgs every county in their
+//    states, national orgs none; same purple ramp.
+//  - Network pins: local/statewide networks with a location that at least one org lists.
+//  - Tribal nations listed by an org, matched by name, in amber.
+// Story locations come from the story-layer prototype (keep in sync with RP_GEOGRAPHIES in
+// ../live-copy/index.html). Albers USA projection puts Alaska and Hawai'i below the lower 48;
+// Puerto Rico and other territories are not shown.
+const LIVE = 'https://annacncl.github.io/Count-Me-In-Live-Map/';
+const W = 1600, H = 1000;
+const C = ['#f3f0ff','#ddd6fe','#c4b5fd','#a78bfa','#7c3aed','#5b21b6','#3b0764'];
+const PIN = '#2DD4BF', STORY = '#fb923c', TRIBAL = '#f59e0b', OUTLINE = '#6b6880';
+const PIN_PATH = 'M20 0 C9 0 0 9 0 20 C0 35 20 55 20 55 C20 55 40 35 40 20 C40 9 31 0 20 0 Z';
+const STATE_FIPS = {AK:2,AL:1,AR:5,AZ:4,CA:6,CO:8,CT:9,DE:10,FL:12,GA:13,HI:15,IA:19,ID:16,IL:17,IN:18,KS:20,KY:21,LA:22,MA:25,MD:24,ME:23,MI:26,MN:27,MO:29,MS:28,MT:30,NC:37,ND:38,NE:31,NH:33,NJ:34,NM:35,NV:32,NY:36,OH:39,OK:40,OR:41,PA:42,RI:44,SC:45,SD:46,TN:47,TX:48,UT:49,VA:51,VT:50,WA:53,WI:55,WV:54,WY:56,DC:11};
+const STORIES = [
+  ['Inland Empire, CA', [-117.25, 34.05]], ['Fox Cities, WI', [-88.4, 44.28]], ['Lehigh Valley, PA', [-75.5, 40.62]],
+  ['South Texas (PJTT)', [-99.5, 27.5]], ['Palm Beach County, FL', [-80.45, 26.65]], ['New Hampshire (statewide)', [-71.55, 43.2]],
+  ['Cincinnati, OH', [-84.51, 39.1]], ['North Sound, WA', [-122.25, 48.35]],
+];
+const status = (msg, err) => { const el = document.getElementById('status'); el.textContent = msg; el.classList.toggle('error', !!err); };
+const pinMarkup = (title) => `${title ? `<title>${title.replace(/[<&]/g, '')}</title>` : ''}<path d="${PIN_PATH}" fill="${PIN}" stroke="#fff" stroke-width="3"/><circle cx="20" cy="20" r="8" fill="#fff" opacity="0.9"/>`;
+
+Promise.all([
+  d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json'),
+  d3.json(LIVE + 'orgs.json'), d3.json(LIVE + 'networks.json'), d3.json(LIVE + 'tribal.geojson'),
+]).then(([us, orgs, networks, tribal]) => {
+  const svg = d3.select('#map');
+  const counties = topojson.feature(us, us.objects.counties).features;
+  const nation = topojson.feature(us, us.objects.nation);
+  const projection = d3.geoAlbersUsa().fitExtent([[30, 30], [W - 30, H - 130]], nation);
+  const path = d3.geoPath(projection);
+
+  // County density, as on the live map
+  const density = {};
+  const countyIds = counties.map((c) => c.id);
+  for (const o of orgs) {
+    if (o.scope === 'national') continue;
+    let fps = [];
+    if (o.scope === 'local') fps = (o.fips || []).map((f) => String(f).padStart(5, '0'));
+    else if (o.scope === 'statewide') for (const a of o.states || []) {
+      const p = String(STATE_FIPS[a] || '').padStart(2, '0');
+      fps = fps.concat(countyIds.filter((id) => id.startsWith(p)));
+    }
+    for (const f of fps) density[f] = (density[f] || 0) + 1;
+  }
+  const max = Math.max(1, ...Object.values(density));
+  const raw = [[1, C[1]], [Math.max(2, Math.round(0.2 * max)), C[2]], [Math.max(3, Math.round(0.4 * max)), C[3]],
+    [Math.max(4, Math.round(0.6 * max)), C[4]], [Math.max(5, Math.round(0.8 * max)), C[5]], [Math.max(6, max), C[6]]];
+  const stops = []; let last = 0;
+  for (const [v, c] of raw) { const x = Math.max(v, last + 1); stops.push([x, c]); last = x; }
+  const color = d3.scaleLinear().domain(stops.map((s) => s[0])).range(stops.map((s) => s[1])).clamp(true);
+
+  svg.append('rect').attr('width', W).attr('height', H).attr('fill', '#ffffff');
+  svg.append('path').attr('d', path(nation)).attr('fill', '#f4f4f2');
+  svg.append('g').attr('id', 'county-shading').selectAll('path')
+    .data(counties.filter((c) => density[c.id])).join('path')
+    .attr('d', path).attr('fill', (c) => color(density[c.id])).attr('fill-opacity', 0.85);
+
+  const active = new Set(orgs.flatMap((o) => o.tribalNations || []).map((t) => t.toLowerCase().trim()));
+  const tribes = tribal.features.filter((f) => {
+    const n = (f.properties.NAME || '').toLowerCase();
+    return n && [...active].some((t) => n === t || n.includes(t) || t.includes(n));
+  });
+  svg.append('g').attr('id', 'tribal-nations').selectAll('path').data(tribes).join('path')
+    .attr('d', path).attr('fill', TRIBAL).attr('fill-opacity', 0.75).attr('stroke', TRIBAL).attr('stroke-width', 0.6);
+
+  svg.append('path').attr('d', path(topojson.mesh(us, us.objects.counties, (a, b) => a !== b && a.id.slice(0, 2) === b.id.slice(0, 2))))
+    .attr('fill', 'none').attr('stroke', '#ffffff').attr('stroke-width', 0.35).attr('stroke-opacity', 0.9);
+  svg.append('path').attr('d', path(topojson.mesh(us, us.objects.states, (a, b) => a !== b)))
+    .attr('fill', 'none').attr('stroke', OUTLINE).attr('stroke-width', 0.8).attr('stroke-opacity', 0.6);
+  svg.append('path').attr('d', path(nation)).attr('fill', 'none').attr('stroke', OUTLINE).attr('stroke-width', 1);
+
+  const sg = svg.append('g').attr('id', 'story-circles');
+  for (const [name, ll] of STORIES) {
+    const p = projection(ll); if (!p) continue;
+    const g = sg.append('g'); g.append('title').text(name);
+    g.append('circle').attr('cx', p[0]).attr('cy', p[1]).attr('r', 24).attr('fill', STORY).attr('fill-opacity', 0.22).attr('stroke', STORY).attr('stroke-width', 2);
+    g.append('circle').attr('cx', p[0]).attr('cy', p[1]).attr('r', 7).attr('fill', STORY).attr('stroke', '#fff').attr('stroke-width', 2);
+  }
+
+  // Network pins: only networks that at least one org lists (the live map's rule)
+  const listed = new Set(orgs.flatMap((o) => (o.networks || []).map((n) => n.trim())));
+  const entries = [];
+  for (const n of networks) {
+    if (n.scale === 'nationwide' || !listed.has(n.name)) continue;
+    if (n.pins && n.pins.length > 1) n.pins.forEach((p) => entries.push({ name: n.name, lng: p.lng, lat: p.lat }));
+    else if (n.lat && n.lng) entries.push({ name: n.name, lng: n.lng, lat: n.lat });
+  }
+  const total = {}, idx = {};
+  entries.forEach((n) => { const k = `${n.lng.toFixed(2)},${n.lat.toFixed(2)}`; total[k] = (total[k] || 0) + 1; });
+  const pg = svg.append('g').attr('id', 'network-pins');
+  const pw = 15, ph = pw * 1.375;
+  for (const n of entries) {
+    const p = projection([n.lng, n.lat]); if (!p) continue;
+    const k = `${n.lng.toFixed(2)},${n.lat.toFixed(2)}`; const i = (idx[k] = (idx[k] || 0) + 1) - 1;
+    let dx = 0, dy = 0; // spread pins that share a spot in a small ring, as the live map does
+    if (total[k] > 1) { const r = 8 + Math.min(total[k], 10) * 1.2, a = (i / total[k]) * 2 * Math.PI - Math.PI / 2; dx = r * Math.cos(a); dy = r * Math.sin(a); }
+    pg.append('g').attr('transform', `translate(${(p[0] + dx - pw / 2).toFixed(1)},${(p[1] + dy - ph).toFixed(1)}) scale(${pw / 40})`).html(pinMarkup(n.name));
+  }
+
+  // Legend
+  const lg = svg.append('g').attr('id', 'legend').attr('transform', `translate(40, ${H - 82})`).attr('font-size', 15).attr('fill', '#2b2a35');
+  const shadeKey = lg.append('g').attr('data-for', 'county-shading');
+  shadeKey.append('text').attr('y', -14).attr('font-weight', 600).text('Organizations per county');
+  const counts = d3.range(1, max + 1), sw = Math.min(48, 220 / counts.length);
+  counts.forEach((v, i) => {
+    shadeKey.append('rect').attr('x', i * sw).attr('width', sw).attr('height', 14).attr('fill', color(v)).attr('fill-opacity', 0.85);
+    if (counts.length <= 8 || i === 0 || i === counts.length - 1) shadeKey.append('text').attr('x', i * sw + sw / 2).attr('y', 32).attr('text-anchor', 'middle').text(v);
+  });
+  const items = [['network-pins', 'Network'], ['story-circles', 'Story location'], ['tribal-nations', 'Tribal nation']];
+  const keys = items.map(([layer, label]) => {
+    const it = lg.append('g').attr('data-for', layer);
+    if (layer === 'network-pins') it.append('g').attr('transform', 'translate(0,-6) scale(0.4)').html(pinMarkup());
+    if (layer === 'story-circles') { it.append('circle').attr('cx', 9).attr('cy', 7).attr('r', 11).attr('fill', STORY).attr('fill-opacity', 0.22).attr('stroke', STORY).attr('stroke-width', 1.5); it.append('circle').attr('cx', 9).attr('cy', 7).attr('r', 4).attr('fill', STORY); }
+    if (layer === 'tribal-nations') it.append('rect').attr('width', 18).attr('height', 14).attr('fill', TRIBAL).attr('fill-opacity', 0.75);
+    it.append('text').attr('x', 28).attr('y', 12).text(label);
+    return it;
+  });
+  // Lay out the legend from whichever layers are on
+  function layoutLegend() {
+    const on = (l) => document.querySelector(`[data-layer="${l}"]`).checked;
+    let x = on('county-shading') ? 300 : 0;
+    keys.forEach((it) => { const show = on(it.attr('data-for')); it.attr('display', show ? null : 'none'); if (show) { it.attr('transform', `translate(${x},0)`); x += it.node().getBBox().width + 36; } });
+    shadeKey.attr('display', on('county-shading') ? null : 'none');
+  }
+  document.querySelectorAll('#layers input').forEach((cb) => cb.addEventListener('change', () => {
+    svg.select('#' + cb.dataset.layer).attr('display', cb.checked ? null : 'none');
+    layoutLegend();
+  }));
+  layoutLegend();
+
+  window.__stats = { shadedCounties: Object.keys(density).length, maxPerCounty: max, networkPins: entries.length, tribalShapes: tribes.length, stories: STORIES.length };
+  document.getElementById('dl-png').disabled = false;
+  document.getElementById('dl-svg').disabled = false;
+  status(`Drawn from today's live map data: ${Object.keys(density).length} shaded counties, ${entries.length} network pins, ${STORIES.length} story locations.`);
+}).catch((e) => status('Could not load the map data. Please refresh the page to try again.', true));
+
+// Downloads: the SVG as drawn (hidden layers removed), or a PNG at 2x (3200 x 2000)
+function exportSvgText() {
+  const clone = document.getElementById('map').cloneNode(true);
+  clone.querySelectorAll('[display="none"]').forEach((el) => el.remove());
+  clone.setAttribute('width', W); clone.setAttribute('height', H);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
+}
+function save(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+const stamp = () => new Date().toISOString().slice(0, 10);
+document.getElementById('dl-svg').addEventListener('click', () => save(new Blob([exportSvgText()], { type: 'image/svg+xml' }), `count-me-in-map-${stamp()}.svg`));
+document.getElementById('dl-png').addEventListener('click', () => {
+  const btn = document.getElementById('dl-png'); btn.disabled = true;
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([exportSvgText()], { type: 'image/svg+xml' }));
+  img.onload = () => {
+    const scale = 2, canvas = document.createElement('canvas');
+    canvas.width = W * scale; canvas.height = H * scale;
+    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((b) => { save(b, `count-me-in-map-${stamp()}.png`); btn.disabled = false; }, 'image/png');
+  };
+  img.onerror = () => { btn.disabled = false; status('The PNG could not be created. Try the SVG download instead.', true); };
+  img.src = url;
+});
+</script>
+</body>
+</html>
